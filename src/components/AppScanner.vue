@@ -80,6 +80,48 @@
           <div class="message-text">{{ messageText }}</div>
         </div>
       </div>
+
+      <!-- Модальное окно для ввода суммы -->
+      <div v-if="showAmountModal" class="amount-modal-overlay" @click="closeAmountModal">
+        <div class="amount-modal" @click.stop>
+          <div class="modal-header">
+            <h3>Введите сумму платежа</h3>
+            <p>QR-код не содержит сумму платежа. Укажите сумму для продолжения.</p>
+          </div>
+          
+          <div class="amount-input-container">
+            <input 
+              v-model="amountInput" 
+              type="text" 
+              inputmode="decimal"
+              placeholder="0.00"
+              class="amount-input"
+              :class="{ error: amountError }"
+              @keyup.enter="confirmAmount"
+              @input="amountError = ''"
+              autofocus
+            />
+            <span class="currency-label">₽</span>
+          </div>
+          
+          <div v-if="amountError" class="amount-error">
+            {{ amountError }}
+          </div>
+          
+          <div class="modal-buttons">
+            <button class="cancel-btn" @click="closeAmountModal">
+              Отмена
+            </button>
+            <button 
+              class="confirm-btn" 
+              @click="confirmAmount"
+              :disabled="!amountInput.trim()"
+            >
+              Подтвердить
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -109,6 +151,12 @@ const messageText = ref('');
 const messageType = ref('info');
 const torchEnabled = ref(false);
 const isProcessingQR = ref(false); // Флаг для предотвращения дублирования обработки
+
+// Состояние модального окна для ввода суммы
+const showAmountModal = ref(false);
+const amountInput = ref('');
+const pendingQrData = ref('');
+const amountError = ref('');
 
 // Функция для отображения сообщений
 const showMessageWithType = (text, type = 'info', duration = 3000) => {
@@ -255,6 +303,40 @@ const isValidPaymentUrl = (url) => {
   }
 };
 
+// Проверка наличия суммы в URL
+const hasAmountInUrl = (url) => {
+  try {
+    const urlObj = new URL(url);
+    const params = urlObj.searchParams;
+    
+    // Проверяем различные параметры суммы
+    return params.has('amount') || 
+           params.has('sum') || 
+           params.has('value') ||
+           url.includes('amount=') ||
+           url.includes('sum=') ||
+           url.includes('value=');
+  } catch (error) {
+    // Если не удается парсить как URL, проверяем строку напрямую
+    return url.includes('amount=') || 
+           url.includes('sum=') || 
+           url.includes('value=');
+  }
+};
+
+// Добавление суммы в URL
+const addAmountToUrl = (url, amount) => {
+  try {
+    const urlObj = new URL(url);
+    urlObj.searchParams.set('amount', amount);
+    return urlObj.toString();
+  } catch (error) {
+    // Если не удается парсить как URL, добавляем параметр как строку
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}amount=${amount}`;
+  }
+};
+
 // Обработка найденного QR-кода
 const handleQRDetected = async (qrData) => {
   // Предотвращаем дублирование обработки
@@ -273,6 +355,15 @@ const handleQRDetected = async (qrData) => {
     // Останавливаем сканирование
     stopContinuousScanning();
     
+    // Проверяем наличие суммы в URL
+    if (!hasAmountInUrl(qrData)) {
+      // Если суммы нет, показываем модальное окно для ввода
+      pendingQrData.value = qrData;
+      showAmountModal.value = true;
+      isProcessingQR.value = false; // Сбрасываем флаг для возможности дальнейшей обработки
+      return;
+    }
+    
     showMessageWithType('QR-код найден! Обрабатываем...', 'success', 2000);
     
     // Отправляем в store
@@ -289,10 +380,12 @@ const handleQRDetected = async (qrData) => {
       }
     }, 3000);
   } finally {
-    // Сбрасываем флаг через 2 секунды
-    setTimeout(() => {
-      isProcessingQR.value = false;
-    }, 2000);
+    // Сбрасываем флаг через 2 секунды только если не показываем модальное окно
+    if (!showAmountModal.value) {
+      setTimeout(() => {
+        isProcessingQR.value = false;
+      }, 2000);
+    }
   }
 };
 // Непрерывное сканирование управляется самим QrScanner
@@ -477,6 +570,97 @@ const stopCamera = () => {
 const goBack = () => {
   stopCamera();
   router.back();
+};
+
+// Функции для модального окна ввода суммы
+const closeAmountModal = () => {
+  showAmountModal.value = false;
+  amountInput.value = '';
+  amountError.value = '';
+  pendingQrData.value = '';
+  isProcessingQR.value = false;
+  
+  // Перезапускаем сканирование
+  if (qrScanner.value && cameraReady.value) {
+    qrScanner.value.start();
+    startContinuousScanning();
+  }
+};
+
+const validateAmount = (amount) => {
+  // Проверяем что сумма не пустая
+  if (!amount || amount.trim() === '') {
+    return 'Введите сумму';
+  }
+  
+  // Заменяем запятую на точку для корректного парсинга
+  const normalizedAmount = amount.replace(',', '.');
+  
+  // Проверяем что это число
+  const numAmount = parseFloat(normalizedAmount);
+  if (isNaN(numAmount)) {
+    return 'Введите корректную сумму';
+  }
+  
+  // Проверяем что сумма больше 0
+  if (numAmount <= 0) {
+    return 'Сумма должна быть больше 0';
+  }
+  
+  // Проверяем что сумма не слишком большая
+  if (numAmount > 1000000) {
+    return 'Сумма слишком большая';
+  }
+  
+  // Проверяем количество знаков после запятой (максимум 2)
+  const decimalParts = normalizedAmount.split('.');
+  if (decimalParts.length > 1 && decimalParts[1].length > 2) {
+    return 'Максимум 2 знака после запятой';
+  }
+  
+  return null;
+};
+
+const confirmAmount = async () => {
+  amountError.value = '';
+  
+  // Валидируем введенную сумму
+  const error = validateAmount(amountInput.value);
+  if (error) {
+    amountError.value = error;
+    return;
+  }
+  
+  try {
+    // Нормализуем сумму
+    const normalizedAmount = amountInput.value.replace(',', '.');
+    const amount = parseFloat(normalizedAmount).toFixed(2);
+    
+    // Добавляем сумму к URL
+    const urlWithAmount = addAmountToUrl(pendingQrData.value, amount);
+    
+    // Закрываем модальное окно
+    showAmountModal.value = false;
+    
+    showMessageWithType('Обрабатываем платеж...', 'success', 2000);
+    
+    // Отправляем в store
+    await walletStore.qrTake(urlWithAmount);
+    
+    // Очищаем состояние
+    amountInput.value = '';
+    pendingQrData.value = '';
+    
+  } catch (error) {
+    amountError.value = 'Ошибка обработки платежа';
+    
+    // Перезапускаем сканирование через 3 секунды
+    setTimeout(() => {
+      closeAmountModal();
+    }, 3000);
+  } finally {
+    isProcessingQR.value = false;
+  }
 };
 
 // Lifecycle hooks
@@ -900,6 +1084,274 @@ color: white;
   .message-text {
     font-size: 14px;
     font-weight: 600;
+  }
+}
+
+/* Модальное окно для ввода суммы */
+.amount-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: modalOverlayAppear 0.3s ease-out;
+}
+
+@keyframes modalOverlayAppear {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
+}
+
+.amount-modal {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  padding: 32px 28px;
+  width: 90%;
+  max-width: 400px;
+  margin: 0 20px;
+  box-shadow: 
+    0 32px 64px -12px rgba(0, 0, 0, 0.25),
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.amount-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+}
+
+@keyframes modalAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+}
+
+.modal-header p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.amount-input-container {
+  position: relative;
+  margin-bottom: 24px;
+  z-index: 1;
+}
+
+.amount-input {
+  width: 100%;
+  background: rgba(248, 250, 252, 0.8);
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 20px 60px 20px 24px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+  transition: all 0.3s ease;
+  outline: none;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+
+.amount-input:focus {
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.01);
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.1),
+    0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.amount-input.error {
+  border-color: #ef4444;
+  background: rgba(254, 242, 242, 0.95);
+  animation: inputError 0.3s ease;
+}
+
+@keyframes inputError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.currency-label {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  font-weight: 600;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.amount-error {
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: -16px;
+  margin-bottom: 24px;
+  animation: errorAppear 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes errorAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.cancel-btn,
+.confirm-btn {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.cancel-btn {
+  background: rgba(241, 245, 249, 0.8);
+  color: #64748b;
+  backdrop-filter: blur(10px);
+}
+
+.cancel-btn:hover {
+  background: rgba(226, 232, 240, 0.9);
+  color: #475569;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+}
+
+.confirm-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.4);
+}
+
+.confirm-btn:disabled {
+  background: rgba(156, 163, 175, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cancel-btn:active,
+.confirm-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+  .amount-modal {
+    padding: 28px 24px;
+    margin: 0 16px;
+    border-radius: 20px;
+  }
+  
+  .modal-header h3 {
+    font-size: 22px;
+  }
+  
+  .modal-header p {
+    font-size: 15px;
+  }
+  
+  .amount-input {
+    font-size: 24px;
+    padding: 18px 55px 18px 20px;
+  }
+  
+  .currency-label {
+    font-size: 20px;
+    right: 20px;
+  }
+  
+  .modal-buttons {
+    gap: 12px;
+  }
+  
+  .cancel-btn,
+  .confirm-btn {
+    padding: 14px 20px;
+    font-size: 15px;
   }
 }
 </style>
