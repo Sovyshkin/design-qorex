@@ -528,6 +528,46 @@ const changeLang = async (lang: string) => {
     }
   };
 
+  const withdrawFunds = async (amount: string, network: string, wallet: string, memo?: string) => {
+    try {
+      loaderScan.value = true;
+      
+      // Отправляем данные как query параметры
+      const params = new URLSearchParams({
+        tg_id: String(userTg.value.id),
+        amount: amount,
+        network: network,
+        wallet: wallet
+      });
+
+      // Добавляем memo только если оно заполнено
+      if (memo && memo.trim() !== '') {
+        params.append('memo', memo);
+      }
+      
+      let response = await axios.post(`/daddy_pleasу_output?${params.toString()}`, {});
+      
+      if (response.status == 200) {
+        let { id, datatime } = response.data.more_detail
+        let { type_trans, bool_suecess } = response.data
+        let amount_usdt = response.data.more_detail.amount
+        await getPrice()
+        let amount_rub = amount_usdt * usdt_price.value
+        router.push({ name: "transaction", query: { id, amount_rub, amount_usdt, datatime, type_trans, bool_suecess } });
+      }
+    } catch (err) {
+      
+      if (err.response?.data?.detail == 'Недостаточно средств') {
+        errMessage.value = t('insufficient_funds')
+      } else {
+        errMessage.value = t('failed_text')
+      }
+      router.push({ name: "transaction_failed" });
+    } finally {
+      loaderScan.value = false;
+    }
+  };
+
   const getMyReferrals = async () => {
     try {
       let response = await axios.get(`/my_ref/${userTg.value.id}`);
@@ -551,6 +591,7 @@ const changeLang = async (lang: string) => {
 
   return {
     qrTake,
+    withdrawFunds,
     getMyReferrals,
     getRub,
     goTransaction,

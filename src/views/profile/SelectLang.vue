@@ -47,12 +47,13 @@ h1 {
   width: 32px;
 }
 .lang-list {
-  padding: 0 15px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin: 0 auto;
+  padding: 0 15px 120px 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0 auto;
+  overflow-y: auto;
 }
 
 .list-item {

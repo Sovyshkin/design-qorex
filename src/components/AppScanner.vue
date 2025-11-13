@@ -672,6 +672,8 @@ onMounted(async () => {
     showMessageWithType('Проблема с доступом к камере', 'error', 5000);
   }
   
+  walletStore.loaderScan = false;
+
   await nextTick();
   await initCamera();
 });

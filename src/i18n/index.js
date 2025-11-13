@@ -98,7 +98,17 @@ const messages = {
     camera_not_ready: "Камера не готова",
     qr_not_found_manual: "QR-код не найден",
     advanced_scanning: "Глубокое сканирование",
-    no_referals_description: "Поделитесь своей реферальной ссылкой с друзьями и получайте до 3% с каждой их покупки"
+    no_referals_description: "Поделитесь своей реферальной ссылкой с друзьями и получайте до 3% с каждой их покупки",
+    withdraw_page: "Вывод средств",
+    withdraw_amount: "Сумма вывода",
+    min_withdraw: "Минимальная сумма",
+    select_network: "Выберите сеть",
+    wallet_address: "Адрес кошелька",
+    enter_wallet_address: "Введите адрес кошелька",
+    available_balance: "Доступный баланс",
+    withdraw_funds: "Вывести средства",
+    memo_optional: "Memo",
+    memo_warning: "⚠️ Убедитесь, что ввели Memo/Tag, если это требуется биржей или кошельком. Без него средства могут быть потеряны!"
   },
   EN: {
     referal: "Referral program",
@@ -200,6 +210,16 @@ const messages = {
     camera_not_ready: "Camera not ready",
     qr_not_found_manual: "QR-code not found. Try to point the camera more clearly at the code",
     advanced_scanning: "Deep scanning",
+    withdraw_page: "Withdraw",
+    withdraw_amount: "Withdrawal amount",
+    min_withdraw: "Minimum amount",
+    select_network: "Select network",
+    wallet_address: "Wallet address",
+    enter_wallet_address: "Enter wallet address",
+    available_balance: "Available balance",
+    withdraw_funds: "Withdraw funds",
+    memo_optional: "Memo",
+    memo_warning: "⚠️ Make sure to enter Memo/Tag if required by the exchange or wallet. Without it, funds may be lost!"
   },
 };
 

@@ -35,7 +35,6 @@ const { t } = useI18n();
 </template>
 <style scoped>
 .container {
-    height: 70vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -43,7 +42,8 @@ const { t } = useI18n();
     gap: 20px;
     font-size: 20px;
     font-weight: 600s;
-    padding: 10px;
+    padding: 10px 10px 120px 10px;
+    overflow-y: auto;
 }
 
 .header {

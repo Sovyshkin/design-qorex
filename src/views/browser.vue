@@ -11,7 +11,7 @@ const { t } = useI18n();
 </template>
 <style scoped>
 .container {
-    height: 90vh;
+    min-height: calc(100vh - 70px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -19,6 +19,7 @@ const { t } = useI18n();
     gap: 20px;
     font-size: 20px;
     font-weight: 600s;
-    padding: 10px;
+    padding: 10px 10px 90px 10px;
+    overflow-y: auto;
 }
 </style>

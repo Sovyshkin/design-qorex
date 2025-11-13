@@ -52,7 +52,7 @@ onMounted(async () => {
             <span>{{ t("deposit") }}</span>
             <img src="../assets/deposit.svg" alt="deposit" />
           </button>
-          <button class="btn pay_out">
+          <button class="btn pay_out" @click="goRoute('withdraw')">
             <span>{{ t("pay_out") }}</span>
             <img src="../assets/pay_out.svg" alt="">
           </button>
@@ -84,13 +84,13 @@ onMounted(async () => {
 </template>
 <style scoped>
 .container {
-  height: 90vh;
-  font-weight: 500;
   display: flex;
   flex-direction: column;
   gap: 30px;
   background-color: #f5f5f5;
-  padding: 15px 20px;
+  padding: 15px 20px 120px 20px;
+  overflow-y: auto;
+  font-weight: 500;
 }
 
 header {

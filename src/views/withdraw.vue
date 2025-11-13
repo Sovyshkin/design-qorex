@@ -1,10 +1,13 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
+const amount = ref("");
+const walletAddress = ref("");
+const memo = ref("");
 const selectedNetwork = ref("USDT_TRC20");
 
 const networks = [
@@ -13,10 +16,25 @@ const networks = [
   { id: "USDT_ERC20", name: "ERC20 (Ethereum)", icon: "ethereum" }
 ];
 
-const createInvoice = () => {
-  walletStore.createInvoice(selectedNetwork.value);
+const isFormValid = computed(() => {
+  return amount.value && walletAddress.value && selectedNetwork.value;
+});
+
+const handleWithdraw = () => {
+  if (!isFormValid.value) return;
+  
+  // Конвертируем USDT_TRC20 -> TRC20 для API
+  const networkId = selectedNetwork.value.replace('USDT_', '');
+  
+  walletStore.withdrawFunds(
+    amount.value,
+    networkId,
+    walletAddress.value,
+    memo.value
+  );
 };
 </script>
+
 <template>
   <header class="header">
     <img
@@ -25,13 +43,13 @@ const createInvoice = () => {
       alt=""
       @click="walletStore.goBack()"
     />
-    <h1>{{ t("deposit_page") }}</h1>
+    <h1>{{ t("withdraw_page") }}</h1>
     <div class="emp"></div>
   </header>
   <main class="container">
     <div class="form-container">
       <div class="group">
-        <input type="number" :placeholder="t('select_amount')" id="amount" v-model="walletStore.amount"/>
+        <input type="number" :placeholder="t('select_amount')" id="amount" v-model="amount"/>
         <span class="group-item">USDT</span>
       </div>
       
@@ -57,11 +75,37 @@ const createInvoice = () => {
           </div>
         </div>
       </div>
+
+      <input 
+        type="text" 
+        :placeholder="t('enter_wallet_address')" 
+        id="wallet" 
+        v-model="walletAddress"
+        required
+      />
+
+      <div class="memo-container">
+        <input 
+          type="text" 
+          :placeholder="t('memo_optional')" 
+          id="memo" 
+          v-model="memo"
+        />
+        <p class="memo-note">{{ t('memo_warning') }}</p>
+      </div>
     </div>
     
-    <button class="btn" @click="createInvoice()">{{ t("continue") }}</button>
+    <button 
+      class="btn" 
+      :class="{ disabled: !isFormValid }"
+      :disabled="!isFormValid"
+      @click="handleWithdraw()"
+    >
+      {{ t("withdraw_funds") }}
+    </button>
   </main>
 </template>
+
 <style scoped>
 .header {
   padding: 20px 15px;
@@ -83,6 +127,7 @@ h1 {
 .container {
   display: flex;
   flex-direction: column;
+  gap: 20px;
   padding: 0 20px 120px 20px;
   overflow-y: auto;
 }
@@ -91,7 +136,6 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 20px;
 }
 
 .btn {
@@ -106,6 +150,12 @@ h1 {
   font-size: 14px;
   color: #141414;
   background-color: #deec51;
+  transition: opacity 0.2s ease;
+}
+
+.btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 input,
@@ -137,6 +187,20 @@ select::placeholder {
   right: 4%;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.memo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memo-note {
+  font-size: 12px;
+  color: #ff6b6b;
+  padding: 0 4px;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .network-selector {

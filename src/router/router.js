@@ -75,6 +75,11 @@ const router = createRouter({
       name: "deposit",
     },
     {
+      path: "/withdraw",
+      component: () => import("../views/withdraw.vue"),
+      name: "withdraw",
+    },
+    {
       path: "/email_add",
       component: () => import("../views/email/email_add.vue"),
       name: "email_add",

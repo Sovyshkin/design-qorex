@@ -48,11 +48,10 @@ h1 {
 }
 
 .container {
-  height: 72vh;
   display: flex;
-  justify-content: space-between;
   flex-direction: column;
-  padding: 0 20px;
+  padding: 0 20px 120px 20px;
+  overflow-y: auto;
 }
 
 .btn {

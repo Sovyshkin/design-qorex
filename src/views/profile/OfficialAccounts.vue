@@ -78,7 +78,8 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 15px;
+  padding: 0 15px 120px 15px;
+  overflow-y: auto;
 }
 
 .docs {

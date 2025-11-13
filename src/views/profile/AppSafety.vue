@@ -133,7 +133,8 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 20px 15px 100px 15px;
+  padding: 0 15px 120px 15px;
+  overflow-y: auto;
 }
 
 .profile-item {
