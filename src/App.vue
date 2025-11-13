@@ -45,7 +45,10 @@ const requirePin = () => {
 }
 
 // Список маршрутов, которые не требуют PIN-кода
-const publicRoutes = ['enterPin', 'createPin']; // Исправлено: имена маршрутов в нижнем регистре
+const publicRoutes = ['enterPin', 'createPin'];
+
+// Маршруты, которые требуют дополнительной проверки PIN перед доступом
+const sensitiveRoutes = ['scanner'];
 
 router.beforeEach(async (to, from, next) => {
   walletStore.isLoading = true;
@@ -62,8 +65,16 @@ router.beforeEach(async (to, from, next) => {
 
     // Проверяем, является ли маршрут публичным
     const isPublicRoute = publicRoutes.includes(to.name);
+    const isSensitiveRoute = sensitiveRoutes.includes(to.name);
     
-
+    // Дополнительная проверка PIN для чувствительных маршрутов (сканер)
+    if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
+      walletStore.isLoading = false;
+      return next({ 
+        name: 'enterPin', 
+        query: { returnTo: to.fullPath } 
+      });
+    }
     
     // Если маршрут не публичный и требуется ввод PIN-кода
     if (!isPublicRoute && requirePin()) {
@@ -105,6 +116,10 @@ router.beforeEach(async (to, from, next) => {
 // Функция для инициализации приложения
 const initializeApp = async () => {
   try {
+    // Сбрасываем pinVerified при каждом запуске приложения
+    // Это важно для Telegram WebApp, т.к. каждое открытие бота - новая сессия
+    localStorage.removeItem('pinVerified');
+    
     walletStore.getUserInfo();
     
     // Если это Telegram Web App, создаем/получаем пользователя

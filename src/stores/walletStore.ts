@@ -57,7 +57,7 @@ export const useWalletStore = defineStore("wallet", () => {
       // Сохраняем пин-код в куки для быстрого доступа (но основным источником остается база данных)
       Cookies.set("pinCode", pin, { expires: 365 });
       localStorage.setItem('hasPinCode', 'true');
-      localStorage.setItem('pinVerified', Date.now().toString()); // Автоматически верифицируем
+      // НЕ устанавливаем pinVerified автоматически - пользователь должен ввести PIN при следующем входе
       message_status.value = "success";
       codePasswordActive.value = true;
       setTimeout(() => {
@@ -324,6 +324,14 @@ const changeLang = async (lang: string) => {
       
       // Устанавливаем состояние активности пин-кода на основе его наличия
       codePasswordActive.value = !!response.data.pin_code;
+      
+      // Инициализируем состояние PIN-кода в localStorage
+      if (pinCode.value) {
+        localStorage.setItem('hasPinCode', 'true');
+      } else {
+        localStorage.removeItem('hasPinCode');
+        localStorage.removeItem('pinVerified');
+      }
       
       history.value = response.data.list_transctions_replenished;
       

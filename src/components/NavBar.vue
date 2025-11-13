@@ -1,8 +1,12 @@
 <script setup>
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import { useWalletStore } from '@/stores/walletStore.ts';
 
 const { t } = useI18n();
+const router = useRouter();
+const walletStore = useWalletStore();
 const activeTab = ref("main");
 
 const navItems = [
@@ -16,6 +20,41 @@ const navItems = [
 const setActiveTab = (tabId) => {
   activeTab.value = tabId;
 };
+
+const handleScannerClick = (navigate) => {
+  // Проверяем, включен ли PIN-код
+  if (walletStore.hasPinCode()) {
+    const pinVerified = localStorage.getItem('pinVerified');
+    
+    // Если PIN не верифицирован, перенаправляем на ввод PIN
+    if (!pinVerified) {
+      router.push({ 
+        name: 'enterPin', 
+        query: { returnTo: '/scanner' } 
+      });
+      return;
+    }
+    
+    // Проверяем, не истекло ли время сессии (5 минут)
+    if (pinVerified) {
+      const verificationTime = parseInt(pinVerified);
+      const currentTime = Date.now();
+      const sessionTimeout = 5 * 60 * 1000; // 5 минут
+      
+      if (currentTime - verificationTime > sessionTimeout) {
+        localStorage.removeItem('pinVerified');
+        router.push({ 
+          name: 'enterPin', 
+          query: { returnTo: '/scanner' } 
+        });
+        return;
+      }
+    }
+  }
+  
+  // Если PIN верифицирован или не установлен, переходим на сканер
+  navigate();
+};
 </script>
 <template>
   <nav class="navbar">
@@ -27,10 +66,9 @@ const setActiveTab = (tabId) => {
       v-slot="{ navigate, isActive }"
     >
       <button 
-        @click="navigate" 
+        @click="handleScannerClick(navigate)" 
         :class="{ active: isActive }"
         class="scanner"
-        @click.prevent="navigate"
         v-if="item.id == 'scanner'"
       >
         <img :src="`/assets/${item.icon}.svg`" />
