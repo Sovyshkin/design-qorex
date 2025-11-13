@@ -121,6 +121,16 @@ const initializePinState = () => {
   }
 };
 
+const showMessage = (message: string, status: string = 'error', duration: number = 3000) => {
+  errMessage.value = message;
+  message_status.value = status;
+  
+  setTimeout(() => {
+    errMessage.value = '';
+    message_status.value = '';
+  }, duration);
+};
+
 const savedLang = localStorage.getItem("lang") || "RU";
 i18n.global.locale = savedLang;
 const availableLanguages = [
@@ -643,6 +653,7 @@ const changeLang = async (lang: string) => {
     createUser,
     roundToHundredths,
     errMessage,
-    referalId
+    referalId,
+    showMessage
   };
 });

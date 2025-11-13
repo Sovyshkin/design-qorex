@@ -8,6 +8,7 @@ import { useWalletStore } from '@/stores/walletStore.ts'
 
 const router = useRouter();
 const walletStore = useWalletStore()
+const accessDenied = ref(false);
 
 // Функция для проверки необходимости ввода PIN
 const requirePin = () => {
@@ -47,7 +48,7 @@ const requirePin = () => {
 // Список маршрутов, которые не требуют PIN-кода
 const publicRoutes = ['enterPin', 'createPin'];
 
-// Маршруты, которые требуют дополнительной проверки PIN перед доступом
+// Маршруты, которые требуют проверки PIN перед доступом
 const sensitiveRoutes = ['scanner'];
 
 router.beforeEach(async (to, from, next) => {
@@ -67,7 +68,7 @@ router.beforeEach(async (to, from, next) => {
     const isPublicRoute = publicRoutes.includes(to.name);
     const isSensitiveRoute = sensitiveRoutes.includes(to.name);
     
-    // Дополнительная проверка PIN для чувствительных маршрутов (сканер)
+    // Проверка PIN ТОЛЬКО для чувствительных маршрутов (сканер)
     if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
       walletStore.isLoading = false;
       return next({ 
@@ -75,32 +76,12 @@ router.beforeEach(async (to, from, next) => {
         query: { returnTo: to.fullPath } 
       });
     }
-    
-    // Если маршрут не публичный и требуется ввод PIN-кода
-    if (!isPublicRoute && requirePin()) {
-      // Если у пользователя еще нет PIN-кода, перенаправляем на создание
-      if (!walletStore.hasPinCode()) {
-
-        walletStore.isLoading = false;
-        return next({ name: 'createPin' });
-      } else {
-        // Если PIN-код есть, но не верифицирован - перенаправляем на ввод
-
-        walletStore.isLoading = false;
-        return next({ 
-          name: 'enterPin', 
-          query: { returnTo: to.fullPath } 
-        });
-      }
-    }
 
     // Блокируем доступ к созданию PIN-кода если он уже установлен
-    if (to.name === 'createPin' && walletStore.hasPinCode() && !requirePin()) {
-
+    if (to.name === 'createPin' && walletStore.hasPinCode()) {
       walletStore.isLoading = false;
-      return next({ name: 'home' });
+      return next({ name: 'main' });
     }
-
 
     next();
   } catch (error) {
@@ -112,6 +93,20 @@ router.beforeEach(async (to, from, next) => {
     }, 500);
   }
 });
+
+// Функция проверки доступа по белому списку
+const checkAccessByWhitelist = (userId) => {
+  const allowedIds = import.meta.env.VITE_ALLOWED_TELEGRAM_IDS;
+  
+  // Если белый список не задан или пустой - разрешаем доступ всем
+  if (!allowedIds || allowedIds.trim() === '') {
+    return true;
+  }
+  
+  // Парсим белый список и проверяем ID пользователя
+  const allowedIdsArray = allowedIds.split(',').map(id => id.trim());
+  return allowedIdsArray.includes(String(userId));
+};
 
 // Функция для инициализации приложения
 const initializeApp = async () => {
@@ -126,20 +121,18 @@ const initializeApp = async () => {
     if (window.Telegram && window.Telegram.WebApp) {
       // Исправлено: правильное обращение к userTg
       if (walletStore.userTg && walletStore.userTg.id) {
+        // Проверяем доступ по белому списку
+        if (!checkAccessByWhitelist(walletStore.userTg.id)) {
+          // Показываем экран блокировки доступа
+          accessDenied.value = true;
+          walletStore.isLoading = false;
+          return;
+        }
+        
         // Загружаем данные пользователя (включая пин-код) из базы данных
         await walletStore.getUser();
         
-        // Проверяем наличие PIN-кода при загрузке приложения
-        if (walletStore.hasPinCode() && requirePin()) {
-
-          // Если требуется PIN, перенаправляем на страницу ввода
-          router.push({ 
-            name: 'enterPin', 
-            query: { returnTo: router.currentRoute.value.fullPath } 
-          });
-        } else {
-
-        }
+        // Больше НЕ проверяем PIN при загрузке - только при переходе на сканер
       }
     }
   } catch (err) {
@@ -178,7 +171,17 @@ const debugInfo = computed(() => {
   <main class="wrapper">
     <AppMessage/>
     
-    <div class="wrap-load" v-if="walletStore.isLoading">
+    <!-- Экран блокировки доступа -->
+    <div class="access-denied" v-if="accessDenied">
+      <div class="access-denied-content">
+        <div class="lock-icon">🔒</div>
+        <h1>Доступ ограничен</h1>
+        <p>Приложение находится в режиме тестирования.</p>
+        <p class="sub-text">Доступ разрешен только авторизованным пользователям.</p>
+      </div>
+    </div>
+    
+    <div class="wrap-load" v-else-if="walletStore.isLoading">
       <AppLoader/>
     </div>
     
@@ -357,6 +360,60 @@ button::-moz-focus-inner {
 
 h1 {
   text-align: center;
+}
+
+.access-denied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.access-denied-content {
+  text-align: center;
+  background: white;
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.lock-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+.access-denied-content h1 {
+  color: #141414;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.access-denied-content p {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.access-denied-content .sub-text {
+  font-size: 14px;
+  color: #999;
+  margin-top: 20px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* Стили для страниц PIN-кода */
