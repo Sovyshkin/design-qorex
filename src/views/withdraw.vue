@@ -44,7 +44,7 @@ const handleWithdraw = async () => {
       @click="walletStore.goBack()"
     />
     <h1>{{ t("withdraw_page") }}</h1>
-    <div class="emp"></div
+    <div class="emp"></div>
   </header>
   <main class="container">
     <div class="form-container">
