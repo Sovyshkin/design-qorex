@@ -670,12 +670,11 @@ const changeLang = async (lang: string) => {
     try {
       loaderScan.value = true;
       
-      const params = new URLSearchParams({
-        tg_id: String(userTg.value.id),
-        key: twoFactorCode,
-        amount: amount,
-        wallet: recipientWallet
-      });
+      const params = new URLSearchParams();
+      params.append('tg_id', String(userTg.value.id));
+      params.append('key', String(twoFactorCode));
+      params.append('amount', String(amount));
+      params.append('wallet', String(recipientWallet));
       
       let response = await axios.post(`/transfer_cash_wallet?${params.toString()}`, {});
       
