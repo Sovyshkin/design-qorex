@@ -49,12 +49,22 @@ onMounted(async () => {
         </div>
         <div class="actions">
           <button class="btn deposit" @click="goRoute('deposit')">
+            <div class="btn-icon">
+              <img src="../assets/deposit.svg" alt="deposit" />
+            </div>
             <span>{{ t("deposit") }}</span>
-            <img src="../assets/deposit.svg" alt="deposit" />
+          </button>
+          <button class="btn transfer" @click="goRoute('transfer')">
+            <div class="btn-icon">
+              <img src="../assets/send.png" alt="transfer" />
+            </div>
+            <span>{{ t("transfer") }}</span>
           </button>
           <button class="btn pay_out" @click="goRoute('withdraw')">
+            <div class="btn-icon">
+              <img src="../assets/pay_out.svg" alt="withdraw" />
+            </div>
             <span>{{ t("pay_out") }}</span>
-            <img src="../assets/pay_out.svg" alt="">
           </button>
         </div>
       </div>
@@ -179,35 +189,112 @@ h3 {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 25px;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .btn {
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 10px 12px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn:active::before {
+  opacity: 1;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.btn:active .btn-icon {
+  transform: scale(0.9);
+}
+
+.btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .btn span {
-  font-weight: 300;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 11px;
   color: #141414;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
 }
 
 .deposit {
   background-color: #DEEC51;
+  box-shadow: 0 2px 8px rgba(222, 236, 81, 0.3);
+}
+
+.deposit .btn-icon {
+  background-color: rgba(20, 20, 20, 0.1);
+}
+
+.deposit:active {
+  box-shadow: 0 1px 4px rgba(222, 236, 81, 0.2);
+}
+
+.transfer {
+  background-color: #fff;
+  border: 1.5px solid #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.transfer .btn-icon {
+  background-color: #f5f5f5;
+}
+
+.transfer:active {
+  border-color: #d0d0d0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .pay_out {
   background-color: #262626;
+  box-shadow: 0 2px 8px rgba(38, 38, 38, 0.3);
+}
+
+.pay_out .btn-icon {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .pay_out span {
   color: #fff;
+}
+
+.pay_out:active {
+  box-shadow: 0 1px 4px rgba(38, 38, 38, 0.2);
 }
 
 .coins {

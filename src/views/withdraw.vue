@@ -20,13 +20,13 @@ const isFormValid = computed(() => {
   return amount.value && walletAddress.value && selectedNetwork.value;
 });
 
-const handleWithdraw = () => {
+const handleWithdraw = async () => {
   if (!isFormValid.value) return;
   
   // Конвертируем USDT_TRC20 -> TRC20 для API
   const networkId = selectedNetwork.value.replace('USDT_', '');
   
-  walletStore.withdrawFunds(
+  await walletStore.withdrawFunds(
     amount.value,
     networkId,
     walletAddress.value,
@@ -44,7 +44,7 @@ const handleWithdraw = () => {
       @click="walletStore.goBack()"
     />
     <h1>{{ t("withdraw_page") }}</h1>
-    <div class="emp"></div>
+    <div class="emp"></div
   </header>
   <main class="container">
     <div class="form-container">

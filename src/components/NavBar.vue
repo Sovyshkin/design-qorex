@@ -13,7 +13,7 @@ const navItems = [
   { id: "main", name: t("main"), icon: "main", path: "/" },
   { id: "history", name: t("history"), icon: "history", path: "/history" },
   { id: "scanner", name: t("scanner"), icon: "scanner", path: "/scanner" },
-  { id: "browser", name: t("browser"), icon: "browser", path: "/browser" },
+  { id: "transfer", name: t("transfer"), icon: "send", path: "/transfer", isPng: true },
   { id: "profile", name: t("profile"), icon: "profile", path: "/profile" },
 ];
 
@@ -79,7 +79,7 @@ const handleScannerClick = (navigate) => {
         @click.prevent="navigate"
         v-else
       >
-        <img :src="`/assets/${item.icon}.svg`" class="icon" />
+        <img :src="`/assets/${item.icon}${item.isPng ? '.png' : '.svg'}`" class="icon" />
         <span>{{ item.name }}</span>
       </button>
     </router-link>
@@ -143,6 +143,12 @@ button.active {
 button .icon {
   width: 24px;
   height: 24px;
+}
+
+/* PNG иконки делаем чуть меньше */
+button img[src$=".png"] {
+  width: 20px;
+  height: 20px;
 }
 
 /* Анимация при нажатии */

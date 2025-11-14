@@ -30,6 +30,11 @@ const router = createRouter({
       name: "safety",
     },
     {
+      path: "/profile/two-factor-auth",
+      component: () => import("../views/profile/TwoFactorAuth.vue"),
+      name: "twoFactorAuth",
+    },
+    {
       path: "/profile/info",
       component: () => import("../views/profile/AppInfo.vue"),
       name: "info",
@@ -78,6 +83,11 @@ const router = createRouter({
       path: "/withdraw",
       component: () => import("../views/withdraw.vue"),
       name: "withdraw",
+    },
+    {
+      path: "/transfer",
+      component: () => import("../views/transfer.vue"),
+      name: "transfer",
     },
     {
       path: "/email_add",

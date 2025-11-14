@@ -39,6 +39,8 @@ export const useWalletStore = defineStore("wallet", () => {
   const pinCode = ref("");
   const referalId = ref(""); // Добавляем переменную для реферального ID
   const isCreatingUser = ref(false); // Флаг для предотвращения повторного создания пользователя
+  const userWallet = ref(""); // Номер кошелька пользователя для переводов
+  const has2FA = ref(false); // Статус 2FA пользователя
 
   const history = ref([]);
 
@@ -598,6 +600,131 @@ const changeLang = async (lang: string) => {
     }
   };
 
+  const enable2FA = async () => {
+    try {
+      loaderScan.value = true;
+      let response = await axios.post(`/fa_take`, {
+        tg_id: String(userTg.value.id)
+      });
+      
+      if (response.status === 200 && response.data.status === 'success') {
+        return {
+          success: true,
+          qrImage: response.data.qr_image_base64,
+          key: response.data.key
+        };
+      }
+      return { success: false };
+    } catch (err) {
+      showMessage(t('error_occurred'), 'error');
+      return { success: false };
+    } finally {
+      loaderScan.value = false;
+    }
+  };
+
+  const verify2FACode = async (code: string) => {
+    try {
+      loaderScan.value = true;
+      let response = await axios.post(`/key_fa_check`, {
+        tg_id: String(userTg.value.id),
+        key: code
+      });
+      
+      if (response.status === 200 && response.data.status === 'success') {
+        has2FA.value = true; // Обновляем статус 2FA
+        showMessage(t('2fa_enabled_success'), 'success');
+        return true;
+      }
+      return false;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        showMessage(t('invalid_2fa_code'), 'error');
+      } else {
+        showMessage(t('error_occurred'), 'error');
+      }
+      return false;
+    } finally {
+      loaderScan.value = false;
+    }
+  };
+
+  const getUserWallet = async () => {
+    try {
+      let response = await axios.post(`/take_user_w`, {
+        tg_id: String(userTg.value.id)
+      });
+      
+      if (response.status === 200 && response.data.wallet) {
+        userWallet.value = response.data.wallet;
+        return response.data.wallet;
+      }
+      return null;
+    } catch (err) {
+      showMessage(t('error_occurred'), 'error');
+      return null;
+    }
+  };
+
+  const transferFunds = async (recipientWallet: string, amount: string, twoFactorCode: string) => {
+    // Проверяем, включен ли 2FA
+    if (!has2FA.value) {
+      showMessage(t('transfer_requires_2fa'), 'error');
+      router.push({ name: 'twoFactorAuth' });
+      return false;
+    }
+
+    try {
+      loaderScan.value = true;
+      
+      let response = await axios.post(`/transfer_cash_wallet`, {
+        tg_id: String(userTg.value.id),
+        key: twoFactorCode,
+        amount: amount,
+        wallet: recipientWallet
+      });
+      
+      if (response.status === 200) {
+        // Получаем детали транзакции из ответа
+        let { id, datatime } = response.data.more_detail || {};
+        let { type_trans, bool_suecess } = response.data;
+        let amount_usdt = response.data.more_detail?.amount || amount;
+        
+        await getPrice();
+        await getUser(); // Обновляем баланс
+        
+        let amount_rub = parseFloat(amount_usdt) * usdt_price.value;
+        
+        // Перенаправляем на страницу транзакции
+        router.push({ 
+          name: "transaction", 
+          query: { 
+            id, 
+            amount_rub, 
+            amount_usdt, 
+            datatime, 
+            type_trans: type_trans || 'transfer', 
+            bool_suecess 
+          } 
+        });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        showMessage(t('invalid_2fa_code'), 'error');
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, 'error');
+      } else {
+        showMessage(t('transfer_failed'), 'error');
+      }
+      router.push({ name: "transaction_failed" });
+      return false;
+    } finally {
+      loaderScan.value = false;
+    }
+  };
+
 
   const roundToHundredths = (value: number | string | null | undefined): string => {
   if (value === null || value === undefined || value === '') return '0.00'
@@ -611,6 +738,10 @@ const changeLang = async (lang: string) => {
     qrTake,
     withdrawFunds,
     getMyReferrals,
+    enable2FA,
+    verify2FACode,
+    getUserWallet,
+    transferFunds,
     getRub,
     goTransaction,
     transaction,
@@ -654,6 +785,8 @@ const changeLang = async (lang: string) => {
     roundToHundredths,
     errMessage,
     referalId,
-    showMessage
+    showMessage,
+    userWallet,
+    has2FA
   };
 });

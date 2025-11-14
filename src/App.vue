@@ -181,15 +181,14 @@ const debugInfo = computed(() => {
       </div>
     </div>
     
-    <div class="wrap-load" v-else-if="walletStore.isLoading">
-      <AppLoader/>
-    </div>
-    
     <template v-else>
       <!-- Отображаем страницы PIN-кода без навбара -->
       <template v-if="!showContent">
         <div class="pin-page">
-          <router-view v-slot="{ Component }">
+          <div class="wrap-load" v-if="walletStore.isLoading">
+            <AppLoader/>
+          </div>
+          <router-view v-else v-slot="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" />
             </transition>
@@ -199,14 +198,17 @@ const debugInfo = computed(() => {
       
       <!-- Отображаем основной контент с навбаром -->
       <template v-else>
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
-        <footer>
-          <NavBar />
-        </footer>
+        <div class="content-wrapper">
+          <div class="wrap-load" v-if="walletStore.isLoading">
+            <AppLoader/>
+          </div>
+          <router-view v-else v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </div>
+        <NavBar class="navbar-fixed" />
       </template>
     </template>
   </main>
@@ -330,11 +332,12 @@ button::-moz-focus-inner {
 }
 
 .wrap-load {
-  height: 100vh;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex: 1;
+  min-height: calc(100vh - 80px);
 }
 
 .fade-enter-active,
@@ -423,5 +426,23 @@ h1 {
   flex-direction: column;
   justify-content: center;
   background-color: #f5f5f5;
+}
+
+/* Фиксированный навбар */
+.navbar-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* Обертка для контента с отступом снизу для навбара */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
 }
 </style>

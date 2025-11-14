@@ -1,0 +1,360 @@
+<script setup>
+import { useI18n } from "vue-i18n";
+import { useWalletStore } from '@/stores/walletStore.ts'
+import { ref, computed, onMounted } from "vue";
+
+const { t } = useI18n();
+const walletStore = useWalletStore();
+const amount = ref("");
+const recipientWallet = ref("");
+const myWallet = ref("");
+const twoFactorCode = ref("");
+
+const isFormValid = computed(() => {
+  return amount.value && 
+         recipientWallet.value && 
+         parseFloat(amount.value) > 0 &&
+         twoFactorCode.value.length === 6;
+});
+
+const handleTransfer = async () => {
+  if (!isFormValid.value) return;
+  
+  // Проверка, что не переводим самому себе
+  if (recipientWallet.value === myWallet.value) {
+    walletStore.showMessage(t('cannot_transfer_to_self'), 'error');
+    return;
+  }
+  
+  await walletStore.transferFunds(recipientWallet.value, amount.value, twoFactorCode.value);
+};
+
+const copyWallet = () => {
+  if (myWallet.value) {
+    navigator.clipboard.writeText(myWallet.value);
+    walletStore.showMessage(t('copied'), 'success', 1500);
+  }
+};
+
+onMounted(async () => {
+  // Получаем номер кошелька пользователя
+  const wallet = await walletStore.getUserWallet();
+  if (wallet) {
+    myWallet.value = wallet;
+  }
+});
+</script>
+
+<template>
+  <header class="header">
+    <img
+      class="arrow"
+      src="../assets/arrow-left.svg"
+      alt=""
+      @click="walletStore.goBack()"
+    />
+    <h1>{{ t("transfer_page") }}</h1>
+    <div class="emp"></div>
+  </header>
+  <main class="container">
+    <!-- Мой кошелек -->
+    <div class="my-wallet-section">
+      <div class="section-header">
+        <h3>{{ t('my_wallet') }}</h3>
+      </div>
+      <div class="wallet-card" @click="copyWallet">
+        <div class="wallet-info">
+          <span class="wallet-label">{{ t('wallet_number') }}</span>
+          <span class="wallet-number">{{ myWallet || t('loading') }}</span>
+        </div>
+        <img src="../assets/copy.svg" alt="copy" class="copy-icon" />
+      </div>
+    </div>
+
+    <!-- Форма перевода -->
+    <div class="form-container">
+      <h3>{{ t('transfer_to_user') }}</h3>
+      
+      <input 
+        type="text" 
+        :placeholder="t('recipient_wallet_number')" 
+        v-model="recipientWallet"
+        required
+      />
+
+      <div class="group">
+        <input 
+          type="number" 
+          :placeholder="t('select_amount')" 
+          v-model="amount"
+        />
+        <span class="group-item">USDT</span>
+      </div>
+
+      <div class="balance-info">
+        <span>{{ t('available_balance') }}:</span>
+        <span class="balance-value">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
+      </div>
+
+      <div class="code-input-section">
+        <h4>{{ t('enter_2fa_code') }}</h4>
+        <input 
+          type="text" 
+          v-model="twoFactorCode"
+          :placeholder="t('enter_6_digit_code')"
+          maxlength="6"
+          pattern="[0-9]*"
+          inputmode="numeric"
+          class="code-input"
+        />
+      </div>
+
+      <div class="info-block">
+        <img src="/assets/info.svg" alt="info" class="info-icon" />
+        <p>{{ t('transfer_2fa_required') }}</p>
+      </div>
+    </div>
+    
+    <button 
+      class="btn" 
+      :class="{ disabled: !isFormValid }"
+      :disabled="!isFormValid"
+      @click="handleTransfer()"
+    >
+      {{ t("transfer_funds") }}
+    </button>
+  </main>
+</template>
+
+<style scoped>
+.header {
+  padding: 20px 15px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.emp {
+  width: 32px;
+}
+
+h1 {
+  color: #141414;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 20px 120px 20px;
+  overflow-y: auto;
+}
+
+.my-wallet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-header h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #141414;
+  margin: 0;
+}
+
+.wallet-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.wallet-card:hover {
+  border-color: #deec51;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wallet-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.wallet-number {
+  font-size: 18px;
+  font-weight: 500;
+  color: #141414;
+  font-family: monospace;
+}
+
+.copy-icon {
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  padding-left: 4px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-container h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #141414;
+  margin: 0;
+}
+
+.btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-weight: 300;
+  font-size: 14px;
+  color: #141414;
+  background-color: #deec51;
+  transition: opacity 0.2s ease;
+}
+
+.btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 16px;
+  background: none;
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: #a5a5a5;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 19.12px;
+}
+
+.group {
+  position: relative;
+}
+
+.group-item {
+  position: absolute;
+  right: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 500;
+}
+
+.balance-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.balance-value {
+  font-weight: 500;
+  color: #141414;
+}
+
+.code-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.code-input-section h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #141414;
+  margin: 0;
+}
+
+.code-input {
+  width: 100%;
+  border: 2px solid #141414 !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  font-size: 20px !important;
+  text-align: center;
+  letter-spacing: 6px;
+  font-weight: 500;
+  background: #fff !important;
+  outline: none;
+}
+
+.code-input::placeholder {
+  letter-spacing: normal !important;
+  font-size: 14px !important;
+  color: #a5a5a5 !important;
+}
+
+.info-block {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background-color: #fff3cd;
+  border-radius: 12px;
+  border: 1px solid #ffc107;
+}
+
+.info-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-block p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #856404;
+}
+
+.arrow {
+  height: 32px;
+  width: 32px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.arrow:hover {
+  transform: translateX(-3px);
+}
+</style>

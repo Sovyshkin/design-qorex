@@ -20,6 +20,7 @@ const auth = ref([
 // Отдельные состояния для чекбоксов
 const codePasswordActive = ref(walletStore.codePasswordActive);
 const hideBalanceActive = ref(walletStore.hideBalanceActive);
+const twoFactorActive = ref(false); // TODO: загружать из user данных
 
 // Обработчик изменения защиты PIN-кодом
 const toggleCodePassword = (val) => {
@@ -35,6 +36,16 @@ const toggleCodePassword = (val) => {
 const toggleHideBalance = (val) => {
   hideBalanceActive.value = val;
   walletStore.setHideBalanceActive(val);
+};
+
+const toggleTwoFactor = (val) => {
+  if (val) {
+    // Перенаправляем на страницу настройки 2FA
+    router.push({ name: 'twoFactorAuth' });
+  } else {
+    // TODO: добавить отключение 2FA
+    twoFactorActive.value = false;
+  }
 };
 
 const goBack = () => {
@@ -97,6 +108,19 @@ watch(
         <InputCheck
           :modelValue="codePasswordActive"
           @update:modelValue="toggleCodePassword"
+        />
+      </div>
+
+      <div class="list-item">
+        <div class="info">
+          <div class="wrap-img">
+            <img src="/assets/safety.svg" alt="2fa" />
+          </div>
+          <span class="list-value">{{ t("two_factor_auth") }}</span>
+        </div>
+        <InputCheck
+          :modelValue="twoFactorActive"
+          @update:modelValue="toggleTwoFactor"
         />
       </div>
 
