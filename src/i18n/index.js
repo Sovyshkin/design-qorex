@@ -138,7 +138,11 @@ const messages = {
     transfer_success: "Перевод выполнен успешно",
     transfer_failed: "Ошибка при переводе средств",
     transfer_api_not_ready: "API для переводов еще не готов. Обратитесь к разработчику",
-    enter_2fa_code: "Введите код 2FA из приложения"
+    enter_2fa_code: "Введите код 2FA из приложения",
+    require_2fa_title: "Требуется 2FA",
+    require_2fa_description: "Для использования функции переводов необходимо включить двухфакторную аутентификацию. Это обеспечит дополнительную защиту ваших средств.",
+    enable_2fa: "Включить 2FA",
+    go_back: "Назад"
   },
   EN: {
     referal: "Referral program",
@@ -279,7 +283,11 @@ const messages = {
     transfer_success: "Transfer completed successfully",
     transfer_failed: "Error transferring funds",
     transfer_api_not_ready: "Transfer API is not ready yet. Contact the developer",
-    enter_2fa_code: "Enter 2FA code from your app"
+    enter_2fa_code: "Enter 2FA code from your app",
+    require_2fa_title: "2FA Required",
+    require_2fa_description: "Two-factor authentication is required to use the transfer feature. This provides additional protection for your funds.",
+    enable_2fa: "Enable 2FA",
+    go_back: "Go Back"
   },
 };
 

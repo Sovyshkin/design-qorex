@@ -2,6 +2,7 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted } from "vue";
+import Require2FA from '@/components/Require2FA.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -46,6 +47,9 @@ onMounted(async () => {
 </script>
 
 <template>
+  <Require2FA v-if="!walletStore.has2FA" />
+  
+  <div v-else>
   <header class="header">
     <img
       class="arrow"
@@ -124,6 +128,7 @@ onMounted(async () => {
       {{ t("transfer_funds") }}
     </button>
   </main>
+  </div>
 </template>
 
 <style scoped>
