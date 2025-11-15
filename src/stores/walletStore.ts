@@ -604,7 +604,7 @@ const changeLang = async (lang: string) => {
     try {
       loaderScan.value = true;
       const tgId = String(userTg.value.id);
-      let response = await axios.post(`/fa_take?tg_id=${tgId}`, {});
+      let response = await axios.post(`/fa_take?tg_id=${tgId}`);
       
       if (response.status === 200 && response.data.status === 'success') {
         return {
