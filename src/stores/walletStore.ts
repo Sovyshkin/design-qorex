@@ -603,7 +603,8 @@ const changeLang = async (lang: string) => {
   const enable2FA = async () => {
     try {
       loaderScan.value = true;
-      let response = await axios.post(`/fa_take?tg_id=${String(userTg.value.id)}`, {});
+      const tgId = String(userTg.value.id);
+      let response = await axios.post(`/fa_take?tg_id=${tgId}`, {});
       
       if (response.status === 200 && response.data.status === 'success') {
         return {
@@ -624,7 +625,9 @@ const changeLang = async (lang: string) => {
   const verify2FACode = async (code: string) => {
     try {
       loaderScan.value = true;
-      let response = await axios.post(`/key_fa_check?tg_id=${String(userTg.value.id)}&key=${code}`, {});
+      const tgId = String(userTg.value.id);
+      const keyCode = String(code);
+      let response = await axios.post(`/key_fa_check?tg_id=${tgId}&key=${keyCode}`, {});
       
       if (response.status === 200 && response.data.status === 'success') {
         has2FA.value = true; // Обновляем статус 2FA
@@ -646,7 +649,8 @@ const changeLang = async (lang: string) => {
 
   const getUserWallet = async () => {
     try {
-      let response = await axios.post(`/take_user_w?tg_id=${String(userTg.value.id)}`, {});
+      const tgId = String(userTg.value.id);
+      let response = await axios.post(`/take_user_w?tg_id=${tgId}`, {});
       
       if (response.status === 200 && response.data.wallet) {
         userWallet.value = response.data.wallet;
