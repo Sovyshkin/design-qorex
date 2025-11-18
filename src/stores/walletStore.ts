@@ -49,24 +49,29 @@ export const useWalletStore = defineStore("wallet", () => {
   const transaction = ref({});
 
   const setHideBalanceActive = async (val: boolean) => {
+    // Сначала обновляем локальное состояние
     hideBalanceActive.value = val;
-    
-    // Сохраняем состояние в localStorage
-    if (val) {
-      localStorage.setItem('hideBalance', 'true');
-    } else {
-      localStorage.removeItem('hideBalance');
-    }
-    
-    // Отправляем изменение на сервер (если пользователь авторизован)
+
+    // Отправляем изменение на сервер
     try {
       if (user.value && user.value.tg_id) {
         await axios.patch(`/update_visibility_balance/${user.value.tg_id}`, {
           visibility_balance: val
         });
+        // После успешного обновления на сервере синхронизируем localStorage
+        syncSettingsWithLocalStorage();
+      } else {
+        // Если пользователь не авторизован, сохраняем только в localStorage
+        if (val) {
+          localStorage.setItem('hideBalance', 'true');
+        } else {
+          localStorage.removeItem('hideBalance');
+        }
       }
     } catch (err) {
       console.error('Failed to update balance visibility on server:', err);
+      // В случае ошибки возвращаем предыдущее состояние
+      hideBalanceActive.value = !val;
     }
   };
 
@@ -81,6 +86,8 @@ export const useWalletStore = defineStore("wallet", () => {
         codePasswordActive.value = true;
         pinVerified.value = true; // Автоматически верифицируем после установки
         pinVerificationTime.value = Date.now();
+        // Синхронизируем localStorage после успешного обновления
+        syncSettingsWithLocalStorage();
         setTimeout(() => {
           message_status.value = "";
           router.push({ name: "safety" })
@@ -100,6 +107,8 @@ export const useWalletStore = defineStore("wallet", () => {
       if (response.status == 200) {
         // Очищаем все данные PIN-кода
         clearAllPinData();
+        // Синхронизируем localStorage после успешного обновления
+        syncSettingsWithLocalStorage();
         message_status.value = "success";
         setTimeout(() => {
           message_status.value = "";
@@ -179,11 +188,23 @@ const hasPinCode = () => {
   return codePasswordActive.value && !!pinCode.value;
 };
 
-// Инициализируем состояние скрытия баланса из localStorage
-const savedHideBalance = localStorage.getItem('hideBalance');
-if (savedHideBalance === 'true') {
-  hideBalanceActive.value = true;
-}
+// Функция для синхронизации localStorage с серверными данными
+const syncSettingsWithLocalStorage = () => {
+  // Синхронизируем состояние скрытия баланса
+  if (hideBalanceActive.value) {
+    localStorage.setItem('hideBalance', 'true');
+  } else {
+    localStorage.removeItem('hideBalance');
+  }
+
+  // Синхронизируем состояние PIN-кода
+  if (codePasswordActive.value) {
+    localStorage.setItem('hasPinCode', 'true');
+  } else {
+    localStorage.removeItem('hasPinCode');
+    localStorage.removeItem('pinVerified');
+  }
+};
 
 const showMessage = (message: string, status: string = 'error', duration: number = 3000) => {
   errMessage.value = message;
@@ -413,20 +434,8 @@ const changeLang = async (lang: string) => {
       // Загружаем статус 2FA из ответа сервера
       has2FA.value = !!response.data.two_factor_enabled || !!response.data.tfa_enabled || !!response.data.has_2fa;
       
-      // Инициализируем состояние PIN-кода в localStorage на основе boolpin
-      if (codePasswordActive.value) {
-        localStorage.setItem('hasPinCode', 'true');
-      } else {
-        localStorage.removeItem('hasPinCode');
-        localStorage.removeItem('pinVerified');
-      }
-      
-      // Сохраняем состояние скрытия баланса в localStorage
-      if (hideBalanceActive.value) {
-        localStorage.setItem('hideBalance', 'true');
-      } else {
-        localStorage.removeItem('hideBalance');
-      }
+      // Синхронизируем localStorage с серверными данными
+      syncSettingsWithLocalStorage();
       
       history.value = response.data.list_transctions_replenished;
       
@@ -895,6 +904,7 @@ const changeLang = async (lang: string) => {
     clearPinSession,
     clearAllPinData,
     initializePinState,
+    syncSettingsWithLocalStorage,
     createUser,
     roundToHundredths,
     errMessage,
