@@ -133,64 +133,6 @@ onMounted(async () => {
     <div class="emp"></div>
   </header>
   <main class="pin-code-container">
-    <div class="pin-dots">
-      <div
-        v-for="i in 4"
-        :key="i"
-        class="pin-dot"
-        :class="{ active: pin.length >= i }"
-      ></div>
-    </div>
-
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
-
-    <div class="pin-grid">
-      <button
-        v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
-        :key="num"
-        class="pin-button"
-        @click="handleNumberClick(num)"
-        @mousedown="startPress(num)"
-        @mouseup="endPress()"
-        @mouseleave="endPress()"
-        :class="{ pressed: pressedButton === num }"
-      >
-        {{ num }}
-      </button>
-      
-      <div class="empty-cell"></div>
-      
-      <button
-        class="pin-button"
-        @click="handleNumberClick(0)"
-        @mousedown="startPress(0)"
-        @mouseup="endPress()"
-        @mouseleave="endPress()"
-        :class="{ pressed: pressedButton === 0 }"
-      >
-        0
-      </button>
-      
-      <button
-        class="pin-button delete-button"
-        @click="handleDeleteClick"
-        @mousedown="startPress('delete')"
-        @mouseup="endPress()"
-        @mouseleave="endPress()"
-        :class="{ pressed: pressedButton === 'delete' }"
-      >
-        <img src="@/assets/delete.png" alt="Delete" class="delete-icon" />
-      </button>
-    </div>
-  </main>
-  <header class="header">
-    <div class="emp"></div> <!-- Убираем кнопку назад при вводе PIN -->
-    <h1>{{ isCreateMode ? t('create_pincode') : t('enter_pincode') }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="pin-code-container">
     <!-- DEBUG BLOCK -->
     <div style="background: #222; color: #fff; font-size: 12px; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
       <strong>DEBUG:</strong>
@@ -251,12 +193,19 @@ onMounted(async () => {
         0
       </button>
       
-      <button class="pin-button del" @click="deleteLast">
-        ←
+      <button
+        class="pin-button delete-button"
+        @click="handleDeleteClick"
+        @mousedown="startPress('delete')"
+        @mouseup="endPress()"
+        @mouseleave="endPress()"
+        :class="{ pressed: pressedButton === 'delete' }"
+      >
+        <img src="@/assets/delete.png" alt="Delete" class="delete-icon" />
       </button>
     </div>
   </main>
- </template>
+</template>
 
 <style scoped>
 .error-message {
