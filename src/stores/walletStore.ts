@@ -91,7 +91,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const disablePinCode = async () => {
     try {
       let response = await axios.patch(`/update_pincode/${user.value.tg_id}`, {
-        pincode: null,
+        pincode: "",
       });
       if (response.status == 200) {
         // Очищаем все данные PIN-кода
@@ -111,11 +111,14 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const verifyPin = (enteredPin: string) => {
+    // Проверяем, активен ли PIN-код на сервере
+    if (!codePasswordActive.value) {
+      return false;
+    }
+    
     // Если пин-код не загружен из базы данных, возвращаем false
     if (!pinCode.value) {
-      
-      // Автоматически отключаем пин-код если он не найден
-      clearAllPinData();
+      console.warn('PIN-код не загружен из сервера');
       return false;
     }
     
@@ -123,15 +126,9 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const hasPinCode = () => {
-    // Проверяем наличие пин-кода и статус активности из сервера
-    const hasPin = !!pinCode.value && codePasswordActive.value;
-    
-    // Если пин-кода нет, очищаем все связанные настройки
-    if (!hasPin) {
-      clearAllPinData();
-    }
-    
-    return hasPin;
+    // Основная проверка - статус активности PIN-кода из сервера
+    // Это наиболее надежный источник информации
+    return codePasswordActive.value;
   };
 
   const verifyAndStorePin = (enteredPin: string) => {

@@ -55,13 +55,10 @@ router.beforeEach(async (to, from, next) => {
   walletStore.isLoading = true;
   
   try {
-    // Если пользователь еще не загружен, загружаем его данные
-    if (!walletStore.user.tg_id) {
-      await walletStore.getUserInfo();
-      // Исправлено: правильное обращение к userTg
-      if (walletStore.userTg && walletStore.userTg.id) {
-        await walletStore.getUser();
-      }
+    // ВСЕГДА загружаем данные пользователя для обеспечения актуальности
+    await walletStore.getUserInfo();
+    if (walletStore.userTg && walletStore.userTg.id) {
+      await walletStore.getUser();
     }
 
     // Проверяем, является ли маршрут публичным
@@ -69,7 +66,16 @@ router.beforeEach(async (to, from, next) => {
     const isSensitiveRoute = sensitiveRoutes.includes(to.name);
     
     // Проверка PIN для всех основных страниц приложения
+    console.log('Router Guard PIN Check:', {
+      to: to.name,
+      isSensitiveRoute,
+      hasPinCode: walletStore.hasPinCode(),
+      codePasswordActive: walletStore.codePasswordActive,
+      requirePin: requirePin()
+    });
+    
     if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
+      console.log('Router Guard: Перенаправляем на enterPin');
       walletStore.isLoading = false;
       return next({ 
         name: 'enterPin', 
@@ -133,17 +139,28 @@ const initializeApp = async () => {
         // Это важно для Telegram WebApp, т.к. каждое открытие бота - новая сессия
         localStorage.removeItem('pinVerified');
         
-        // Проверяем, нужно ли запросить PIN-код для текущей страницы
-        const currentRoute = router.currentRoute.value;
-        const isSensitiveRoute = sensitiveRoutes.includes(currentRoute.name);
-        
-        if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
-          // Перенаправляем на страницу ввода PIN-кода
-          router.push({ 
-            name: 'enterPin', 
-            query: { returnTo: currentRoute.fullPath } 
+        // Принудительно проверяем PIN для текущей страницы
+        // Это нужно для случая, когда приложение открывается сразу на защищенной странице
+        setTimeout(() => {
+          const currentRoute = router.currentRoute.value;
+          const isSensitiveRoute = sensitiveRoutes.includes(currentRoute.name);
+          
+          console.log('Init PIN Check:', {
+            currentRoute: currentRoute.name,
+            isSensitiveRoute,
+            hasPinCode: walletStore.hasPinCode(),
+            codePasswordActive: walletStore.codePasswordActive,
+            requirePin: requirePin()
           });
-        }
+          
+          if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
+            console.log('Init: Перенаправляем на enterPin');
+            router.push({ 
+              name: 'enterPin', 
+              query: { returnTo: currentRoute.fullPath } 
+            });
+          }
+        }, 100); // Небольшая задержка для завершения инициализации
       }
     }
   } catch (err) {
