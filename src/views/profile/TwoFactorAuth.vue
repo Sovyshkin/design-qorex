@@ -172,7 +172,7 @@ onMounted(async () => {
       
       <div class="info-card">
         <div class="info-icon">
-          <img src="../../assets/info.svg" alt="info" />
+          <img src="/assets/info.svg" alt="info" />
         </div>
         <div class="info-content">
           <h3>{{ t('important') }}</h3>
@@ -433,7 +433,6 @@ h1 {
   margin: 0;
   line-height: 1.4;
 }
-</style>
 
 /* Стили для статуса включенного 2FA */
 .enabled-container {
