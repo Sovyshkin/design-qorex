@@ -37,6 +37,8 @@ export const useWalletStore = defineStore("wallet", () => {
   const codePasswordActive = ref(false);
   const hideBalanceActive = ref(false);
   const pinCode = ref("");
+  const pinVerified = ref(false); // Новое состояние для отслеживания верификации PIN
+  const pinVerificationTime = ref(0); // Время последней верификации
   const referalId = ref(""); // Добавляем переменную для реферального ID
   const isCreatingUser = ref(false); // Флаг для предотвращения повторного создания пользователя
   const userWallet = ref(""); // Номер кошелька пользователя для переводов
@@ -69,23 +71,25 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const setPinCode = async (pin: string) => {
-    pinCode.value = pin;
-    let response = await axios.patch(`/update_pincode/${user.value.tg_id}`, {
-      pincode: pinCode.value,
-    });
-    if (response.status == 200) {
-      // Сохраняем пин-код в куки для быстрого доступа (но основным источником остается база данных)
-      Cookies.set("pinCode", pin, { expires: 365 });
-      localStorage.setItem('hasPinCode', 'true');
-      // НЕ устанавливаем pinVerified автоматически - пользователь должен ввести PIN при следующем входе
-      message_status.value = "success";
-      codePasswordActive.value = true;
-      setTimeout(() => {
-        message_status.value = "";
-        router.push({ name: "safety" })
-      }, 2500);
+    try {
+      pinCode.value = pin;
+      let response = await axios.patch(`/update_pincode/${user.value.tg_id}`, {
+        pincode: pinCode.value,
+      });
+      if (response.status == 200) {
+        message_status.value = "success";
+        codePasswordActive.value = true;
+        pinVerified.value = true; // Автоматически верифицируем после установки
+        pinVerificationTime.value = Date.now();
+        setTimeout(() => {
+          message_status.value = "";
+          router.push({ name: "safety" })
+        }, 2500);
+      }
+    } catch (error) {
+      console.error('Failed to set PIN code:', error);
+      message_status.value = "error";
     }
-    
   };
 
   const disablePinCode = async () => {
@@ -110,76 +114,81 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
-  const verifyPin = (enteredPin: string) => {
-    // Проверяем, активен ли PIN-код на сервере
-    if (!codePasswordActive.value) {
-      console.log('PIN не активен на сервере');
-      return false;
-    }
-    // Явная проверка на undefined/null/пустую строку
-    if (pinCode.value === undefined || pinCode.value === null || pinCode.value === "") {
-      console.warn('PIN-код не загружен из сервера:', pinCode.value);
-      return false;
-    }
-    // Отладочная информация для проверки PIN
-    console.log('PIN verification:', {
-      enteredPin,
-      enteredPinType: typeof enteredPin,
-      storedPin: pinCode.value,
-      storedPinType: typeof pinCode.value,
-      enteredPinString: String(enteredPin),
-      storedPinString: String(pinCode.value),
-      comparison: String(enteredPin) === String(pinCode.value)
-    });
-    // Приводим оба значения к строке для корректного сравнения
-    return String(enteredPin) === String(pinCode.value);
-  };
-
-  const hasPinCode = () => {
-    // Основная проверка - статус активности PIN-кода из сервера
-    // Это наиболее надежный источник информации
-    return codePasswordActive.value;
-  };
-
-  const verifyAndStorePin = (enteredPin: string) => {
-  if (verifyPin(enteredPin)) {
-    // Сохраняем время успешного ввода PIN
-    localStorage.setItem('pinVerified', Date.now().toString());
-    localStorage.setItem('hasPinCode', 'true');
-    return true;
-  }
-  return false;
-};
-
 const clearPinSession = () => {
-  localStorage.removeItem('pinVerified');
+  pinVerified.value = false;
+  pinVerificationTime.value = 0;
 };
 
 const clearAllPinData = () => {
-  
   pinCode.value = "";
   codePasswordActive.value = false;
-  localStorage.removeItem('hasPinCode');
-  localStorage.removeItem('pinVerified');
-  Cookies.remove('pinCode');
+  pinVerified.value = false;
+  pinVerificationTime.value = 0;
 };
 
 const initializePinState = () => {
-  if (pinCode.value) {
-    localStorage.setItem('hasPinCode', 'true');
-  }
-  
-  // Инициализируем состояние скрытия баланса из localStorage
-  const savedHideBalance = localStorage.getItem('hideBalance');
-  if (savedHideBalance === 'true') {
-    hideBalanceActive.value = true;
-  }
+  // Инициализация состояния PIN из сервера
+  // Ничего не делаем с localStorage - все состояние в store
 };
+
+const verifyPin = (enteredPin: string) => {
+  if (!codePasswordActive.value) {
+    console.log('PIN не активен на сервере');
+    return false;
+  }
+
+  if (!pinCode.value) {
+    console.warn('PIN-код не загружен из сервера');
+    return false;
+  }
+
+  const isValid = String(enteredPin) === String(pinCode.value);
+  if (isValid) {
+    pinVerified.value = true;
+    pinVerificationTime.value = Date.now();
+  }
+
+  return isValid;
+};
+
+const isPinRequired = () => {
+  // PIN требуется если:
+  // 1. PIN активен на сервере
+  // 2. PIN не верифицирован в текущей сессии
+  // 3. Прошло более 5 минут с момента последней верификации
+
+  if (!codePasswordActive.value) {
+    return false; // PIN не активен
+  }
+
+  if (!pinVerified.value) {
+    return true; // PIN не верифицирован
+  }
+
+  // Проверяем таймаут сессии (5 минут)
+  const sessionTimeout = 5 * 60 * 1000; // 5 минут
+  if (Date.now() - pinVerificationTime.value > sessionTimeout) {
+    pinVerified.value = false; // Сбрасываем верификацию
+    return true;
+  }
+
+  return false;
+};
+
+const hasPinCode = () => {
+  return codePasswordActive.value && !!pinCode.value;
+};
+
+// Инициализируем состояние скрытия баланса из localStorage
+const savedHideBalance = localStorage.getItem('hideBalance');
+if (savedHideBalance === 'true') {
+  hideBalanceActive.value = true;
+}
 
 const showMessage = (message: string, status: string = 'error', duration: number = 3000) => {
   errMessage.value = message;
   message_status.value = status;
-  
+
   setTimeout(() => {
     errMessage.value = '';
     message_status.value = '';
@@ -883,7 +892,6 @@ const changeLang = async (lang: string) => {
     setHideBalanceActive,
     setPinCode,
     disablePinCode,
-    verifyAndStorePin,
     clearPinSession,
     clearAllPinData,
     initializePinState,

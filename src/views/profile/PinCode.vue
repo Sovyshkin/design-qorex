@@ -3,7 +3,6 @@ import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "../../stores/walletStore.ts";
 import { useRouter, useRoute } from 'vue-router';
-import Cookies from "js-cookie";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -17,12 +16,6 @@ const errorMessage = ref("");
 // Определяем режим работы на основе маршрута и параметров
 const isCreateMode = route.name === 'createPin' || route.query.createMode || false
 
-console.log('PinCode режим:', {
-  routeName: route.name,
-  createMode: route.query.createMode,
-  isCreateMode
-});
-
 const handleNumberClick = (num) => {
   if (pin.value.length < 4) {
     pin.value += num.toString();
@@ -33,39 +26,13 @@ const handleNumberClick = (num) => {
     if (isCreateMode) {
       walletStore.setPinCode(pin.value);
     } else {
-      // Проверяем, активен ли пин-код в системе (на основе данных сервера)
-      if (!walletStore.codePasswordActive) {
-        // Пин-код не активен на сервере, очищаем локальные данные
-        walletStore.clearAllPinData();
-        errorMessage.value = 'PIN-код не активен на сервере';
-        console.error('PIN-код не активен на сервере');
-        return;
-      }
-      
-      console.log('Проверяем PIN в PinCode.vue:', {
-        enteredPin: pin.value,
-        enteredPinType: typeof pin.value,
-        codePasswordActive: walletStore.codePasswordActive,
-        storedPin: walletStore.pinCode,
-        storedPinType: typeof walletStore.pinCode
-      });
-
       if (walletStore.verifyPin(pin.value)) {
         console.log('PIN верный, перенаправляем');
-        // Сохраняем время успешного ввода PIN
-        localStorage.setItem('pinVerified', Date.now().toString());
         // Возвращаемся назад или на главную страницу
         const returnTo = route.query.returnTo || '/';
         router.push(returnTo);
       } else {
-        // Проверяем, загружен ли PIN-код из сервера
-        if (walletStore.pinCode === undefined || walletStore.pinCode === null || walletStore.pinCode === "") {
-          errorMessage.value = 'PIN-код не загружен из сервера';
-          console.error('PIN-код не загружен из сервера:', walletStore.pinCode);
-        } else {
-          console.log('PIN неверный, показываем ошибку');
-          errorMessage.value = t('wrong_pin');
-        }
+        errorMessage.value = t('wrong_pin');
         pin.value = "";
       }
     }
@@ -111,12 +78,12 @@ onMounted(async () => {
       console.log('PIN-код не активен на сервере, перенаправляем на главную');
       // Пин-код не активен на сервере, очищаем локальные данные
       walletStore.clearAllPinData();
-      
+
       // Перенаправляем на главную страницу
       router.push('/');
       return;
     }
-    
+
     // Запрещаем возврат без ввода PIN только если пин-код активен
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = function() {
@@ -133,26 +100,6 @@ onMounted(async () => {
     <div class="emp"></div>
   </header>
   <main class="pin-code-container">
-    <!-- DEBUG BLOCK -->
-    <div style="background: #222; color: #fff; font-size: 12px; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
-      <strong>DEBUG:</strong>
-      <div>route.name: {{ $route.name }}</div>
-      <div>isCreateMode: {{ isCreateMode }}</div>
-      <div>codePasswordActive: {{ walletStore.codePasswordActive }}</div>
-      <div>pinCode (store): {{ walletStore.pinCode }}</div>
-      <div>typeof pinCode: {{ typeof walletStore.pinCode }}</div>
-      <div>enteredPin: {{ pin }}</div>
-      <div>typeof enteredPin: {{ typeof pin }}</div>
-      <div>user.tg_id: {{ walletStore.user?.tg_id }}</div>
-      <div>user.id: {{ walletStore.user?.id }}</div>
-      <div>userTg.id: {{ walletStore.userTg?.id }}</div>
-      <div>getUser loaded: {{ !!walletStore.user }}</div>
-      <div>errorMessage: {{ errorMessage }}</div>
-      <div>pinVerified (localStorage): {{ localStorage.getItem('pinVerified') }}</div>
-      <div>hasPinCode: {{ walletStore.hasPinCode() }}</div>
-    </div>
-    <!-- END DEBUG BLOCK -->
-
     <div class="pin-dots">
       <div
         v-for="i in 4"

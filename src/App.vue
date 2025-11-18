@@ -12,37 +12,7 @@ const accessDenied = ref(false);
 
 // Функция для проверки необходимости ввода PIN
 const requirePin = () => {
-  const pinVerified = localStorage.getItem('pinVerified')
-  
-  // Сначала проверяем, есть ли пин-код в системе
-  const hasPinCode = walletStore.hasPinCode()
-  
-  // Если пин-кода нет в системе, не требуем его ввод
-  if (!hasPinCode) {
-    // Очищаем все связанные настройки
-    localStorage.removeItem('hasPinCode');
-    localStorage.removeItem('pinVerified');
-    return false
-  }
-  
-  // Если PIN-код установлен и не был верифицирован в течение сессии
-  if (hasPinCode && !pinVerified) {
-    return true
-  }
-  
-  // Проверяем, не истекло ли время сессии (5 минут)
-  if (pinVerified) {
-    const verificationTime = parseInt(pinVerified)
-    const currentTime = Date.now()
-    const sessionTimeout = 5 * 60 * 1000 // 5 минут
-    
-    if (currentTime - verificationTime > sessionTimeout) {
-      localStorage.removeItem('pinVerified')
-      return true
-    }
-  }
-  
-  return false
+  return walletStore.isPinRequired();
 }
 
 // Список маршрутов, которые не требуют PIN-кода
