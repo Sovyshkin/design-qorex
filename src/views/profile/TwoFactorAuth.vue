@@ -48,17 +48,26 @@ const verifyCode = async () => {
   const success = await walletStore.verify2FACode(verificationCode.value);
   
   if (success) {
-    // Успешно - возвращаемся в безопасность
+    // Успешно - возвращаемся в профиль
     setTimeout(() => {
-      router.push({ name: 'safety' });
+      router.push({ name: 'profile' });
     }, 1500);
   } else {
     verificationCode.value = '';
   }
 };
 
-onMounted(() => {
-  initialize2FA();
+onMounted(async () => {
+  // Проверяем статус 2FA первым делом
+  await walletStore.check2FAStatus();
+  
+  if (!walletStore.has2FA) {
+    // Если 2FA не включен, начинаем настройку
+    initialize2FA();
+  } else {
+    // Если 2FA уже включен, устанавливаем шаг 3 (статус)
+    step.value = 3;
+  }
 });
 </script>
 
@@ -112,8 +121,8 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Шаг 2: Ввод кода -->
-    <div v-if="step === 2" class="step-container">
+        <!-- Шаг 2: Ввод кода верификации -->
+    <div v-else-if="step === 2" class="step-container">
       <div class="instructions">
         <h2>{{ t('verify_2fa') }}</h2>
         <p>{{ t('enter_code_from_app') }}</p>
@@ -145,6 +154,34 @@ onMounted(() => {
         @click="step = 1"
       >
         {{ t('back_to_qr') }}
+      </button>
+    </div>
+
+    <!-- Шаг 3: 2FA уже настроен -->
+    <div v-else-if="step === 3" class="step-container enabled-container">
+      <div class="status-card">
+        <div class="status-icon">
+          <img src="../../assets/check.svg" alt="enabled" class="check-icon" />
+        </div>
+        
+        <div class="status-content">
+          <h2>{{ t('2fa_enabled') }}</h2>
+          <p>{{ t('2fa_enabled_description') }}</p>
+        </div>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-icon">
+          <img src="../../assets/info.svg" alt="info" />
+        </div>
+        <div class="info-content">
+          <h3>{{ t('important') }}</h3>
+          <p>{{ t('2fa_disable_warning') }}</p>
+        </div>
+      </div>
+
+      <button class="btn" @click="goBack()">
+        {{ t('back_to_profile') }}
       </button>
     </div>
   </main>
@@ -311,5 +348,174 @@ h1 {
 
 .arrow:hover {
   transform: translateX(-3px);
+}
+
+/* Стили для статуса включенного 2FA */
+.enabled-container {
+  text-align: center;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: #f0f9ff;
+  border: 2px solid #deec51;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.status-icon {
+  width: 48px;
+  height: 48px;
+  background-color: #deec51;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.check-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.status-content {
+  text-align: left;
+  flex: 1;
+}
+
+.status-content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #141414;
+  margin: 0 0 8px 0;
+}
+
+.status-content p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #856404;
+  margin: 0 0 8px 0;
+}
+
+.info-content p {
+  font-size: 13px;
+  color: #856404;
+  margin: 0;
+  line-height: 1.4;
+}
+</style>
+
+/* Стили для статуса включенного 2FA */
+.enabled-container {
+  text-align: center;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: #f0f9ff;
+  border: 2px solid #deec51;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.status-icon {
+  width: 48px;
+  height: 48px;
+  background-color: #deec51;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.check-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.status-content {
+  text-align: left;
+  flex: 1;
+}
+
+.status-content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #141414;
+  margin: 0 0 8px 0;
+}
+
+.status-content p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #856404;
+  margin: 0 0 8px 0;
+}
+
+.info-content p {
+  font-size: 13px;
+  color: #856404;
+  margin: 0;
+  line-height: 1.4;
 }
 </style>

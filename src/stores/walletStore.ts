@@ -337,6 +337,9 @@ const changeLang = async (lang: string) => {
       // Устанавливаем состояние активности пин-кода на основе его наличия
       codePasswordActive.value = !!response.data.pin_code;
       
+      // Загружаем статус 2FA из ответа сервера
+      has2FA.value = !!response.data.two_factor_enabled || !!response.data.tfa_enabled || !!response.data.has_2fa;
+      
       // Инициализируем состояние PIN-кода в localStorage
       if (pinCode.value) {
         localStorage.setItem('hasPinCode', 'true');
@@ -359,6 +362,9 @@ const changeLang = async (lang: string) => {
         await getPrice();
         balance_rub.value = balance.value * usdt_price.value;
       }
+      
+      // Проверяем статус 2FA
+      await check2FAStatus();
       
     } catch (err) {
       
@@ -647,6 +653,35 @@ const changeLang = async (lang: string) => {
     }
   };
 
+  const check2FAStatus = async () => {
+    try {
+      const tgId = String(userTg.value.id);
+      // Пробуем получить статус 2FA через существующий endpoint
+      let response = await axios.get(`/user/${tgId}`);
+      
+      if (response.status === 200 && response.data) {
+        // Проверяем различные возможные поля для статуса 2FA
+        has2FA.value = !!(response.data.two_factor_enabled || 
+                         response.data.tfa_enabled || 
+                         response.data.has_2fa ||
+                         response.data.is_2fa_enabled ||
+                         response.data['2fa_enabled']);
+      }
+    } catch (err) {
+      // Если не удается получить статус, пробуем сделать тестовый запрос
+      try {
+        const tgId = String(userTg.value.id);
+        // Тестируем с невалидным кодом - если 2FA включен, получим ошибку 404
+        await axios.post(`/key_fa_check?tg_id=${tgId}&key=000000`, {});
+      } catch (testErr) {
+        // Если получили 404, значит 2FA настроен (но код неверный)
+        if (testErr.response?.status === 404) {
+          has2FA.value = true;
+        }
+      }
+    }
+  };
+
   const getUserWallet = async () => {
     try {
       const tgId = String(userTg.value.id);
@@ -738,6 +773,7 @@ const changeLang = async (lang: string) => {
     getMyReferrals,
     enable2FA,
     verify2FACode,
+    check2FAStatus,
     getUserWallet,
     transferFunds,
     getRub,

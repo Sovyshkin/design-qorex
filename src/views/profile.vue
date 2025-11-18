@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useWalletStore } from "@/stores/walletStore";
@@ -39,12 +39,20 @@ const aboutUs = ref([
 ]);
 
 
-const referal = ref([
+// Делаем реактивный computed для элементов профиля
+const referal = computed(() => [
   {
     name: t("email_add_profile"),
     icon: "email",
     route: "email_add",
     show: walletStore.user.email ? false : true,
+  },
+  {
+    name: t("two_factor_auth"),
+    icon: "safety",
+    route: "twoFactorAuth",
+    show: true,
+    isEnabled: walletStore.has2FA,
   },
   {
     name: t("referal"),
@@ -78,6 +86,8 @@ const goRoute = (route) => {
 onMounted(async () => {
   try {
     await walletStore.getUser();
+    // Принудительно проверяем статус 2FA
+    await walletStore.check2FAStatus();
   } catch (err) {
 
   }
@@ -105,6 +115,13 @@ onMounted(async () => {
               <span class="list-value">{{ item.name }}</span>
             </div>
             <img
+              v-if="item.isEnabled"
+              class="arrow"
+              src="../assets/check.svg"
+              alt="enabled"
+            />
+            <img
+              v-else
               class="arrow"
               src="../assets/arrow-right.svg"
               alt="arrow-right"
