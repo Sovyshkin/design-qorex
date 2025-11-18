@@ -1,6 +1,6 @@
 <
 <script setup>
-import { ref, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "../../stores/walletStore.ts";
 import { useRouter } from "vue-router";
@@ -17,24 +17,23 @@ const auth = ref([
   },
 ]);
 
-// Отдельные состояния для чекбоксов
-const codePasswordActive = ref(walletStore.codePasswordActive);
-const hideBalanceActive = ref(walletStore.hideBalanceActive);
-const twoFactorActive = ref(false); // TODO: загружать из user данных
+// Используем computed для синхронизации с store
+const codePasswordActive = computed(() => walletStore.codePasswordActive);
+const hideBalanceActive = computed(() => walletStore.hideBalanceActive);
+const twoFactorActive = computed(() => walletStore.has2FA);
 
 // Обработчик изменения защиты PIN-кодом
-const toggleCodePassword = (val) => {
-
+const toggleCodePassword = async (val) => {
   if (!val) {
-    walletStore.codePasswordActive = false;
+    // Отключаем PIN-код через API
+    await walletStore.disablePinCode();
   } else {
     // Перенаправляем на страницу установки PIN-кода при первом включении
-      router.push({ name: 'createPin', query: { createMode: true } });
+    router.push({ name: 'createPin', query: { createMode: true } });
   }
 };
 
 const toggleHideBalance = (val) => {
-  hideBalanceActive.value = val;
   walletStore.setHideBalanceActive(val);
 };
 
@@ -43,8 +42,8 @@ const toggleTwoFactor = (val) => {
     // Перенаправляем на страницу настройки 2FA
     router.push({ name: 'twoFactorAuth' });
   } else {
-    // TODO: добавить отключение 2FA
-    twoFactorActive.value = false;
+    // 2FA нельзя отключить, когда включено
+    // Просто не делаем ничего, статус остается неизменным
   }
 };
 
@@ -52,24 +51,20 @@ const goBack = () => {
   try {
     router.push({ name: "profile" })
   } catch (err) {
-
     
   }
 }
 
-watch(
-  () => walletStore.codePasswordActive,
-  (val) => {
-    codePasswordActive.value = val;
+// Загружаем актуальные данные пользователя при монтировании компонента
+onMounted(async () => {
+  try {
+    await walletStore.getUser();
+    // Также проверяем статус 2FA
+    await walletStore.check2FAStatus();
+  } catch (error) {
+    console.error('Ошибка загрузки данных пользователя:', error);
   }
-);
-
-watch(
-  () => walletStore.hideBalanceActive,
-  (val) => {
-    hideBalanceActive.value = val;
-  }
-);
+});
 </script>
 
 <template>

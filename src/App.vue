@@ -185,18 +185,6 @@ const debugInfo = computed(() => {
   <main class="wrapper">
     <AppMessage/>
     
-    <!-- Временный debug блок -->
-    <div v-if="debugInfo.currentRoute === 'main'" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-size: 12px; max-width: 300px;">
-      <div><strong>Debug Info:</strong></div>
-      <div>Route: {{ debugInfo.currentRoute }}</div>
-      <div>HasPinCode: {{ debugInfo.hasPinCode }}</div>
-      <div>CodePasswordActive: {{ debugInfo.codePasswordActive }}</div>
-      <div>PinCode: {{ debugInfo.pinCode ? '***' : 'null' }}</div>
-      <div>PinVerified: {{ debugInfo.pinVerified }}</div>
-      <div>RequirePin: {{ debugInfo.requirePin }}</div>
-      <div>IsLoading: {{ debugInfo.isLoading }}</div>
-    </div>
-
     <!-- Экран блокировки доступа -->
     <div class="access-denied" v-if="accessDenied">
       <div class="access-denied-content">

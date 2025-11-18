@@ -88,6 +88,28 @@ export const useWalletStore = defineStore("wallet", () => {
     
   };
 
+  const disablePinCode = async () => {
+    try {
+      let response = await axios.patch(`/update_pincode/${user.value.tg_id}`, {
+        pincode: null,
+      });
+      if (response.status == 200) {
+        // Очищаем все данные PIN-кода
+        clearAllPinData();
+        message_status.value = "success";
+        setTimeout(() => {
+          message_status.value = "";
+        }, 2500);
+      }
+    } catch (error) {
+      console.error('Ошибка отключения PIN-кода:', error);
+      message_status.value = "error";
+      setTimeout(() => {
+        message_status.value = "";
+      }, 2500);
+    }
+  };
+
   const verifyPin = (enteredPin: string) => {
     // Если пин-код не загружен из базы данных, возвращаем false
     if (!pinCode.value) {
@@ -845,6 +867,7 @@ const changeLang = async (lang: string) => {
     hasPinCode,
     setHideBalanceActive,
     setPinCode,
+    disablePinCode,
     verifyAndStorePin,
     clearPinSession,
     clearAllPinData,
