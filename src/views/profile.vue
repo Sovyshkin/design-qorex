@@ -32,6 +32,11 @@ const aboutUs = ref([
     route: "faq",
   },
   {
+    name: t("support"),
+    icon: "support",
+    route: "support",
+  },
+  {
     name: t("info"),
     icon: "info",
     route: "info",
@@ -46,13 +51,6 @@ const referal = computed(() => [
     icon: "email",
     route: "email_add",
     show: walletStore.user.email ? false : true,
-  },
-  {
-    name: t("two_factor_auth"),
-    icon: "safety",
-    route: "twoFactorAuth",
-    show: true,
-    isEnabled: walletStore.has2FA,
   },
   {
     name: t("referal"),
@@ -75,6 +73,8 @@ const goRoute = (route) => {
   try {
     if (route == "faq") {
       window.location.href = "https://gardawallet.com";
+    } else if (route == "support") {
+      window.location.href = "https://t.me/Gardawallet_Support_bot";
     } else {
       router.push({ name: route });
     }

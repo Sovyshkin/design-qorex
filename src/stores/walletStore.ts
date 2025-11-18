@@ -46,8 +46,26 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const transaction = ref({});
 
-  const setHideBalanceActive = (val: boolean) => {
+  const setHideBalanceActive = async (val: boolean) => {
     hideBalanceActive.value = val;
+    
+    // Сохраняем состояние в localStorage
+    if (val) {
+      localStorage.setItem('hideBalance', 'true');
+    } else {
+      localStorage.removeItem('hideBalance');
+    }
+    
+    // Отправляем изменение на сервер (если пользователь авторизован)
+    try {
+      if (user.value && user.value.tg_id) {
+        await axios.patch(`/update_visibility_balance/${user.value.tg_id}`, {
+          visibility_balance: val
+        });
+      }
+    } catch (err) {
+      console.error('Failed to update balance visibility on server:', err);
+    }
   };
 
   const setPinCode = async (pin: string) => {
@@ -120,6 +138,12 @@ const clearAllPinData = () => {
 const initializePinState = () => {
   if (pinCode.value) {
     localStorage.setItem('hasPinCode', 'true');
+  }
+  
+  // Инициализируем состояние скрытия баланса из localStorage
+  const savedHideBalance = localStorage.getItem('hideBalance');
+  if (savedHideBalance === 'true') {
+    hideBalanceActive.value = true;
   }
 };
 
@@ -334,18 +358,28 @@ const changeLang = async (lang: string) => {
       balance.value = response.data.balance || 0;
       pinCode.value = response.data.pin_code;
       
-      // Устанавливаем состояние активности пин-кода на основе его наличия
-      codePasswordActive.value = !!response.data.pin_code;
+      // Устанавливаем состояние активности пин-кода на основе поля boolpin
+      codePasswordActive.value = !!response.data.boolpin;
+      
+      // Устанавливаем состояние скрытия баланса на основе поля visibility_balance
+      hideBalanceActive.value = !!response.data.visibility_balance;
       
       // Загружаем статус 2FA из ответа сервера
       has2FA.value = !!response.data.two_factor_enabled || !!response.data.tfa_enabled || !!response.data.has_2fa;
       
-      // Инициализируем состояние PIN-кода в localStorage
-      if (pinCode.value) {
+      // Инициализируем состояние PIN-кода в localStorage на основе boolpin
+      if (codePasswordActive.value) {
         localStorage.setItem('hasPinCode', 'true');
       } else {
         localStorage.removeItem('hasPinCode');
         localStorage.removeItem('pinVerified');
+      }
+      
+      // Сохраняем состояние скрытия баланса в localStorage
+      if (hideBalanceActive.value) {
+        localStorage.setItem('hideBalance', 'true');
+      } else {
+        localStorage.removeItem('hideBalance');
       }
       
       history.value = response.data.list_transctions_replenished;
