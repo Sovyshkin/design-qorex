@@ -111,6 +111,29 @@ h1 {
   flex-direction: column;
   padding: 0 20px 120px 20px;
   overflow-y: auto;
+  min-height: calc(100vh - 80px); /* Учитываем высоту header */
+}
+
+/* Исправление для маленьких экранов iPhone 5/SE */
+@media (max-height: 600px) and (max-width: 400px) {
+  .container {
+    padding: 0 20px 80px 20px; /* Уменьшаем нижний padding */
+    min-height: calc(100vh - 60px);
+  }
+  
+  .form-container {
+    gap: 15px; /* Уменьшаем gap между элементами */
+    margin-bottom: 15px;
+  }
+  
+  .network-selector {
+    margin-top: 15px;
+  }
+  
+  .btn {
+    padding: 12px 16px; /* Уменьшаем padding кнопки */
+    font-size: 13px;
+  }
 }
 
 .form-container {
@@ -271,15 +294,30 @@ select::placeholder {
   position: relative;
 }
 
-.check-icon:after {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 6px;
-  border-left: 2px solid #141414;
-  border-bottom: 2px solid #141414;
-  transform: rotate(-45deg);
-  top: 8px;
-  left: 6px;
+/* Дополнительные исправления для очень маленьких экранов */
+@media (max-height: 600px) {
+  .header {
+    padding: 15px 15px; /* Уменьшаем padding header */
+  }
+  
+  .network-item {
+    padding: 12px 16px; /* Уменьшаем padding элементов сети */
+  }
+  
+  .network-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  input {
+    padding: 12px 16px; /* Уменьшаем padding input */
+  }
+}
+
+/* Специфично для iPhone SE и подобных устройств */
+@media (max-width: 375px) and (max-height: 667px) {
+  .container {
+    padding: 0 15px 60px 15px; /* Еще больше уменьшаем padding */
+  }
 }
 </style>

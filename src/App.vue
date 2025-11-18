@@ -496,5 +496,14 @@ h1 {
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
+  overflow-y: auto; /* Добавляем прокрутку для маленьких экранов */
+  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+}
+
+/* Исправления для маленьких экранов */
+@media (max-height: 600px) {
+  .content-wrapper {
+    padding-bottom: 80px; /* Дополнительный отступ для навбара на маленьких экранах */
+  }
 }
 </style>
