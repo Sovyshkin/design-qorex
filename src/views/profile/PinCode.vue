@@ -256,6 +256,9 @@ onMounted(async () => {
       </button>
     </div>
   </main>
+ </template>
+
+<style scoped>
 .error-message {
   color: #ff4444;
   margin-bottom: 20px;
