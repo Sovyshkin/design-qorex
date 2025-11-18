@@ -86,7 +86,7 @@ onMounted(async () => {
 
 <template>
   <main class="profile">
-    <transition name="fade-scale" appear>
+    <transition name="user-appear" appear>
       <div class="user profile-item">
         <div class="wrap-avatar">
           <img :src="walletStore.userTg.photo_url" alt="" />
@@ -94,7 +94,7 @@ onMounted(async () => {
         <span class="name">@{{ walletStore.user.username }}</span>
       </div>
     </transition>
-    <transition name="slide-up" appear>
+    <transition name="referal-appear" appear>
       <div class="referal profile-item">
         <template v-for="(item, i) in referal" :key="i">
           <div class="list-item" v-if="item.show" @click="goRoute(item.route)">
@@ -113,10 +113,10 @@ onMounted(async () => {
         </template>
       </div>
     </transition>
-    <transition name="fade-down" appear>
+    <transition name="params-title-appear" appear>
       <h2 class="profile-value">{{ t("params") }}</h2>
     </transition>
-    <transition name="slide-up" appear>
+    <transition name="params-appear" appear>
       <div class="params profile-item">
         <div
           class="list-item"
@@ -134,10 +134,10 @@ onMounted(async () => {
         </div>
       </div>
     </transition>
-    <transition name="fade-down" appear>
+    <transition name="about-title-appear" appear>
       <h2 class="profile-value">{{ t("aboutUs") }}</h2>
     </transition>
-    <transition name="slide-up" appear>
+    <transition name="about-appear" appear>
       <div class="about-us profile-item">
         <div
           class="list-item"
@@ -171,7 +171,7 @@ onMounted(async () => {
         <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
       </div>
     </div> -->
-    <transition name="fade-scale" appear>
+    <transition name="exit-appear" appear>
       <button class="btn exit profile-item" @click="walletStore.logOut()">
         {{ t("exit") }}
       </button>
@@ -282,5 +282,69 @@ onMounted(async () => {
 .name {
   font-size: 20px;
   color: #141414;
+}
+
+/* Анимации появления профиля */
+.user-appear-enter-active {
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.1s;
+}
+.user-appear-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(-20px);
+}
+
+.referal-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.3s;
+}
+.referal-appear-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.params-title-appear-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.5s;
+}
+.params-title-appear-enter-from {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+
+.params-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.6s;
+}
+.params-appear-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.about-title-appear-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.8s;
+}
+.about-title-appear-enter-from {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+
+.about-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.9s;
+}
+.about-appear-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.exit-appear-enter-active {
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 1.1s;
+}
+.exit-appear-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
 }
 </style>

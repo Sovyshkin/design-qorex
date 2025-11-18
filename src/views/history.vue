@@ -204,19 +204,21 @@ onMounted(async () => {
       <div class="history-container">
         <div class="history">
           <template v-if="walletStore.history.length">
-            <transition-group name="list" tag="div">
+            <transition-group name="history-group-appear" tag="div">
               <div
                 v-for="(group, dateKey) in groupedHistory"
                 :key="dateKey"
                 class="history-group"
               >
                 <h2 class="history-date">{{ group.displayDate }}</h2>
-            <div
-              v-for="(item, index) in group.items"
-              :key="index"
-              class="history-item"
-              @click="walletStore.goTransaction(item)"
-            >
+            <transition-group name="history-item-appear" tag="div">
+              <div
+                v-for="(item, index) in group.items"
+                :key="`${dateKey}-${index}`"
+                class="history-item"
+                :style="{ '--item-index': index }"
+                @click="walletStore.goTransaction(item)"
+              >
               <div class="history-info">
                 <div class="wrap-img">
                   <img
@@ -269,7 +271,8 @@ onMounted(async () => {
                 </span>
                 <span class="count-rub" v-else>********</span>
               </div>
-            </div>
+              </div>
+            </transition-group>
               </div>
             </transition-group>
           </template>
@@ -432,5 +435,50 @@ h1 {
 
 .in_processing {
   color: #d5a810;
+}
+
+/* Анимации появления истории */
+.fade-down-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.1s;
+}
+.fade-down-enter-from {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.fade-scale-enter-active {
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.2s;
+}
+.fade-scale-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(20px);
+}
+
+.history-group-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.3s;
+}
+.history-group-appear-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.history-item-appear-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(0.4s + var(--item-index) * 0.1s);
+}
+.history-item-appear-enter-from {
+  opacity: 0;
+  transform: translateX(-40px) scale(0.95);
+}
+
+.list-enter-active {
+  transition: all 0.3s ease;
+}
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>
