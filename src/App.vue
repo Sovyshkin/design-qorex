@@ -68,11 +68,18 @@ router.beforeEach(async (to, from, next) => {
     // Проверка PIN для всех основных страниц приложения
     console.log('Router Guard PIN Check:', {
       to: to.name,
+      from: from.name,
       isSensitiveRoute,
       hasPinCode: walletStore.hasPinCode(),
       codePasswordActive: walletStore.codePasswordActive,
       requirePin: requirePin()
     });
+    
+    // Избегаем циклических перенаправлений
+    if (to.name === 'enterPin' || to.name === 'createPin') {
+      walletStore.isLoading = false;
+      return next();
+    }
     
     if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
       console.log('Router Guard: Перенаправляем на enterPin');
@@ -153,6 +160,11 @@ const initializeApp = async () => {
             requirePin: requirePin()
           });
           
+          // Не перенаправляем, если уже на странице PIN-кода
+          if (currentRoute.name === 'enterPin' || currentRoute.name === 'createPin') {
+            return;
+          }
+          
           if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
             console.log('Init: Перенаправляем на enterPin');
             router.push({ 
@@ -177,6 +189,13 @@ onMounted(() => {
 const showContent = computed(() => {
   const currentRoute = router.currentRoute.value;
   const shouldShow = !publicRoutes.includes(currentRoute.name);
+
+  console.log('showContent computed:', {
+    currentRoute: currentRoute.name,
+    publicRoutes,
+    shouldShow,
+    accessDenied: accessDenied.value
+  });
 
   return shouldShow;
 });
@@ -214,21 +233,19 @@ const debugInfo = computed(() => {
     
     <template v-else>
       <!-- Отображаем страницы PIN-кода без навбара -->
-      <template v-if="!showContent">
-        <div class="pin-page">
-          <div class="wrap-load" v-if="walletStore.isLoading">
-            <AppLoader/>
-          </div>
-          <router-view v-else v-slot="{ Component }">
-            <transition name="fade" mode="out-in">
-              <component :is="Component" />
-            </transition>
-          </router-view>
+      <div v-if="!showContent" class="pin-page">
+        <div class="wrap-load" v-if="walletStore.isLoading">
+          <AppLoader/>
         </div>
-      </template>
+        <router-view v-else v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </div>
       
       <!-- Отображаем основной контент с навбаром -->
-      <template v-else>
+      <div v-else>
         <transition name="app-appear" appear>
           <div class="content-wrapper">
             <div class="wrap-load" v-if="walletStore.isLoading">
@@ -244,7 +261,7 @@ const debugInfo = computed(() => {
         <transition name="navbar-appear" appear>
           <NavBar class="navbar-fixed" />
         </transition>
-      </template>
+      </div>
     </template>
   </main>
 </template>

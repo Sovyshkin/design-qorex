@@ -14,8 +14,14 @@ const pin = ref("");
 const pressedButton = ref(null);
 const errorMessage = ref("");
 
-// Определяем режим работы на основе наличия PIN-кода
-const isCreateMode = route.query.createMode || false
+// Определяем режим работы на основе маршрута и параметров
+const isCreateMode = route.name === 'createPin' || route.query.createMode || false
+
+console.log('PinCode режим:', {
+  routeName: route.name,
+  createMode: route.query.createMode,
+  isCreateMode
+});
 
 const handleNumberClick = (num) => {
   if (pin.value.length < 4) {
@@ -67,19 +73,28 @@ const endPress = () => {
 };
 
 // Если пользователь пытается уйти без ввода PIN, блокируем навигацию
-onMounted(() => {
-  // Добавляем отладочную информацию при загрузке компонента
+onMounted(async () => {
+  console.log('PinCode onMounted:', {
+    isCreateMode,
+    routeName: route.name,
+    codePasswordActive: walletStore.codePasswordActive,
+    pinCode: walletStore.pinCode ? '***' : null
+  });
 
-
-
-
-
-  
+  // Если это не режим создания, убеждаемся что данные загружены
   if (!isCreateMode) {
-    // Проверяем, есть ли пин-код в системе
-    if (!walletStore.pinCode) {
+    // Загружаем актуальные данные пользователя если нужно
+    if (!walletStore.user.tg_id) {
+      await walletStore.getUserInfo();
+      if (walletStore.userTg && walletStore.userTg.id) {
+        await walletStore.getUser();
+      }
+    }
 
-      // Пин-код не найден, автоматически отключаем защиту
+    // Проверяем статус PIN-кода из сервера
+    if (!walletStore.codePasswordActive) {
+      console.log('PIN-код не активен на сервере, перенаправляем на главную');
+      // Пин-код не активен на сервере, очищаем локальные данные
       walletStore.clearAllPinData();
       
       // Перенаправляем на главную страницу
@@ -87,7 +102,7 @@ onMounted(() => {
       return;
     }
     
-    // Запрещаем возврат без ввода PIN только если пин-код существует
+    // Запрещаем возврат без ввода PIN только если пин-код активен
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = function() {
       window.history.pushState(null, null, window.location.href);
