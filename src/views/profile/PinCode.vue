@@ -37,9 +37,8 @@ const handleNumberClick = (num) => {
       if (!walletStore.codePasswordActive) {
         // Пин-код не активен на сервере, очищаем локальные данные
         walletStore.clearAllPinData();
-        
-        // Перенаправляем на главную страницу
-        router.push('/');
+        errorMessage.value = 'PIN-код не активен на сервере';
+        console.error('PIN-код не активен на сервере');
         return;
       }
       
@@ -59,8 +58,14 @@ const handleNumberClick = (num) => {
         const returnTo = route.query.returnTo || '/';
         router.push(returnTo);
       } else {
-        console.log('PIN неверный, показываем ошибку');
-        errorMessage.value = t('wrong_pin');
+        // Проверяем, загружен ли PIN-код из сервера
+        if (walletStore.pinCode === undefined || walletStore.pinCode === null || walletStore.pinCode === "") {
+          errorMessage.value = 'PIN-код не загружен из сервера';
+          console.error('PIN-код не загружен из сервера:', walletStore.pinCode);
+        } else {
+          console.log('PIN неверный, показываем ошибку');
+          errorMessage.value = t('wrong_pin');
+        }
         pin.value = "";
       }
     }
@@ -180,57 +185,77 @@ onMounted(async () => {
       </button>
     </div>
   </main>
-</template>
+  <header class="header">
+    <div class="emp"></div> <!-- Убираем кнопку назад при вводе PIN -->
+    <h1>{{ isCreateMode ? t('create_pincode') : t('enter_pincode') }}</h1>
+    <div class="emp"></div>
+  </header>
+  <main class="pin-code-container">
+    <!-- DEBUG BLOCK -->
+    <div style="background: #222; color: #fff; font-size: 12px; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+      <strong>DEBUG:</strong>
+      <div>route.name: {{ $route.name }}</div>
+      <div>isCreateMode: {{ isCreateMode }}</div>
+      <div>codePasswordActive: {{ walletStore.codePasswordActive }}</div>
+      <div>pinCode (store): {{ walletStore.pinCode }}</div>
+      <div>typeof pinCode: {{ typeof walletStore.pinCode }}</div>
+      <div>enteredPin: {{ pin }}</div>
+      <div>typeof enteredPin: {{ typeof pin }}</div>
+      <div>user.tg_id: {{ walletStore.user?.tg_id }}</div>
+      <div>user.id: {{ walletStore.user?.id }}</div>
+      <div>userTg.id: {{ walletStore.userTg?.id }}</div>
+      <div>getUser loaded: {{ !!walletStore.user }}</div>
+      <div>errorMessage: {{ errorMessage }}</div>
+      <div>pinVerified (localStorage): {{ localStorage.getItem('pinVerified') }}</div>
+      <div>hasPinCode: {{ walletStore.hasPinCode() }}</div>
+    </div>
+    <!-- END DEBUG BLOCK -->
 
-<style scoped>
-/* Существующие стили остаются без изменений */
-.header {
-  padding: 20px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
+    <div class="pin-dots">
+      <div
+        v-for="i in 4"
+        :key="i"
+        class="pin-dot"
+        :class="{ active: pin.length >= i }"
+      ></div>
+    </div>
 
-.emp {
-  width: 18px; /* Сохраняем симметрию */
-}
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
 
-h1 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.pin-code-container {
-  max-width: 350px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-  font-family: Arial, sans-serif;
-}
-
-.pin-dots {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
-.pin-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  transition: all 0.3s ease;
-}
-
-.pin-dot.active {
-  background-color: #DEEC51;
-  transform: scale(1.2);
-}
-
+    <div class="pin-grid">
+      <button
+        v-for="num in [1, 2, 3, 4, 5, 6, 7, 8, 9]"
+        :key="num"
+        class="pin-button"
+        @click="handleNumberClick(num)"
+        @mousedown="startPress(num)"
+        @mouseup="endPress()"
+        @mouseleave="endPress()"
+        :class="{ pressed: pressedButton === num }"
+      >
+        {{ num }}
+      </button>
+      
+      <div class="empty-cell"></div>
+      
+      <button
+        class="pin-button"
+        @click="handleNumberClick(0)"
+        @mousedown="startPress(0)"
+        @mouseup="endPress()"
+        @mouseleave="endPress()"
+        :class="{ pressed: pressedButton === 0 }"
+      >
+        0
+      </button>
+      
+      <button class="pin-button del" @click="deleteLast">
+        ←
+      </button>
+    </div>
+  </main>
 .error-message {
   color: #ff4444;
   margin-bottom: 20px;

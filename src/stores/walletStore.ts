@@ -116,13 +116,11 @@ export const useWalletStore = defineStore("wallet", () => {
       console.log('PIN не активен на сервере');
       return false;
     }
-    
-    // Если пин-код не загружен из базы данных, возвращаем false
-    if (!pinCode.value) {
-      console.warn('PIN-код не загружен из сервера');
+    // Явная проверка на undefined/null/пустую строку
+    if (pinCode.value === undefined || pinCode.value === null || pinCode.value === "") {
+      console.warn('PIN-код не загружен из сервера:', pinCode.value);
       return false;
     }
-    
     // Отладочная информация для проверки PIN
     console.log('PIN verification:', {
       enteredPin,
@@ -131,9 +129,8 @@ export const useWalletStore = defineStore("wallet", () => {
       storedPinType: typeof pinCode.value,
       enteredPinString: String(enteredPin),
       storedPinString: String(pinCode.value),
-      comparison: enteredPin === String(pinCode.value)
+      comparison: String(enteredPin) === String(pinCode.value)
     });
-    
     // Приводим оба значения к строке для корректного сравнения
     return String(enteredPin) === String(pinCode.value);
   };
