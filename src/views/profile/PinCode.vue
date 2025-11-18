@@ -27,9 +27,9 @@ const handleNumberClick = (num) => {
     if (isCreateMode) {
       walletStore.setPinCode(pin.value);
     } else {
-      // Проверяем, есть ли пин-код в системе
-      if (!walletStore.pinCode) {
-        // Пин-код не найден, автоматически отключаем защиту
+      // Проверяем, активен ли пин-код в системе (на основе данных сервера)
+      if (!walletStore.codePasswordActive) {
+        // Пин-код не активен на сервере, очищаем локальные данные
         walletStore.clearAllPinData();
         
         // Перенаправляем на главную страницу

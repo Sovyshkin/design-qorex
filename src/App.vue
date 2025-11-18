@@ -49,7 +49,7 @@ const requirePin = () => {
 const publicRoutes = ['enterPin', 'createPin'];
 
 // Маршруты, которые требуют проверки PIN перед доступом
-const sensitiveRoutes = ['scanner'];
+const sensitiveRoutes = ['scanner', 'main', 'profile', 'history', 'deposit', 'withdraw', 'transfer'];
 
 router.beforeEach(async (to, from, next) => {
   walletStore.isLoading = true;
@@ -68,7 +68,7 @@ router.beforeEach(async (to, from, next) => {
     const isPublicRoute = publicRoutes.includes(to.name);
     const isSensitiveRoute = sensitiveRoutes.includes(to.name);
     
-    // Проверка PIN ТОЛЬКО для чувствительных маршрутов (сканер)
+    // Проверка PIN для всех основных страниц приложения
     if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
       walletStore.isLoading = false;
       return next({ 
@@ -111,11 +111,8 @@ const checkAccessByWhitelist = (userId) => {
 // Функция для инициализации приложения
 const initializeApp = async () => {
   try {
-    // Сбрасываем pinVerified при каждом запуске приложения
-    // Это важно для Telegram WebApp, т.к. каждое открытие бота - новая сессия
-    localStorage.removeItem('pinVerified');
-    
-    walletStore.getUserInfo();
+    // Получаем информацию о пользователе из Telegram
+    await walletStore.getUserInfo();
     
     // Если это Telegram Web App, создаем/получаем пользователя
     if (window.Telegram && window.Telegram.WebApp) {
@@ -132,11 +129,25 @@ const initializeApp = async () => {
         // Загружаем данные пользователя (включая пин-код) из базы данных
         await walletStore.getUser();
         
-        // Больше НЕ проверяем PIN при загрузке - только при переходе на сканер
+        // Сбрасываем pinVerified после загрузки данных пользователя
+        // Это важно для Telegram WebApp, т.к. каждое открытие бота - новая сессия
+        localStorage.removeItem('pinVerified');
+        
+        // Проверяем, нужно ли запросить PIN-код для текущей страницы
+        const currentRoute = router.currentRoute.value;
+        const isSensitiveRoute = sensitiveRoutes.includes(currentRoute.name);
+        
+        if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
+          // Перенаправляем на страницу ввода PIN-кода
+          router.push({ 
+            name: 'enterPin', 
+            query: { returnTo: currentRoute.fullPath } 
+          });
+        }
       }
     }
   } catch (err) {
-
+    console.error('Ошибка инициализации приложения:', err);
   }
 }
 
@@ -158,11 +169,14 @@ const debugInfo = computed(() => {
   return {
     currentRoute: router.currentRoute.value.name,
     hasPinCode: walletStore.hasPinCode(),
+    codePasswordActive: walletStore.codePasswordActive,
+    pinCode: walletStore.pinCode,
     pinVerified: localStorage.getItem('pinVerified'),
     requirePin: requirePin(),
     showContent: showContent.value,
     userTg: walletStore.userTg,
-    user: walletStore.user
+    user: walletStore.user,
+    isLoading: walletStore.isLoading
   };
 });
 </script>
@@ -171,6 +185,18 @@ const debugInfo = computed(() => {
   <main class="wrapper">
     <AppMessage/>
     
+    <!-- Временный debug блок -->
+    <div v-if="debugInfo.currentRoute === 'main'" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-size: 12px; max-width: 300px;">
+      <div><strong>Debug Info:</strong></div>
+      <div>Route: {{ debugInfo.currentRoute }}</div>
+      <div>HasPinCode: {{ debugInfo.hasPinCode }}</div>
+      <div>CodePasswordActive: {{ debugInfo.codePasswordActive }}</div>
+      <div>PinCode: {{ debugInfo.pinCode ? '***' : 'null' }}</div>
+      <div>PinVerified: {{ debugInfo.pinVerified }}</div>
+      <div>RequirePin: {{ debugInfo.requirePin }}</div>
+      <div>IsLoading: {{ debugInfo.isLoading }}</div>
+    </div>
+
     <!-- Экран блокировки доступа -->
     <div class="access-denied" v-if="accessDenied">
       <div class="access-denied-content">

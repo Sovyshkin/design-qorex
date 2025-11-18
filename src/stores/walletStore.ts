@@ -101,8 +101,8 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const hasPinCode = () => {
-    // Проверяем наличие пин-кода в переменной (загруженного из базы данных)
-    const hasPin = !!pinCode.value;
+    // Проверяем наличие пин-кода и статус активности из сервера
+    const hasPin = !!pinCode.value && codePasswordActive.value;
     
     // Если пин-кода нет, очищаем все связанные настройки
     if (!hasPin) {
