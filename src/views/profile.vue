@@ -86,63 +86,75 @@ onMounted(async () => {
 
 <template>
   <main class="profile">
-    <div class="user profile-item">
-      <div class="wrap-avatar">
-        <img :src="walletStore.userTg.photo_url" alt="" />
+    <transition name="fade-scale" appear>
+      <div class="user profile-item">
+        <div class="wrap-avatar">
+          <img :src="walletStore.userTg.photo_url" alt="" />
+        </div>
+        <span class="name">@{{ walletStore.user.username }}</span>
       </div>
-      <span class="name">@{{ walletStore.user.username }}</span>
-    </div>
-    <div class="referal profile-item">
-      <template v-for="(item, i) in referal" :key="i">
-        <div class="list-item" v-if="item.show" @click="goRoute(item.route)">
+    </transition>
+    <transition name="slide-up" appear>
+      <div class="referal profile-item">
+        <template v-for="(item, i) in referal" :key="i">
+          <div class="list-item" v-if="item.show" @click="goRoute(item.route)">
+            <div class="info">
+              <div class="wrap-img">
+                <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
+              </div>
+              <span class="list-value">{{ item.name }}</span>
+            </div>
+            <img
+              class="arrow"
+              src="../assets/arrow-right.svg"
+              alt="arrow-right"
+            />
+          </div>
+        </template>
+      </div>
+    </transition>
+    <transition name="fade-down" appear>
+      <h2 class="profile-value">{{ t("params") }}</h2>
+    </transition>
+    <transition name="slide-up" appear>
+      <div class="params profile-item">
+        <div
+          class="list-item"
+          v-for="(item, i) in params"
+          :key="i"
+          @click="goRoute(item.route)"
+        >
           <div class="info">
             <div class="wrap-img">
               <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
             </div>
             <span class="list-value">{{ item.name }}</span>
           </div>
-          <img
-            class="arrow"
-            src="../assets/arrow-right.svg"
-            alt="arrow-right"
-          />
+          <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
         </div>
-      </template>
-    </div>
-    <h2 class="profile-value">{{ t("params") }}</h2>
-    <div class="params profile-item">
-      <div
-        class="list-item"
-        v-for="(item, i) in params"
-        :key="i"
-        @click="goRoute(item.route)"
-      >
-        <div class="info">
-          <div class="wrap-img">
-            <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
-          </div>
-          <span class="list-value">{{ item.name }}</span>
-        </div>
-        <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
       </div>
-    </div>
-    <h2 class="profile-value">{{ t("aboutUs") }}</h2>
-    <div class="about-us profile-item">
-      <div
-        class="list-item"
-        v-for="(item, i) in aboutUs"
-        :key="i"
-        @click="goRoute(item.route)"
-      >
-        <div class="info">
-          <div class="wrap-img">
-            <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
+    </transition>
+    <transition name="fade-down" appear>
+      <h2 class="profile-value">{{ t("aboutUs") }}</h2>
+    </transition>
+    <transition name="slide-up" appear>
+      <div class="about-us profile-item">
+        <div
+          class="list-item"
+          v-for="(item, i) in aboutUs"
+          :key="i"
+          @click="goRoute(item.route)"
+        >
+          <div class="info">
+            <div class="wrap-img">
+              <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
+            </div>
+            <span class="list-value">{{ item.name }}</span>
           </div>
-          <span class="list-value">{{ item.name }}</span>
+          <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
         </div>
-        <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
       </div>
-    </div>
+    </transition>
     <!-- <div class="about-us profile-item">
       <div
         class="list-item"
@@ -159,9 +171,11 @@ onMounted(async () => {
         <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
       </div>
     </div> -->
-    <button class="btn exit profile-item" @click="walletStore.logOut()">
-      {{ t("exit") }}
-    </button>
+    <transition name="fade-scale" appear>
+      <button class="btn exit profile-item" @click="walletStore.logOut()">
+        {{ t("exit") }}
+      </button>
+    </transition>
   </main>
 </template>
 

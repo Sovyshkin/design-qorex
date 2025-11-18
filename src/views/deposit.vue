@@ -13,22 +13,36 @@ const networks = [
   { id: "USDT_ERC20", name: "ERC20 (Ethereum)", icon: "ethereum" }
 ];
 
-const createInvoice = () => {
-  walletStore.createInvoice(selectedNetwork.value);
+const isCreatingInvoice = ref(false);
+
+const createInvoice = async () => {
+  if (isCreatingInvoice.value) return; // Предотвращаем повторные нажатия
+  
+  try {
+    isCreatingInvoice.value = true;
+    await walletStore.createInvoice(selectedNetwork.value);
+  } catch (error) {
+    console.error('Error creating invoice:', error);
+  } finally {
+    isCreatingInvoice.value = false;
+  }
 };
 </script>
 <template>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
-    <h1>{{ t("deposit_page") }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="container">
+  <transition name="fade-down" appear>
+    <header class="header">
+      <img
+        class="arrow"
+        src="../assets/arrow-left.svg"
+        alt=""
+        @click="walletStore.goBack()"
+      />
+      <h1>{{ t("deposit_page") }}</h1>
+      <div class="emp"></div>
+    </header>
+  </transition>
+  <transition name="fade-scale" appear>
+    <main class="container">
     <div class="form-container">
       <div class="group">
         <input type="number" :placeholder="t('select_amount')" id="amount" v-model="walletStore.amount"/>
@@ -59,8 +73,20 @@ const createInvoice = () => {
       </div>
     </div>
     
-    <button class="btn" @click="createInvoice()">{{ t("continue") }}</button>
-  </main>
+    <button 
+      class="btn" 
+      :class="{ loading: isCreatingInvoice }"
+      :disabled="isCreatingInvoice"
+      @click="createInvoice()"
+    >
+      <div class="btn-content">
+        <div class="loader" v-if="isCreatingInvoice"></div>
+        <span v-if="!isCreatingInvoice">{{ t("continue") }}</span>
+        <span v-else>{{ t("processing") }}</span>
+      </div>
+    </button>
+    </main>
+  </transition>
 </template>
 <style scoped>
 .header {
@@ -106,6 +132,40 @@ h1 {
   font-size: 14px;
   color: #141414;
   background-color: #deec51;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn.loading {
+  background-color: #d4d926;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #141414;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 input,

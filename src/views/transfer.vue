@@ -50,16 +50,18 @@ onMounted(async () => {
   <Require2FA v-if="!walletStore.has2FA" />
   
   <div v-else>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
-    <h1>{{ t("transfer_page") }}</h1>
-    <div class="emp"></div>
-  </header>
+    <transition name="fade-down" appear>
+      <header class="header">
+        <img
+          class="arrow"
+          src="../assets/arrow-left.svg"
+          alt=""
+          @click="walletStore.goBack()"
+        />
+        <h1>{{ t("transfer_page") }}</h1>
+        <div class="emp"></div>
+      </header>
+    </transition>
   <main class="container">
     <!-- Мой кошелек -->
     <div class="my-wallet-section">
@@ -361,5 +363,67 @@ select::placeholder {
 
 .arrow:hover {
   transform: translateX(-3px);
+}
+
+/* Анимации */
+.fade-scale-enter-active {
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-scale-enter-from {
+  opacity: 0;
+  transform: scale(0.7) translateY(50px);
+}
+
+.fade-down-enter-active {
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-down-enter-from {
+  opacity: 0;
+  transform: translateY(-40px);
+}
+
+.slide-up-enter-active {
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.2s;
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(60px);
+}
+
+/* Дополнительные эффекты */
+.container {
+  animation: pageAppear 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.1s;
+}
+
+@keyframes pageAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Улучшенные эффекты */
+.wallet-card, .form-group, .submit-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wallet-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(222, 236, 81, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(-1px) scale(0.98);
 }
 </style>

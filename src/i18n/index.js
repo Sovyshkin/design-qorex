@@ -53,6 +53,7 @@ const messages = {
     select_amount: "Укажите сумму",
     enter_amount: "Введите сумму для пополнения",
     continue: "Продолжить",
+    processing: "Обработка...",
     email_add: "Email адрес",
     email_text:
       "Добавьте адрес электроной почты для повышения уровня безопасности вашего аккаунта Garda Wallet",
@@ -199,6 +200,7 @@ const messages = {
     select_amount: "Specify the amount",
     enter_amount: "Enter the amount for the deposit",
     continue: "Continue",
+    processing: "Processing...",
     email_add: "Email",
     email_text:
       "Add an email address to enhance the security of your Garda Wallet account.",

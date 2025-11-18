@@ -36,17 +36,20 @@ const handleWithdraw = async () => {
 </script>
 
 <template>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
-    <h1>{{ t("withdraw_page") }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="container">
+  <transition name="fade-down" appear>
+    <header class="header">
+      <img
+        class="arrow"
+        src="../assets/arrow-left.svg"
+        alt=""
+        @click="walletStore.goBack()"
+      />
+      <h1>{{ t("withdraw_page") }}</h1>
+      <div class="emp"></div>
+    </header>
+  </transition>
+  <transition name="fade-scale" appear>
+    <main class="container">
     <div class="form-container">
       <div class="group">
         <input type="number" :placeholder="t('select_amount')" id="amount" v-model="amount"/>
@@ -103,7 +106,8 @@ const handleWithdraw = async () => {
     >
       {{ t("withdraw_funds") }}
     </button>
-  </main>
+    </main>
+  </transition>
 </template>
 
 <style scoped>

@@ -198,17 +198,21 @@ const debugInfo = computed(() => {
       
       <!-- Отображаем основной контент с навбаром -->
       <template v-else>
-        <div class="content-wrapper">
-          <div class="wrap-load" v-if="walletStore.isLoading">
-            <AppLoader/>
+        <transition name="app-appear" appear>
+          <div class="content-wrapper">
+            <div class="wrap-load" v-if="walletStore.isLoading">
+              <AppLoader/>
+            </div>
+            <router-view v-else v-slot="{ Component }">
+              <transition name="page-transition" mode="out-in">
+                <component :is="Component" />
+              </transition>
+            </router-view>
           </div>
-          <router-view v-else v-slot="{ Component }">
-            <transition name="fade" mode="out-in">
-              <component :is="Component" />
-            </transition>
-          </router-view>
-        </div>
-        <NavBar class="navbar-fixed" />
+        </transition>
+        <transition name="navbar-appear" appear>
+          <NavBar class="navbar-fixed" />
+        </transition>
       </template>
     </template>
   </main>
@@ -435,6 +439,39 @@ h1 {
   left: 0;
   right: 0;
   z-index: 1000;
+}
+
+/* Глобальные анимации приложения */
+.app-appear-enter-active {
+  transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.app-appear-enter-from {
+  opacity: 0;
+  transform: translateY(100px) scale(0.9);
+}
+
+.navbar-appear-enter-active {
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.5s;
+}
+.navbar-appear-enter-from {
+  opacity: 0;
+  transform: translateY(100px);
+}
+
+.page-transition-enter-active {
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.page-transition-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 1, 1);
+}
+.page-transition-enter-from {
+  opacity: 0;
+  transform: translateX(50px) scale(0.95);
+}
+.page-transition-leave-to {
+  opacity: 0;
+  transform: translateX(-30px) scale(0.98);
 }
 
 /* Обертка для контента с отступом снизу для навбара */

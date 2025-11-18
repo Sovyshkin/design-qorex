@@ -195,18 +195,22 @@ onMounted(async () => {
 
 <template>
   <div class="page-container">
-    <header class="header">
-      <h1>{{ t("history_tranc") }}</h1>
-    </header>
-    <div class="history-container">
-      <div class="history">
-        <template v-if="walletStore.history.length">
-          <div
-            v-for="(group, dateKey) in groupedHistory"
-            :key="dateKey"
-            class="history-group"
-          >
-            <h2 class="history-date">{{ group.displayDate }}</h2>
+    <transition name="fade-down" appear>
+      <header class="header">
+        <h1>{{ t("history_tranc") }}</h1>
+      </header>
+    </transition>
+    <transition name="fade-scale" appear>
+      <div class="history-container">
+        <div class="history">
+          <template v-if="walletStore.history.length">
+            <transition-group name="list" tag="div">
+              <div
+                v-for="(group, dateKey) in groupedHistory"
+                :key="dateKey"
+                class="history-group"
+              >
+                <h2 class="history-date">{{ group.displayDate }}</h2>
             <div
               v-for="(item, index) in group.items"
               :key="index"
@@ -266,12 +270,13 @@ onMounted(async () => {
                 <span class="count-rub" v-else>********</span>
               </div>
             </div>
-          </div>
-        </template>
-
-        <EmptyHistory v-else />
+              </div>
+            </transition-group>
+          </template>
+          <EmptyHistory v-else />
+        </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 

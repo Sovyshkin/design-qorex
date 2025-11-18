@@ -23,74 +23,96 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="wrapper">
-    <header>
-      <div class="user">
-        <div class="wrap-avatar">
-          <img :src="walletStore.userTg.photo_url" alt="" />
-        </div>
-        <span class="name">{{ walletStore.user.first_name }}</span>
-      </div>
-    </header>
-    <main class="container">
-      <div class="wrap-balance">
-        <div class="balance" @click="walletStore.setHideBalanceActive(!walletStore.hideBalanceActive)">
-          <div class="wrap-text">
-            <span>{{ t("total_balance") }}</span>
-            <img
-              src="../assets/hide.png"
-              v-if="walletStore.hideBalanceActive"
-              alt="hide_balance"
-            />
-            <img src="../assets/open.png" v-else alt="open_balance" />
+  <transition name="main-page-appear" appear>
+    <div class="wrapper">
+      <transition name="header-appear" appear>
+        <header>
+          <div class="user">
+            <div class="wrap-avatar">
+              <img :src="walletStore.userTg.photo_url" alt="" />
+            </div>
+            <span class="name">{{ walletStore.user.first_name }}</span>
           </div>
-          <h2 class="balance-rub" v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.balance_rub) }} ₽</h2>
-          <h2 class="balance-rub" v-else>********</h2>
-        </div>
-        <div class="actions">
-          <button class="btn deposit" @click="goRoute('deposit')">
-            <div class="btn-icon">
-              <img src="../assets/deposit.svg" alt="deposit" />
-            </div>
-            <span>{{ t("deposit") }}</span>
-          </button>
-          <button class="btn transfer" @click="goRoute('transfer')">
-            <div class="btn-icon">
-              <img src="../assets/send.png" alt="transfer" />
-            </div>
-            <span>{{ t("transfer") }}</span>
-          </button>
-          <button class="btn pay_out" @click="goRoute('withdraw')">
-            <div class="btn-icon">
-              <img src="../assets/pay_out.svg" alt="withdraw" />
-            </div>
-            <span>{{ t("pay_out") }}</span>
-          </button>
-        </div>
-      </div>
-      <div class="coins">
-        <h3>{{ t('actives') }}</h3>
-        <div class="coin">
-          <div class="coin-info">
-            <img
-              src="data:image/svg+xml,<svg%20width='40'%20height='40'%20viewBox='0%200%2040%2040'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'><rect%20width='40'%20height='40'%20rx='20'%20fill='%232AAF86'/><path%20d='M22.0302%2021.7391V21.7365C21.9162%2021.7444%2021.3279%2021.7789%2020.0186%2021.7789C18.9716%2021.7789%2018.2375%2021.7497%2017.9777%2021.7365V21.7391C13.9518%2021.5616%2010.9488%2020.8618%2010.9488%2020.0217C10.9488%2019.1841%2013.9544%2018.4818%2017.9777%2018.3042V21.0421C18.2401%2021.0606%2018.9955%2021.1057%2020.0371%2021.1057C21.2881%2021.1057%2021.9136%2021.0527%2022.0302%2021.0421V18.3068C26.0482%2018.4871%2029.0432%2019.1868%2029.0432%2020.0243C29.0432%2020.8618%2026.0456%2021.5616%2022.0302%2021.7418M22.0302%2018.0233V15.5743H27.6358V11.8398H12.3748V15.5743H17.9804V18.0233C13.4243%2018.2326%2010%2019.1338%2010%2020.2151C10%2021.2965%2013.427%2022.1977%2017.9804%2022.4097V30.2602H22.0329V22.4097C26.581%2022.2003%2030%2021.2992%2030%2020.2178C30%2019.1391%2026.581%2018.2353%2022.0329%2018.0259'%20fill='white'/></svg>"
-              alt=""
-            />
-            <div class="coin-currency">
-                <span class="coin-name">USDT</span>
-                <span class="currency-rate">{{ walletStore.roundToHundredths(walletStore.usdt_price) }} ₽</span>
-            </div>
+        </header>
+      </transition>
+      <transition name="container-appear" appear>
+        <main class="container">
+          <transition name="balance-appear" appear>
+            <div class="wrap-balance">
+              <div class="balance" @click="walletStore.setHideBalanceActive(!walletStore.hideBalanceActive)">
+                <div class="wrap-text">
+                  <span>{{ t("total_balance") }}</span>
+                  <img
+                    src="../assets/hide.png"
+                    v-if="walletStore.hideBalanceActive"
+                    alt="hide_balance"
+                  />
+                  <img src="../assets/open.png" v-else alt="open_balance" />
+                </div>
+                <h2 class="balance-rub" v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.balance_rub) }} ₽</h2>
+                <h2 class="balance-rub" v-else>********</h2>
+              </div>
+            <transition name="actions-appear" appear>
+              <div class="actions">
+                <transition name="button-appear-1" appear>
+                  <button class="btn deposit" @click="goRoute('deposit')">
+                    <div class="btn-icon">
+                      <img src="../assets/deposit.svg" alt="deposit" />
+                    </div>
+                    <span>{{ t("deposit") }}</span>
+                  </button>
+                </transition>
+                <transition name="button-appear-2" appear>
+                  <button class="btn transfer" @click="goRoute('transfer')">
+                    <div class="btn-icon">
+                      <img src="../assets/send.png" alt="transfer" />
+                    </div>
+                    <span>{{ t("transfer") }}</span>
+                  </button>
+                </transition>
+                <transition name="button-appear-3" appear>
+                  <button class="btn pay_out" @click="goRoute('withdraw')">
+                    <div class="btn-icon">
+                      <img src="../assets/pay_out.svg" alt="withdraw" />
+                    </div>
+                    <span>{{ t("pay_out") }}</span>
+                  </button>
+                </transition>
+              </div>
+            </transition>
           </div>
-          <div class="coin-activity">
-            <span class="coin-balance" v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.balance_rub) }} ₽</span>
-            <span class="coin-balance" v-else>********</span>
-            <span class="coin-balance-name" v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
-            <span class="coin-balance-name" v-else>********</span>
+        </transition>
+        <transition name="coins-appear" appear>
+          <div class="coins">
+            <transition name="coins-title-appear" appear>
+              <h3>{{ t('actives') }}</h3>
+            </transition>
+            <transition name="coin-card-appear" appear>
+              <div class="coin">
+                <div class="coin-info">
+                  <img
+                    src="data:image/svg+xml,<svg%20width='40'%20height='40'%20viewBox='0%200%2040%2040'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'><rect%20width='40'%20height='40'%20rx='20'%20fill='%232AAF86'/><path%20d='M22.0302%2021.7391V21.7365C21.9162%2021.7444%2021.3279%2021.7789%2020.0186%2021.7789C18.9716%2021.7789%2018.2375%2021.7497%2017.9777%2021.7365V21.7391C13.9518%2021.5616%2010.9488%2020.8618%2010.9488%2020.0217C10.9488%2019.1841%2013.9544%2018.4818%2017.9777%2018.3042V21.0421C18.2401%2021.0606%2018.9955%2021.1057%2020.0371%2021.1057C21.2881%2021.1057%2021.9136%2021.0527%2022.0302%2021.0421V18.3068C26.0482%2018.4871%2029.0432%2019.1868%2029.0432%2020.0243C29.0432%2020.8618%2026.0456%2021.5616%2022.0302%2021.7418M22.0302%2018.0233V15.5743H27.6358V11.8398H12.3748V15.5743H17.9804V18.0233C13.4243%2018.2326%2010%2019.1338%2010%2020.2151C10%2021.2965%2013.427%2022.1977%2017.9804%2022.4097V30.2602H22.0329V22.4097C26.581%2022.2003%2030%2021.2992%2030%2020.2178C30%2019.1391%2026.581%2018.2353%2022.0329%2018.0259'%20fill='white'/></svg>"
+                    alt=""
+                  />
+                  <div class="coin-currency">
+                      <span class="coin-name">USDT</span>
+                      <span class="currency-rate">{{ walletStore.roundToHundredths(walletStore.usdt_price) }} ₽</span>
+                  </div>
+                </div>
+                <div class="coin-activity">
+                  <span class="coin-balance" v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.balance_rub) }} ₽</span>
+                  <span class="coin-balance" v-else>********</span>
+                  <span class="coin-balance-name" v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
+                  <span class="coin-balance-name" v-else>********</span>
+                </div>
+              </div>
+            </transition>
           </div>
-        </div>
-      </div>
-    </main>
-  </div>
+        </transition>
+        </main>
+      </transition>
+    </div>
+  </transition>
 </template>
 <style scoped>
 .container {
@@ -342,5 +364,105 @@ h3 {
 
 .coin-balance {
     text-align: end;
+}
+
+/* Главная анимация страницы */
+.main-page-appear-enter-active {
+  transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.main-page-appear-enter-from {
+  opacity: 0;
+  transform: translateY(100px) scale(0.8);
+}
+
+/* Поэтапные анимации блоков */
+.header-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.1s;
+}
+.header-appear-enter-from {
+  opacity: 0;
+  transform: translateY(-40px);
+}
+
+.container-appear-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.2s;
+}
+.container-appear-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.balance-appear-enter-active {
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.3s;
+}
+.balance-appear-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(40px);
+}
+
+.actions-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.5s;
+}
+.actions-appear-enter-from {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.button-appear-1-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.6s;
+}
+.button-appear-1-enter-from {
+  opacity: 0;
+  transform: scale(0.8) translateY(30px);
+}
+
+.button-appear-2-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.65s;
+}
+.button-appear-2-enter-from {
+  opacity: 0;
+  transform: scale(0.8) translateY(30px);
+}
+
+.button-appear-3-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.7s;
+}
+.button-appear-3-enter-from {
+  opacity: 0;
+  transform: scale(0.8) translateY(30px);
+}
+
+.coins-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.8s;
+}
+.coins-appear-enter-from {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.coins-title-appear-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.85s;
+}
+.coins-title-appear-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.coin-card-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.9s;
+}
+.coin-card-appear-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(30px);
 }
 </style>
