@@ -113,6 +113,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const verifyPin = (enteredPin: string) => {
     // Проверяем, активен ли PIN-код на сервере
     if (!codePasswordActive.value) {
+      console.log('PIN не активен на сервере');
       return false;
     }
     
@@ -122,7 +123,19 @@ export const useWalletStore = defineStore("wallet", () => {
       return false;
     }
     
-    return enteredPin == pinCode.value;
+    // Отладочная информация для проверки PIN
+    console.log('PIN verification:', {
+      enteredPin,
+      enteredPinType: typeof enteredPin,
+      storedPin: pinCode.value,
+      storedPinType: typeof pinCode.value,
+      enteredPinString: String(enteredPin),
+      storedPinString: String(pinCode.value),
+      comparison: enteredPin === String(pinCode.value)
+    });
+    
+    // Приводим оба значения к строке для корректного сравнения
+    return String(enteredPin) === String(pinCode.value);
   };
 
   const hasPinCode = () => {
@@ -376,6 +389,14 @@ const changeLang = async (lang: string) => {
       user.value = response.data;
       balance.value = response.data.balance || 0;
       pinCode.value = response.data.pin_code;
+      
+      // Отладочная информация при загрузке PIN
+      console.log('PIN загружен из сервера:', {
+        pin_code: response.data.pin_code,
+        pin_code_type: typeof response.data.pin_code,
+        boolpin: response.data.boolpin,
+        boolpin_type: typeof response.data.boolpin
+      });
       
       // Устанавливаем состояние активности пин-кода на основе поля boolpin
       codePasswordActive.value = !!response.data.boolpin;

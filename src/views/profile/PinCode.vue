@@ -43,13 +43,23 @@ const handleNumberClick = (num) => {
         return;
       }
       
+      console.log('Проверяем PIN в PinCode.vue:', {
+        enteredPin: pin.value,
+        enteredPinType: typeof pin.value,
+        codePasswordActive: walletStore.codePasswordActive,
+        storedPin: walletStore.pinCode,
+        storedPinType: typeof walletStore.pinCode
+      });
+
       if (walletStore.verifyPin(pin.value)) {
+        console.log('PIN верный, перенаправляем');
         // Сохраняем время успешного ввода PIN
         localStorage.setItem('pinVerified', Date.now().toString());
         // Возвращаемся назад или на главную страницу
         const returnTo = route.query.returnTo || '/';
         router.push(returnTo);
       } else {
+        console.log('PIN неверный, показываем ошибку');
         errorMessage.value = t('wrong_pin');
         pin.value = "";
       }
