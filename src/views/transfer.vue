@@ -1,7 +1,8 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import Require2FA from '@/components/Require2FA.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -9,12 +10,14 @@ const amount = ref("");
 const recipientWallet = ref("");
 const myWallet = ref("");
 const twoFactorCode = ref("");
+const is2FAEnabled = ref(false);
 
 const isFormValid = computed(() => {
   return amount.value && 
          recipientWallet.value && 
          parseFloat(amount.value) > 0 &&
-         twoFactorCode.value.length === 6;
+         twoFactorCode.value.length === 6 &&
+         is2FAEnabled.value;
 });
 
 const handleTransfer = async () => {
@@ -43,18 +46,28 @@ onMounted(async () => {
     myWallet.value = wallet;
   }
   
-  // Если после проверки 2FA все еще не включен, перенаправляем на профиль
-  if (!walletStore.has2FA) {
-    walletStore.showMessage(t('require_2fa_for_transfer'), 'error');
-    setTimeout(() => {
-      walletStore.goBack();
-    }, 2000);
+  // Устанавливаем статус 2FA
+  is2FAEnabled.value = walletStore.has2FA;
+});
+
+// Следим за изменениями статуса 2FA
+watch(() => walletStore.has2FA, async (newValue) => {
+  is2FAEnabled.value = newValue;
+  
+  // Если 2FA включился, загружаем wallet
+  if (newValue && !myWallet.value) {
+    const wallet = await walletStore.getUserWallet();
+    if (wallet) {
+      myWallet.value = wallet;
+    }
   }
 });
 </script>
 
 <template>
-  <div>
+  <Require2FA v-if="!is2FAEnabled" />
+  
+  <div v-else>
     <transition name="fade-down" appear>
       <header class="header">
         <img

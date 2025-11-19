@@ -12,6 +12,7 @@ const step = ref(1); // 1 - показ QR, 2 - ввод кода
 const qrImage = ref('');
 const authKey = ref('');
 const verificationCode = ref('');
+const fromRoute = ref(router.currentRoute.value.query.from);
 
 const goBack = () => {
   router.push({ name: 'safety' });
@@ -48,9 +49,13 @@ const verifyCode = async () => {
   const success = await walletStore.verify2FACode(verificationCode.value);
   
   if (success) {
-    // Успешно - возвращаемся в профиль
+    // Успешно - возвращаемся на страницу, с которой пришли, или в профиль
     setTimeout(() => {
-      router.push({ name: 'profile' });
+      if (fromRoute.value === 'transfer') {
+        router.push({ name: 'transfer' });
+      } else {
+        router.push({ name: 'profile' });
+      }
     }, 1500);
   } else {
     verificationCode.value = '';

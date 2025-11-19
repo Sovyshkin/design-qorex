@@ -68,13 +68,6 @@ router.beforeEach(async (to, from, next) => {
       });
     }
 
-    // Проверяем 2FA для маршрутов, которые его требуют
-    if (requiresTwoFactor && !walletStore.has2FA) {
-      console.log('Router Guard: 2FA не включен, перенаправляем на профиль');
-      walletStore.isLoading = false;
-      return next({ name: 'profile' });
-    }
-
     // Блокируем доступ к созданию PIN-кода если он уже установлен
     if (to.name === 'createPin' && walletStore.hasPinCode()) {
       walletStore.isLoading = false;
