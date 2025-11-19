@@ -90,19 +90,18 @@ onMounted(async () => {
   <header class="header">
     <img
       class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
+      src="@/assets/safety.svg"
+      alt="Security"
       @click="goBack()"
     />
     <h1>{{ t('two_factor_auth') }}</h1>
     <div class="emp"></div>
   </header>
-
   <main class="container">
     <!-- Шаг 0: Требование включить 2FA -->
     <div v-if="step === 0" class="step-container">
       <div class="icon-container">
-        <img src="../../assets/safety.svg" alt="Security" class="security-icon" />
+        <img src="@/assets/safety.svg" alt="Security" class="security-icon" />
       </div>
       <h2>{{ t('setup_2fa') }}</h2>
       <p class="description">{{ t('setup_2fa_description') }}</p>
