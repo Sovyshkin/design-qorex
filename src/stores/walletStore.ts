@@ -412,13 +412,6 @@ const changeLang = async (lang: string) => {
       balance.value = response.data.balance || 0;
       pinCode.value = response.data.pincode;
       
-      // Отладочная информация при загрузке PIN
-        pin_code: response.data.pincode,
-        pin_code_type: typeof response.data.pincode,
-        boolpin: response.data.boolpin,
-        boolpin_type: typeof response.data.boolpin
-      });
-      
       // Устанавливаем состояние активности пин-кода на основе поля boolpin
       codePasswordActive.value = !!response.data.boolpin;
       
