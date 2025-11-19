@@ -415,12 +415,12 @@ const changeLang = async (lang: string) => {
       
       user.value = response.data;
       balance.value = response.data.balance || 0;
-      pinCode.value = response.data.pin_code;
+      pinCode.value = response.data.pincode;
       
       // Отладочная информация при загрузке PIN
       console.log('PIN загружен из сервера:', {
-        pin_code: response.data.pin_code,
-        pin_code_type: typeof response.data.pin_code,
+        pin_code: response.data.pincode,
+        pin_code_type: typeof response.data.pincode,
         boolpin: response.data.boolpin,
         boolpin_type: typeof response.data.boolpin
       });
