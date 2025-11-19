@@ -343,4 +343,10 @@ onMounted(async () => {
   margin: 0;
   line-height: 1.4;
 }
+
+/* Добавляем прокрутку для основного контейнера */
+.container {
+  overflow-y: auto;
+  max-height: 100vh;
+}
 </style>
