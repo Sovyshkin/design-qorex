@@ -938,6 +938,7 @@ const changeLang = async (lang: string) => {
     referalId,
     showMessage,
     userWallet,
-    has2FA
+    has2FA,
+    isPinRequired
   };
 });
