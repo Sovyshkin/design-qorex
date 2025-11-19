@@ -13,6 +13,7 @@ const recipientWallet = ref("");
 const myWallet = ref("");
 const twoFactorCode = ref("");
 const twoFactorKey = ref("");
+const isTwoFactorSetupComplete = ref(false); // Новое состояние для подтверждения успешного подключения 2FA
 
 const isFormValid = computed(() => {
   return amount.value && 
@@ -45,6 +46,13 @@ const goToTwoFactorSetup = () => {
   router.push({ name: 'twoFactorAuth', query: { from: 'transfer' } });
 };
 
+const verifyTwoFactorSetup = async () => {
+  const success = await walletStore.check2FAStatus();
+  if (success) {
+    isTwoFactorSetupComplete.value = true;
+  }
+};
+
 onMounted(async () => {
   // Получаем номер кошелька пользователя с проверкой 2FA
   const result = await walletStore.getUserWalletWith2FACheck();
@@ -67,6 +75,10 @@ watch(() => walletStore.has2FA, async (newValue) => {
       myWallet.value = wallet;
     }
   }
+
+  if (newValue) {
+    verifyTwoFactorSetup();
+  }
 });
 </script>
 
@@ -86,7 +98,7 @@ watch(() => walletStore.has2FA, async (newValue) => {
   </div>
 
   <!-- Показываем страницу подключения 2FA -->
-  <div v-else-if="twoFactorKey" class="two-factor-setup">
+  <div v-else-if="twoFactorKey && !isTwoFactorSetupComplete" class="two-factor-setup">
     <div class="icon-container">
       <img src="/assets/safety.svg" alt="Security" class="security-icon" />
     </div>
@@ -108,8 +120,8 @@ watch(() => walletStore.has2FA, async (newValue) => {
     </button>
   </div>
 
-  <!-- Показываем форму перевода, если 2FA включен -->
-  <div v-else>
+  <!-- Показываем форму перевода, если 2FA успешно подключен -->
+  <div v-else-if="isTwoFactorSetupComplete">
     <transition name="fade-down" appear>
       <header class="header">
         <img
