@@ -810,6 +810,11 @@ const changeLang = async (lang: string) => {
         return await getUserWallet();
       }
       
+      // Если есть ключ, возвращаем его для отображения
+      if (faResponse.data && faResponse.data.key) {
+        return { key: faResponse.data.key };
+      }
+      
       return null;
     } catch (err) {
       console.error('getUserWalletWith2FACheck error:', err);

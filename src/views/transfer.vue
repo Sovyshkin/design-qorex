@@ -3,13 +3,16 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted, watch } from "vue";
 import Require2FA from '@/components/Require2FA.vue';
+import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
+const router = useRouter();
 const amount = ref("");
 const recipientWallet = ref("");
 const myWallet = ref("");
 const twoFactorCode = ref("");
+const twoFactorKey = ref("");
 
 const isFormValid = computed(() => {
   return amount.value && 
@@ -31,18 +34,27 @@ const handleTransfer = async () => {
   await walletStore.transferFunds(recipientWallet.value, amount.value, twoFactorCode.value);
 };
 
-const copyWallet = () => {
-  if (myWallet.value) {
-    navigator.clipboard.writeText(myWallet.value);
-    walletStore.showMessage(t('copied'), 'success', 1500);
+const copyKey = () => {
+  if (twoFactorKey.value) {
+    navigator.clipboard.writeText(twoFactorKey.value);
+    walletStore.showMessage(t('key_copied'), 'success', 1500);
   }
+};
+
+const goToTwoFactorSetup = () => {
+  router.push({ name: 'twoFactorAuth', query: { from: 'transfer' } });
 };
 
 onMounted(async () => {
   // Получаем номер кошелька пользователя с проверкой 2FA
-  const wallet = await walletStore.getUserWalletWith2FACheck();
-  if (wallet) {
-    myWallet.value = wallet;
+  const result = await walletStore.getUserWalletWith2FACheck();
+  
+  if (result && typeof result === 'string') {
+    // Это wallet
+    myWallet.value = result;
+  } else if (result && result.key) {
+    // Это ключ 2FA
+    twoFactorKey.value = result.key;
   }
 });
 
@@ -59,8 +71,33 @@ watch(() => walletStore.has2FA, async (newValue) => {
 </script>
 
 <template>
-  <Require2FA v-if="!walletStore.has2FA" />
+  <!-- Показываем ключ 2FA, если он есть -->
+  <div v-if="twoFactorKey" class="two-factor-setup">
+    <div class="icon-container">
+      <img src="/assets/safety.svg" alt="Security" class="security-icon" />
+    </div>
+    
+    <h2>{{ t('setup_2fa') }}</h2>
+    <p class="description">{{ t('setup_2fa_description') }}</p>
+    
+    <div class="key-section">
+      <h4>{{ t('two_factor_key') }}</h4>
+      <div class="key-container" @click="copyKey">
+        <span class="key-text">{{ twoFactorKey }}</span>
+        <img src="../assets/copy.svg" alt="copy" class="copy-icon" />
+      </div>
+      <p class="hint">{{ t('click_to_copy_key') }}</p>
+    </div>
+    
+    <button class="btn-primary" @click="goToTwoFactorSetup">
+      {{ t('setup_2fa_button') }}
+    </button>
+  </div>
   
+  <!-- Показываем Require2FA, если 2FA не включен и нет ключа -->
+  <Require2FA v-else-if="!walletStore.has2FA" />
+  
+  <!-- Показываем форму перевода, если 2FA включен -->
   <div v-else>
     <transition name="fade-down" appear>
       <header class="header">
@@ -401,6 +438,113 @@ select::placeholder {
 .slide-up-enter-from {
   opacity: 0;
   transform: translateY(60px);
+}
+
+/* Стили для настройки 2FA */
+.two-factor-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 160px);
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.two-factor-setup .icon-container {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 24px;
+}
+
+.two-factor-setup .security-icon {
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+
+.two-factor-setup h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #141414;
+  margin: 0 0 12px 0;
+}
+
+.two-factor-setup .description {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.key-section {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 24px;
+}
+
+.key-section h4 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #141414;
+  margin: 0 0 12px 0;
+}
+
+.key-container {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.key-container:hover {
+  border-color: #deec51;
+  background-color: #fff;
+}
+
+.key-text {
+  font-family: monospace;
+  font-size: 14px;
+  color: #141414;
+  word-break: break-all;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.key-container .copy-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.two-factor-setup .btn-primary {
+  width: 100%;
+  max-width: 300px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 16px;
+  color: #141414;
+  background-color: #deec51;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.two-factor-setup .btn-primary:hover {
+  opacity: 0.9;
 }
 
 /* Дополнительные эффекты */
