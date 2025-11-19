@@ -2,7 +2,6 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted } from "vue";
-import Require2FA from '@/components/Require2FA.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -43,13 +42,19 @@ onMounted(async () => {
   if (wallet) {
     myWallet.value = wallet;
   }
+  
+  // Если после проверки 2FA все еще не включен, перенаправляем на профиль
+  if (!walletStore.has2FA) {
+    walletStore.showMessage(t('require_2fa_for_transfer'), 'error');
+    setTimeout(() => {
+      walletStore.goBack();
+    }, 2000);
+  }
 });
 </script>
 
 <template>
-  <Require2FA v-if="!walletStore.has2FA" />
-  
-  <div v-else>
+  <div>
     <transition name="fade-down" appear>
       <header class="header">
         <img
