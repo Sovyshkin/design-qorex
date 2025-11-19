@@ -30,6 +30,14 @@ const initialize2FA = async () => {
   }
 };
 
+
+const copyKey = () => {
+  if (authKey.value) {
+    navigator.clipboard.writeText(authKey.value);
+    walletStore.showMessage(t('copied'), 'success', 1500);
+  }
+};
+
 const openAuthenticatorApp = () => {
   if (authKey.value) {
     window.open(authKey.value, '_blank');
@@ -88,8 +96,9 @@ onMounted(async () => {
     <div class="emp"></div>
   </header>
 
+
   <main class="container">
-    <!-- Шаг 1: Показ QR кода -->
+    <!-- Шаг 1: Показ QR кода и ключа -->
     <div v-if="step === 1" class="step-container">
       <div class="instructions">
         <h2>{{ t('setup_2fa') }}</h2>
@@ -101,24 +110,34 @@ onMounted(async () => {
         </ol>
       </div>
 
-      <div class="qr-container" v-if="qrImage">
-        <img :src="`data:image/png;base64,${qrImage}`" alt="QR Code" class="qr-code" />
-      </div>
-
-      <div class="loader" v-else>
-        <p>{{ t('loading') }}...</p>
+      <div class="qr-block">
+        <div class="qr-container" v-if="qrImage">
+          <img :src="`data:image/png;base64,${qrImage}`" alt="QR Code" class="qr-code" />
+        </div>
+        <div class="loader" v-else>
+          <p>{{ t('loading') }}...</p>
+        </div>
+        <div class="key-section" v-if="authKey">
+          <label class="key-label">{{ t('your_code') }}</label>
+          <div class="key-container" @click="copyKey">
+            <span class="key-text">{{ authKey }}</span>
+            <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
+          </div>
+          <p class="hint">{{ t('tap_to_copy_wallet') }}</p>
+        </div>
       </div>
 
       <button 
-        class="btn secondary-btn" 
+        class="btn" 
         @click="openAuthenticatorApp"
         v-if="authKey"
+        style="margin-bottom: 12px;"
       >
         {{ t('open_authenticator') }}
       </button>
 
       <button 
-        class="btn" 
+        class="btn btn-primary" 
         @click="goToVerification"
         :disabled="!qrImage"
       >
@@ -206,217 +225,14 @@ onMounted(async () => {
   width: 32px;
 }
 
-h1 {
-  color: #141414;
-  font-size: 18px;
-}
-
-.container {
+.qr-block {
   display: flex;
   flex-direction: column;
-  padding: 0 20px 120px 20px;
-  overflow-y: auto;
-}
-
-.step-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.instructions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.instructions h2 {
-  font-size: 20px;
-  font-weight: 500;
-  color: #141414;
-  margin: 0;
-}
-
-.instructions p {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.instructions ol {
-  margin: 8px 0;
-  padding-left: 20px;
-}
-
-.instructions li {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-
-.qr-container {
-  display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 24px;
-  background-color: #fff;
-  border-radius: 16px;
-  margin: 20px 0;
-}
-
-.qr-code {
-  width: 250px;
-  height: 250px;
-  border-radius: 8px;
-}
-
-.loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 60px 24px;
-}
-
-.loader p {
-  font-size: 14px;
-  color: #666;
-}
-
-.code-input-container {
-  margin: 20px 0;
-}
-
-.code-input {
-  width: 100%;
-  border: 2px solid #141414;
-  border-radius: 12px;
-  padding: 20px;
-  font-size: 24px;
-  text-align: center;
-  letter-spacing: 8px;
-  font-weight: 500;
-  background: #fff;
-  outline: none;
-}
-
-.code-input::placeholder {
-  letter-spacing: normal;
-  font-size: 14px;
-  color: #a5a5a5;
-}
-
-.btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px;
-  border-radius: 12px;
-  font-weight: 500;
-  font-size: 16px;
-  color: #141414;
-  background-color: #deec51;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  opacity: 0.9;
-}
-
-.btn.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.secondary-btn {
-  background-color: #fff;
-  border: 2px solid #141414;
-  color: #141414;
-}
-
-.arrow {
-  height: 32px;
-  width: 32px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.arrow:hover {
-  transform: translateX(-3px);
-}
-
-/* Стили для статуса включенного 2FA */
-.enabled-container {
-  text-align: center;
-}
-
-.status-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 16px;
-  background-color: #f0f9ff;
-  border: 2px solid #deec51;
-  border-radius: 16px;
-  padding: 24px;
-  margin: 20px 0;
+  margin-bottom: 24px;
 }
 
-.status-icon {
-  width: 48px;
-  height: 48px;
-  background-color: #deec51;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.check-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.status-content {
-  text-align: left;
-  flex: 1;
-}
-
-.status-content h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #141414;
-  margin: 0 0 8px 0;
-}
-
-.status-content p {
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.info-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 20px 0;
-}
 
 .info-icon {
   width: 24px;
