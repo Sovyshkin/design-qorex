@@ -434,6 +434,11 @@ const changeLang = async (lang: string) => {
       // Загружаем статус 2FA из ответа сервера
       has2FA.value = !!response.data.two_factor_enabled || !!response.data.tfa_enabled || !!response.data.has_2fa;
       
+      // Если 2FA включен, загружаем wallet поле
+      if (has2FA.value && response.data.wallet) {
+        userWallet.value = response.data.wallet;
+      }
+      
       // Синхронизируем localStorage с серверными данными
       syncSettingsWithLocalStorage();
       

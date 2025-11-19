@@ -161,10 +161,41 @@ onMounted(async () => {
   font-size: 14px;
 }
 
+.pin-code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 30px;
+}
+
+.pin-dots {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.pin-dot.active {
+  background-color: #deec51;
+  border-color: #deec51;
+}
+
 .pin-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
+  max-width: 280px;
+  width: 100%;
 }
 
 .pin-button {
@@ -181,6 +212,7 @@ onMounted(async () => {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .pin-button:active,
@@ -214,6 +246,7 @@ onMounted(async () => {
 
 .delete-button {
   background-color: #f5f5f5;
+  color: #666;
 }
 
 .delete-icon {

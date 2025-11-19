@@ -21,8 +21,11 @@ const publicRoutes = ['enterPin', 'createPin'];
 // Маршруты, которые требуют проверки PIN перед доступом
 const sensitiveRoutes = ['scanner', 'main', 'profile', 'history', 'deposit', 'withdraw', 'transfer'];
 
+// Маршруты, которые требуют включенного 2FA
+const twoFactorRequiredRoutes = ['transfer'];
+
 router.beforeEach(async (to, from, next) => {
-  walletStore.isLoading = true;
+  walletStore.isLoading = false;
 
   try {
     // Проверяем, загружены ли данные пользователя
@@ -37,6 +40,7 @@ router.beforeEach(async (to, from, next) => {
     // Проверяем, является ли маршрут публичным
     const isPublicRoute = publicRoutes.includes(to.name);
     const isSensitiveRoute = sensitiveRoutes.includes(to.name);
+    const requiresTwoFactor = twoFactorRequiredRoutes.includes(to.name);
 
     // Проверка PIN для всех основных страниц приложения
     console.log('Router Guard PIN Check:', {
@@ -62,6 +66,13 @@ router.beforeEach(async (to, from, next) => {
         name: 'enterPin',
         query: { returnTo: to.fullPath }
       });
+    }
+
+    // Проверяем 2FA для маршрутов, которые его требуют
+    if (requiresTwoFactor && !walletStore.has2FA) {
+      console.log('Router Guard: 2FA не включен, перенаправляем на профиль');
+      walletStore.isLoading = false;
+      return next({ name: 'profile' });
     }
 
     // Блокируем доступ к созданию PIN-кода если он уже установлен
