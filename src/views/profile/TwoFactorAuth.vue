@@ -91,7 +91,12 @@ onMounted(async () => {
 
 <template>
   <header class="header">
-    <div class="emp"></div>
+    <img
+      class="arrow"
+      src="../../assets/arrow-left.svg"
+      alt=""
+      @click="goBack()"
+    />
     <h1>{{ t('two_factor_auth') }}</h1>
     <div class="emp"></div>
   </header>
@@ -343,6 +348,5 @@ onMounted(async () => {
 .container {
   overflow-y: auto;
   max-height: 100vh;
-  padding-bottom: 50px;
 }
 </style>

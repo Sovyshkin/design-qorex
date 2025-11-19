@@ -71,15 +71,29 @@ watch(() => walletStore.has2FA, async (newValue) => {
 </script>
 
 <template>
-  <!-- Показываем ключ 2FA, если он есть -->
-  <div v-if="twoFactorKey" class="two-factor-setup">
+  <!-- Показываем окно с требованием включить 2FA -->
+  <div v-if="!walletStore.has2FA && !twoFactorKey" class="require-2fa">
     <div class="icon-container">
       <img src="/assets/safety.svg" alt="Security" class="security-icon" />
     </div>
-    
+
     <h2>{{ t('setup_2fa') }}</h2>
     <p class="description">{{ t('setup_2fa_description') }}</p>
-    
+
+    <button class="btn-primary" @click="goToTwoFactorSetup">
+      {{ t('setup_2fa_button') }}
+    </button>
+  </div>
+
+  <!-- Показываем страницу подключения 2FA -->
+  <div v-else-if="twoFactorKey" class="two-factor-setup">
+    <div class="icon-container">
+      <img src="/assets/safety.svg" alt="Security" class="security-icon" />
+    </div>
+
+    <h2>{{ t('setup_2fa') }}</h2>
+    <p class="description">{{ t('setup_2fa_description') }}</p>
+
     <div class="key-section">
       <h4>{{ t('two_factor_key') }}</h4>
       <div class="key-container" @click="copyKey">
@@ -88,15 +102,12 @@ watch(() => walletStore.has2FA, async (newValue) => {
       </div>
       <p class="hint">{{ t('click_to_copy_key') }}</p>
     </div>
-    
+
     <button class="btn-primary" @click="goToTwoFactorSetup">
       {{ t('setup_2fa_button') }}
     </button>
   </div>
-  
-  <!-- Показываем Require2FA, если 2FA не включен и нет ключа -->
-  <Require2FA v-else-if="!walletStore.has2FA" />
-  
+
   <!-- Показываем форму перевода, если 2FA включен -->
   <div v-else>
     <transition name="fade-down" appear>
@@ -111,74 +122,74 @@ watch(() => walletStore.has2FA, async (newValue) => {
         <div class="emp"></div>
       </header>
     </transition>
-  <main class="container">
-    <!-- Мой кошелек -->
-    <div class="my-wallet-section">
-      <div class="section-header">
-        <h3>{{ t('my_wallet') }}</h3>
-      </div>
-      <div class="wallet-card" @click="copyWallet">
-        <div class="wallet-info">
-          <span class="wallet-label">{{ t('wallet_number') }}</span>
-          <span class="wallet-number">{{ myWallet || t('loading') }}</span>
+    <main class="container">
+      <!-- Мой кошелек -->
+      <div class="my-wallet-section">
+        <div class="section-header">
+          <h3>{{ t('my_wallet') }}</h3>
         </div>
-        <img src="../assets/copy.svg" alt="copy" class="copy-icon" />
-      </div>
-    </div>
-
-    <!-- Форма перевода -->
-    <div class="form-container">
-      <h3>{{ t('transfer_to_user') }}</h3>
-      
-      <input 
-        type="text" 
-        :placeholder="t('recipient_wallet_number')" 
-        v-model="recipientWallet"
-        required
-      />
-
-      <div class="group">
-        <input 
-          type="number" 
-          :placeholder="t('select_amount')" 
-          v-model="amount"
-        />
-        <span class="group-item">USDT</span>
+        <div class="wallet-card" @click="copyWallet">
+          <div class="wallet-info">
+            <span class="wallet-label">{{ t('wallet_number') }}</span>
+            <span class="wallet-number">{{ myWallet || t('loading') }}</span>
+          </div>
+          <img src="../assets/copy.svg" alt="copy" class="copy-icon" />
+        </div>
       </div>
 
-      <div class="balance-info">
-        <span>{{ t('available_balance') }}:</span>
-        <span class="balance-value">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
-      </div>
+      <!-- Форма перевода -->
+      <div class="form-container">
+        <h3>{{ t('transfer_to_user') }}</h3>
 
-      <div class="code-input-section">
-        <h4>{{ t('enter_2fa_code') }}</h4>
         <input 
           type="text" 
-          v-model="twoFactorCode"
-          :placeholder="t('enter_6_digit_code')"
-          maxlength="6"
-          pattern="[0-9]*"
-          inputmode="numeric"
-          class="code-input"
+          :placeholder="t('recipient_wallet_number')" 
+          v-model="recipientWallet"
+          required
         />
+
+        <div class="group">
+          <input 
+            type="number" 
+            :placeholder="t('select_amount')" 
+            v-model="amount"
+          />
+          <span class="group-item">USDT</span>
+        </div>
+
+        <div class="balance-info">
+          <span>{{ t('available_balance') }}:</span>
+          <span class="balance-value">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
+        </div>
+
+        <div class="code-input-section">
+          <h4>{{ t('enter_2fa_code') }}</h4>
+          <input 
+            type="text" 
+            v-model="twoFactorCode"
+            :placeholder="t('enter_6_digit_code')"
+            maxlength="6"
+            pattern="[0-9]*"
+            inputmode="numeric"
+            class="code-input"
+          />
+        </div>
+
+        <div class="info-block">
+          <img src="/assets/info.svg" alt="info" class="info-icon" />
+          <p>{{ t('transfer_2fa_required') }}</p>
+        </div>
       </div>
 
-      <div class="info-block">
-        <img src="/assets/info.svg" alt="info" class="info-icon" />
-        <p>{{ t('transfer_2fa_required') }}</p>
-      </div>
-    </div>
-    
-    <button 
-      class="btn" 
-      :class="{ disabled: !isFormValid }"
-      :disabled="!isFormValid"
-      @click="handleTransfer()"
-    >
-      {{ t("transfer_funds") }}
-    </button>
-  </main>
+      <button 
+        class="btn" 
+        :class="{ disabled: !isFormValid }"
+        :disabled="!isFormValid"
+        @click="handleTransfer()"
+      >
+        {{ t("transfer_funds") }}
+      </button>
+    </main>
   </div>
 </template>
 
