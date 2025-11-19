@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useWalletStore } from '@/stores/walletStore.ts';
 import { useRouter } from 'vue-router';
@@ -10,6 +10,12 @@ const router = useRouter();
 
 const step = ref(1); // 1 - показ QR, 2 - ввод кода
 const qrImage = ref('');
+// Корректный src для QR-кода
+const qrSrc = computed(() => {
+  if (!qrImage.value) return '';
+  if (qrImage.value.startsWith('data:image')) return qrImage.value;
+  return `data:image/png;base64,${qrImage.value}`;
+});
 const authKey = ref('');
 const verificationCode = ref('');
 const fromRoute = ref(router.currentRoute.value.query.from);
@@ -20,9 +26,9 @@ const goBack = () => {
 
 const initialize2FA = async () => {
   const result = await walletStore.enable2FA();
-  
   if (result.success) {
     qrImage.value = result.qrImage;
+    console.log('QR image from backend:', qrImage.value);
     authKey.value = result.key;
   } else {
     // Если не удалось получить QR код, возвращаемся назад
@@ -112,7 +118,7 @@ onMounted(async () => {
 
       <div class="qr-block">
         <div class="qr-container" v-if="qrImage">
-          <img :src="`data:image/png;base64,${qrImage}`" alt="QR Code" class="qr-code" />
+          <img :src="qrSrc" alt="QR Code" class="qr-code" />
         </div>
         <div class="loader" v-else>
           <p>{{ t('loading') }}...</p>
