@@ -801,6 +801,8 @@ const changeLang = async (lang: string) => {
       
       // Если detail: 'Уже подключено', то получаем wallet через take_user_w
       if (faResponse.data && faResponse.data.detail === 'Уже подключено') {
+        // Обновляем статус 2FA, так как он уже подключен
+        has2FA.value = true;
         return await getUserWallet();
       }
       
