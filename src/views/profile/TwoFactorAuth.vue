@@ -28,7 +28,6 @@ const initialize2FA = async () => {
   const result = await walletStore.enable2FA();
   if (result.success) {
     qrImage.value = result.qrImage;
-    console.log('QR image from backend:', qrImage.value);
     authKey.value = result.key;
   } else {
     // Если не удалось получить QR код, возвращаемся назад

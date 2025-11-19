@@ -69,7 +69,6 @@ export const useWalletStore = defineStore("wallet", () => {
         }
       }
     } catch (err) {
-      console.error('Failed to update balance visibility on server:', err);
       // В случае ошибки возвращаем предыдущее состояние
       hideBalanceActive.value = !val;
     }
@@ -94,7 +93,6 @@ export const useWalletStore = defineStore("wallet", () => {
         }, 2500);
       }
     } catch (error) {
-      console.error('Failed to set PIN code:', error);
       message_status.value = "error";
     }
   };
@@ -115,7 +113,6 @@ export const useWalletStore = defineStore("wallet", () => {
         }, 2500);
       }
     } catch (error) {
-      console.error('Ошибка отключения PIN-кода:', error);
       message_status.value = "error";
       setTimeout(() => {
         message_status.value = "";
@@ -142,12 +139,10 @@ const initializePinState = () => {
 
 const verifyPin = (enteredPin: string) => {
   if (!codePasswordActive.value) {
-    console.log('PIN не активен на сервере');
     return false;
   }
 
   if (!pinCode.value) {
-    console.warn('PIN-код не загружен из сервера');
     return false;
   }
 
@@ -418,7 +413,6 @@ const changeLang = async (lang: string) => {
       pinCode.value = response.data.pincode;
       
       // Отладочная информация при загрузке PIN
-      console.log('PIN загружен из сервера:', {
         pin_code: response.data.pincode,
         pin_code_type: typeof response.data.pincode,
         boolpin: response.data.boolpin,
@@ -800,13 +794,11 @@ const changeLang = async (lang: string) => {
       
       // Сначала отправляем запрос на fa_take
       let faResponse = await axios.post(`/fa_take?tg_id=${tgId}`);
-      console.log('fa_take response:', faResponse.data);
       
       // Если detail: 'Уже подключено', то получаем wallet через take_user_w
       if (faResponse.data && faResponse.data.detail === 'Уже подключено') {
         // Обновляем статус 2FA, так как он уже подключен
         has2FA.value = true;
-        console.log('has2FA set to true');
         return await getUserWallet();
       }
       
@@ -817,7 +809,6 @@ const changeLang = async (lang: string) => {
       
       return null;
     } catch (err) {
-      console.error('getUserWalletWith2FACheck error:', err);
       showMessage(t('error_occurred'), 'error');
       return null;
     }
