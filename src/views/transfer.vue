@@ -10,14 +10,13 @@ const amount = ref("");
 const recipientWallet = ref("");
 const myWallet = ref("");
 const twoFactorCode = ref("");
-const is2FAEnabled = ref(false);
 
 const isFormValid = computed(() => {
   return amount.value && 
          recipientWallet.value && 
          parseFloat(amount.value) > 0 &&
          twoFactorCode.value.length === 6 &&
-         is2FAEnabled.value;
+         walletStore.has2FA;
 });
 
 const handleTransfer = async () => {
@@ -45,15 +44,10 @@ onMounted(async () => {
   if (wallet) {
     myWallet.value = wallet;
   }
-  
-  // Устанавливаем статус 2FA
-  is2FAEnabled.value = walletStore.has2FA;
 });
 
 // Следим за изменениями статуса 2FA
 watch(() => walletStore.has2FA, async (newValue) => {
-  is2FAEnabled.value = newValue;
-  
   // Если 2FA включился, загружаем wallet
   if (newValue && !myWallet.value) {
     const wallet = await walletStore.getUserWallet();
@@ -65,7 +59,7 @@ watch(() => walletStore.has2FA, async (newValue) => {
 </script>
 
 <template>
-  <Require2FA v-if="!is2FAEnabled" />
+  <Require2FA v-if="!walletStore.has2FA" />
   
   <div v-else>
     <transition name="fade-down" appear>

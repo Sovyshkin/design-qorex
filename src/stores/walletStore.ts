@@ -431,8 +431,10 @@ const changeLang = async (lang: string) => {
       // Устанавливаем состояние скрытия баланса на основе поля visibility_balance
       hideBalanceActive.value = !!response.data.visibility_balance;
       
-      // Загружаем статус 2FA из ответа сервера
-      has2FA.value = !!response.data.two_factor_enabled || !!response.data.tfa_enabled || !!response.data.has_2fa;
+      // Загружаем статус 2FA из ответа сервера, но только если он еще не установлен
+      if (!has2FA.value) {
+        has2FA.value = !!response.data.two_factor_enabled || !!response.data.tfa_enabled || !!response.data.has_2fa;
+      }
       
       // Если 2FA включен, загружаем wallet поле
       if (has2FA.value && response.data.wallet) {
@@ -798,16 +800,19 @@ const changeLang = async (lang: string) => {
       
       // Сначала отправляем запрос на fa_take
       let faResponse = await axios.post(`/fa_take?tg_id=${tgId}`);
+      console.log('fa_take response:', faResponse.data);
       
       // Если detail: 'Уже подключено', то получаем wallet через take_user_w
       if (faResponse.data && faResponse.data.detail === 'Уже подключено') {
         // Обновляем статус 2FA, так как он уже подключен
         has2FA.value = true;
+        console.log('has2FA set to true');
         return await getUserWallet();
       }
       
       return null;
     } catch (err) {
+      console.error('getUserWalletWith2FACheck error:', err);
       showMessage(t('error_occurred'), 'error');
       return null;
     }
