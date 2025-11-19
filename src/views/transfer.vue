@@ -38,8 +38,8 @@ const copyWallet = () => {
 };
 
 onMounted(async () => {
-  // Получаем номер кошелька пользователя
-  const wallet = await walletStore.getUserWallet();
+  // Получаем номер кошелька пользователя с проверкой 2FA
+  const wallet = await walletStore.getUserWalletWith2FACheck();
   if (wallet) {
     myWallet.value = wallet;
   }

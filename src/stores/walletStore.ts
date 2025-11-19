@@ -792,6 +792,25 @@ const changeLang = async (lang: string) => {
     }
   };
 
+  const getUserWalletWith2FACheck = async () => {
+    try {
+      const tgId = String(userTg.value.id);
+      
+      // Сначала отправляем запрос на fa_take
+      let faResponse = await axios.post(`/fa_take?tg_id=${tgId}`);
+      
+      // Если detail: 'Уже подключено', то получаем wallet через take_user_w
+      if (faResponse.data && faResponse.data.detail === 'Уже подключено') {
+        return await getUserWallet();
+      }
+      
+      return null;
+    } catch (err) {
+      showMessage(t('error_occurred'), 'error');
+      return null;
+    }
+  };
+
   const transferFunds = async (recipientWallet: string, amount: string, twoFactorCode: string) => {
     // Проверяем, включен ли 2FA
     if (!has2FA.value) {
@@ -869,6 +888,7 @@ const changeLang = async (lang: string) => {
     verify2FACode,
     check2FAStatus,
     getUserWallet,
+    getUserWalletWith2FACheck,
     transferFunds,
     getRub,
     goTransaction,
