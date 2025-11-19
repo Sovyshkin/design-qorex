@@ -348,5 +348,6 @@ onMounted(async () => {
 .container {
   overflow-y: auto;
   max-height: 100vh;
+  padding-bottom: 20px; /* Отступ для удобной прокрутки */
 }
 </style>

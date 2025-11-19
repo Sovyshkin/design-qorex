@@ -54,28 +54,12 @@ const verifyTwoFactorSetup = async () => {
 };
 
 onMounted(async () => {
-  // Получаем номер кошелька пользователя с проверкой 2FA
-  const result = await walletStore.getUserWalletWith2FACheck();
-  
-  if (result && typeof result === 'string') {
-    // Это wallet
-    myWallet.value = result;
-  } else if (result && result.key) {
-    // Это ключ 2FA
-    twoFactorKey.value = result.key;
+  if (!walletStore.has2FA) {
+    twoFactorKey.value = null; // Убедимся, что ключ 2FA не отображается до включения
   }
 });
 
-// Следим за изменениями статуса 2FA
-watch(() => walletStore.has2FA, async (newValue) => {
-  // Если 2FA включился, загружаем wallet
-  if (newValue && !myWallet.value) {
-    const wallet = await walletStore.getUserWallet();
-    if (wallet) {
-      myWallet.value = wallet;
-    }
-  }
-
+watch(() => walletStore.has2FA, (newValue) => {
   if (newValue) {
     verifyTwoFactorSetup();
   }
@@ -84,7 +68,7 @@ watch(() => walletStore.has2FA, async (newValue) => {
 
 <template>
   <!-- Показываем окно с требованием включить 2FA -->
-  <div v-if="!walletStore.has2FA && !twoFactorKey" class="require-2fa">
+  <div v-if="!walletStore.has2FA" class="require-2fa">
     <div class="icon-container">
       <img src="/assets/safety.svg" alt="Security" class="security-icon" />
     </div>
