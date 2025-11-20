@@ -68,18 +68,7 @@ watch(() => walletStore.has2FA, (newValue) => {
 
 <template>
   <!-- Показываем окно с требованием включить 2FA -->
-  <div v-if="!walletStore.has2FA" class="require-2fa">
-    <div class="icon-container">
-      <img src="/assets/safety.svg" alt="Security" class="security-icon" />
-    </div>
-
-    <h2>{{ t('setup_2fa') }}</h2>
-    <p class="description">{{ t('setup_2fa_description') }}</p>
-
-    <button class="btn-primary" @click="goToTwoFactorSetup">
-      {{ t('setup_2fa_button') }}
-    </button>
-  </div>
+  <Require2FA v-if="!walletStore.has2FA" />
 
   <!-- Показываем страницу подключения 2FA -->
   <div v-else-if="twoFactorKey && !isTwoFactorSetupComplete" class="two-factor-setup">
@@ -345,7 +334,7 @@ select::placeholder {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
   border-radius: 8px;
   font-size: 14px;
 }

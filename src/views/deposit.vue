@@ -14,17 +14,23 @@ const networks = [
 ];
 
 const isCreatingInvoice = ref(false);
+const isDisabled = ref(false);
 
 const createInvoice = async () => {
-  if (isCreatingInvoice.value) return; // Предотвращаем повторные нажатия
-  
+  if (isDisabled.value) return;
+
+  isDisabled.value = true;
+  isCreatingInvoice.value = true;
+
   try {
-    isCreatingInvoice.value = true;
     await walletStore.createInvoice(selectedNetwork.value);
   } catch (error) {
     console.error('Error creating invoice:', error);
   } finally {
     isCreatingInvoice.value = false;
+    setTimeout(() => {
+      isDisabled.value = false;
+    }, 60000);
   }
 };
 </script>
@@ -75,13 +81,13 @@ const createInvoice = async () => {
     
     <button 
       class="btn" 
-      :class="{ loading: isCreatingInvoice }"
-      :disabled="isCreatingInvoice"
+      :class="{ loading: isDisabled }"
+      :disabled="isDisabled"
       @click="createInvoice()"
     >
       <div class="btn-content">
-        <div class="loader" v-if="isCreatingInvoice"></div>
-        <span v-if="!isCreatingInvoice">{{ t("continue") }}</span>
+        <div class="loader" v-if="isDisabled"></div>
+        <span v-if="!isDisabled">{{ t("continue") }}</span>
         <span v-else>{{ t("processing") }}</span>
       </div>
     </button>
