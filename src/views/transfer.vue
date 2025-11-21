@@ -106,28 +106,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Показываем страницу подключения 2FA, если в ответе есть ключ -->
-  <div v-if="twoFactorKey && !isTwoFactorSetupComplete" class="two-factor-setup">
-    <div class="icon-container">
-      <img src="/assets/safety.svg" alt="Security" class="security-icon" />
-    </div>
-
-    <h2>{{ t('setup_2fa') }}</h2>
-    <p class="description">{{ t('setup_2fa_description') }}</p>
-
-    <div class="key-section">
-      <h4>{{ t('two_factor_key') }}</h4>
-      <div class="key-container" @click="copyKey">
-        <span class="key-text">{{ twoFactorKey }}</span>
-        <img src="../assets/copy.svg" alt="copy" class="copy-icon" />
-      </div>
-      <p class="hint">{{ t('click_to_copy_key') }}</p>
-    </div>
-
-    <button class="btn-primary" @click="goToTwoFactorSetup">
-      {{ t('setup_2fa_button') }}
-    </button>
-  </div>
+  <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
+  <Require2FA v-if="twoFactorKey && !isTwoFactorSetupComplete" />
 
   <!-- Показываем форму перевода, если 2FA успешно подключен -->
   <div v-else-if="isTwoFactorSetupComplete">
