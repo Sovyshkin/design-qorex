@@ -65,10 +65,18 @@ const checkTwoFactorAccess = async () => {
     } else {
       // 2FA уже подключен или другой случай - разрешаем доступ к форме
       isTwoFactorSetupComplete.value = true;
+      // Загружаем кошелек пользователя
+      await walletStore.getUserWallet();
+      myWallet.value = walletStore.userWallet;
     }
   } catch (error) {
     // В случае ошибки пробуем проверить статус обычным способом
     await verifyTwoFactorSetup();
+    if (isTwoFactorSetupComplete.value) {
+      // Если 2FA настроен, загружаем кошелек
+      await walletStore.getUserWallet();
+      myWallet.value = walletStore.userWallet;
+    }
   }
 };
 
@@ -167,11 +175,6 @@ onMounted(async () => {
             inputmode="numeric"
             class="code-input"
           />
-        </div>
-
-        <div class="info-block">
-          <img src="/assets/info.svg" alt="info" class="info-icon" />
-          <p>{{ t('transfer_2fa_required') }}</p>
         </div>
       </div>
 
