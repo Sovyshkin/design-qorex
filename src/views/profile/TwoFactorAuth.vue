@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useWalletStore } from '@/stores/walletStore.ts';
 import { useRouter } from 'vue-router';
+import AppLoader from '@/components/AppLoader.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -10,6 +11,7 @@ const router = useRouter();
 
 const step = ref(1); // 1 - показ QR, 2 - ввод кода
 const qrImage = ref('');
+const loading = ref(true);
 // Корректный src для QR-кода
 const qrSrc = computed(() => {
   if (!qrImage.value) return '';
@@ -83,24 +85,23 @@ onMounted(async () => {
   } else {
     step.value = 3; // Если уже включено, показываем статус
   }
+  loading.value = false;
 });
 </script>
 
 <template>
   <header class="header">
-    <img
-      class="arrow"
-      src="@/assets/safety.svg"
-      alt="Security"
-      @click="goBack()"
-    />
+    <div class="emp"></div>
     <h1>{{ t('two_factor_auth') }}</h1>
     <div class="emp"></div>
   </header>
-  <main class="container">
+  <main v-if="!loading" class="container">
     <!-- Шаг 0: Требование включить 2FA -->
     <transition name="step-fade" appear>
       <div v-if="step === 0" class="step-container">
+        <div class="icon-container">
+          <img src="../../assets/safety.svg" alt="Security" class="security-icon" />
+        </div>
         <h2>{{ t('setup_2fa') }}</h2>
         <p class="description">{{ t('setup_2fa_description') }}</p>
         <button class="btn btn-primary" @click="step = 1">
@@ -211,6 +212,12 @@ onMounted(async () => {
       </div>
     </transition>
   </main>
+
+  <!-- Loading state -->
+  <div v-else class="loading-container">
+    <AppLoader />
+    <p class="loading-text">{{ t('loading') }}...</p>
+  </div>
 </template>
 
 <style scoped>
@@ -230,33 +237,102 @@ onMounted(async () => {
 .step-container {
   max-width: 420px;
   margin: 0 auto;
-  padding: 32px 16px 48px 16px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2);
+  padding: 32px 24px 48px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(222, 236, 81, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.step-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #deec51, #b8d43c, #deec51);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
 }
 
 .icon-container {
   width: 120px;
   height: 120px;
+  background: #deec51;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 24px;
+  box-shadow: 0 20px 40px rgba(222, 236, 81, 0.3), 0 0 0 8px rgba(222, 236, 81, 0.1);
+  animation: lockPulse 2s ease-in-out infinite;
 }
 
 .security-icon {
-  width: 100%;
-  height: 100%;
+  width: 60px;
+  height: 60px;
   opacity: 0.8;
 }
 
 .instructions {
   width: 100%;
   text-align: left;
+  background: rgba(248, 249, 250, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.instructions h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #141414;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, #141414, #333);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.instructions p {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.instructions li::marker {
+  color: #deec51;
+  font-weight: bold;
 }
 
 .description {
@@ -270,19 +346,43 @@ onMounted(async () => {
 .btn-primary {
   width: 100%;
   max-width: 300px;
-  padding: 14px 16px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 16px 20px;
+  border-radius: 16px;
+  font-weight: 600;
   font-size: 16px;
   color: #141414;
-  background-color: #deec51;
+  background: linear-gradient(135deg, #deec51, #b8d43c);
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(222, 236, 81, 0.3);
+  animation: fadeInUp 0.6s ease-out 0.8s both;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(222, 236, 81, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(-1px);
 }
 
 .btn {
@@ -347,6 +447,34 @@ onMounted(async () => {
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(222, 236, 81, 0.1);
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+  position: relative;
+}
+
+.qr-block::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, rgba(222, 236, 81, 0.3), rgba(184, 212, 60, 0.3));
+  border-radius: 22px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.qr-block:hover::before {
+  opacity: 1;
 }
 
 .qr-code {
@@ -354,9 +482,23 @@ onMounted(async () => {
   height: 180px;
   object-fit: contain;
   margin-bottom: 12px;
-  animation: fadeInUp 0.8s ease-out, pulse 3s infinite 1s;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  animation: fadeInUp 0.8s ease-out, gentlePulse 4s infinite 1s;
+  border-radius: 16px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(222, 236, 81, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.qr-code:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow:
+    0 16px 50px rgba(0, 0, 0, 0.2),
+    0 6px 20px rgba(222, 236, 81, 0.3);
 }
 
 .key-section {
@@ -372,21 +514,44 @@ onMounted(async () => {
 }
 
 .key-container {
-  background-color: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
+  background: rgba(248, 249, 250, 0.9);
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(233, 236, 239, 0.8);
+  border-radius: 16px;
   padding: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 8px;
+  animation: fadeInUp 0.6s ease-out 0.6s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.key-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(222, 236, 81, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.key-container:hover::before {
+  left: 100%;
 }
 
 .key-container:hover {
-  border-color: #deec51;
-  background-color: #fff;
+  border-color: rgba(222, 236, 81, 0.6);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 40px rgba(222, 236, 81, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .key-text {
@@ -443,10 +608,10 @@ onMounted(async () => {
 }
 
 .container {
-  overflow-y: auto;
-  max-height: 100vh;
-  padding-bottom: 20px;
-  background: linear-gradient(135deg, #f7f8fa 0%, #e9ecef 100%);
+  padding-bottom: 40px;
+  min-height: calc(100vh - 80px); /* Высота экрана минус высота навбара */
+  overflow-y: scroll; /* Добавляем прокрутку */
+  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
 }
 
 /* Стили для статуса включенного 2FA */
@@ -575,6 +740,17 @@ onMounted(async () => {
   }
 }
 
+@keyframes lockPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 20px 40px rgba(222, 236, 81, 0.3), 0 0 0 8px rgba(222, 236, 81, 0.1);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 25px 50px rgba(222, 236, 81, 0.4), 0 0 0 12px rgba(222, 236, 81, 0.15);
+  }
+}
+
 .qr-code {
   width: 180px;
   height: 180px;
@@ -602,5 +778,103 @@ onMounted(async () => {
   background-color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(222, 236, 81, 0.3);
+}
+
+/* Loading animation */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 24px;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid rgba(222, 236, 81, 0.1);
+  border-top: 4px solid #deec51;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite;
+}
+
+.spinner-ring:nth-child(2) {
+  animation-delay: 0.2s;
+  border-color: rgba(222, 236, 81, 0.2);
+  border-top-color: #deec51;
+}
+
+.spinner-ring:nth-child(3) {
+  animation-delay: 0.4s;
+  border-color: rgba(222, 236, 81, 0.3);
+  border-top-color: #deec51;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #666;
+  font-weight: 500;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      0 4px 16px rgba(222, 236, 81, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow:
+      0 16px 50px rgba(0, 0, 0, 0.2),
+      0 6px 20px rgba(222, 236, 81, 0.3);
+  }
+}
+
+/* Исправления для маленьких экранов */
+@media (max-height: 600px) {
+  .container {
+    padding-bottom: 100px; /* Дополнительный отступ для навбара на маленьких экранах */
+    min-height: calc(100vh - 100px);
+  }
 }
 </style>
