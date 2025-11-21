@@ -261,6 +261,10 @@ h1 {
   font-weight: 500;
   color: #141414;
   font-family: monospace;
+  word-break: break-all;
+  word-wrap: break-word;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .copy-icon {
