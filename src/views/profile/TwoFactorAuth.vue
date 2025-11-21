@@ -21,6 +21,7 @@ const qrSrc = computed(() => {
 const authKey = ref('');
 const verificationCode = ref('');
 const fromRoute = ref(router.currentRoute.value.query.from);
+const keyCopied = ref(false);
 
 const goBack = () => {
   router.push({ name: 'safety' });
@@ -46,7 +47,11 @@ const initialize2FA = async () => {
 const copyKey = () => {
   if (authKey.value) {
     navigator.clipboard.writeText(authKey.value);
+    keyCopied.value = true;
     walletStore.showMessage(t('copied'), 'success', 1500);
+    setTimeout(() => {
+      keyCopied.value = false;
+    }, 1500);
   }
 };
 
@@ -141,7 +146,7 @@ onMounted(async () => {
           </div>
           <div class="key-section" v-if="authKey">
             <label class="key-label">{{ t('your_code') }}</label>
-            <div class="key-container" @click="copyKey">
+            <div class="key-container" :class="{ copied: keyCopied }" @click="copyKey">
               <span class="key-text">{{ authKey }}</span>
               <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
             </div>
@@ -800,6 +805,12 @@ onMounted(async () => {
   box-shadow: 0 8px 25px rgba(222, 236, 81, 0.3);
 }
 
+.key-container.copied {
+  border-color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
+  animation: copiedPulse 0.6s ease-out;
+}
+
 /* Loading animation */
 .loading-container {
   display: flex;
@@ -887,6 +898,25 @@ onMounted(async () => {
     box-shadow:
       0 16px 50px rgba(0, 0, 0, 0.2),
       0 6px 20px rgba(222, 236, 81, 0.3);
+  }
+}
+
+@keyframes copiedPulse {
+  0% {
+    transform: scale(1);
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.2);
+    box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
   }
 }
 
