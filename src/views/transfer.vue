@@ -357,7 +357,7 @@ select::placeholder {
 
 .group-item {
   position: absolute;
-  right: 4%;
+  right: 12%;
   top: 50%;
   transform: translateY(-50%);
   font-weight: 500;
