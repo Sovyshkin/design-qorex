@@ -24,12 +24,7 @@ const fromRoute = ref(router.currentRoute.value.query.from);
 const keyCopied = ref(false);
 
 const goBack = () => {
-  router.push({ name: 'safety' });
-};
-
-const startSetup = async () => {
-  step.value = 1;
-  await initialize2FA();
+  router.push({ name: 'main' });
 };
 
 const initialize2FA = async () => {
@@ -111,7 +106,8 @@ onMounted(async () => {
   // Проверяем статус 2FA первым делом
   await walletStore.check2FAStatus();
   if (!walletStore.has2FA) {
-    step.value = 0; // Сначала требуем включить 2FA
+    step.value = 1; // Начинаем настройку 2FA
+    await initialize2FA();
   } else {
     step.value = 3; // Если уже включено, показываем статус
   }
@@ -131,20 +127,6 @@ onMounted(async () => {
     <div class="emp"></div>
   </header>
   <main v-if="!loading" class="container">
-    <!-- Шаг 0: Требование включить 2FA -->
-    <transition name="step-fade" appear>
-      <div v-if="step === 0" class="step-container">
-        <div class="icon-container">
-          <img src="../../assets/safety.svg" alt="Security" class="security-icon" />
-        </div>
-        <h2>{{ t('setup_2fa') }}</h2>
-        <p class="description">{{ t('setup_2fa_description') }}</p>
-        <button class="btn btn-primary" @click="startSetup()">
-          {{ t('setup_2fa_button') }}
-        </button>
-      </div>
-    </transition>
-
     <!-- Шаг 1: Показ QR кода и ключа -->
     <transition name="step-fade" appear>
       <div v-if="step === 1" class="step-container">
