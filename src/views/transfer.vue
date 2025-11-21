@@ -53,25 +53,34 @@ const verifyTwoFactorSetup = async () => {
   }
 };
 
-onMounted(async () => {
-  if (!walletStore.has2FA) {
-    twoFactorKey.value = null; // Убедимся, что ключ 2FA не отображается до включения
+const checkTwoFactorAccess = async () => {
+  try {
+    // Делаем запрос на /fa_take для проверки статуса 2FA
+    const result = await walletStore.enable2FA();
+    
+    if (result.success && result.qrImage && result.key) {
+      // В ответе есть QR и ключ - нужно настроить 2FA
+      twoFactorKey.value = result.key;
+      // Не показываем форму перевода, пока 2FA не настроен
+    } else {
+      // 2FA уже подключен или другой случай - разрешаем доступ к форме
+      isTwoFactorSetupComplete.value = true;
+    }
+  } catch (error) {
+    // В случае ошибки пробуем проверить статус обычным способом
+    await verifyTwoFactorSetup();
   }
-});
+};
 
-watch(() => walletStore.has2FA, (newValue) => {
-  if (newValue) {
-    verifyTwoFactorSetup();
-  }
+onMounted(async () => {
+  // Проверяем доступ к странице перевода через 2FA
+  await checkTwoFactorAccess();
 });
 </script>
 
 <template>
-  <!-- Показываем окно с требованием включить 2FA -->
-  <Require2FA v-if="!walletStore.has2FA" />
-
-  <!-- Показываем страницу подключения 2FA -->
-  <div v-else-if="twoFactorKey && !isTwoFactorSetupComplete" class="two-factor-setup">
+  <!-- Показываем страницу подключения 2FA, если в ответе есть ключ -->
+  <div v-if="twoFactorKey && !isTwoFactorSetupComplete" class="two-factor-setup">
     <div class="icon-container">
       <img src="/assets/safety.svg" alt="Security" class="security-icon" />
     </div>
