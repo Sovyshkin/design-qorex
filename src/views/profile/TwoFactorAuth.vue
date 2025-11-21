@@ -19,18 +19,24 @@ const qrSrc = computed(() => {
   return `data:image/png;base64,${qrImage.value}`;
 });
 const authKey = ref('');
+const otpauthUrl = ref('');
 const verificationCode = ref('');
 const fromRoute = ref(router.currentRoute.value.query.from);
 const keyCopied = ref(false);
 
 const goBack = () => {
-  router.push({ name: 'main' });
+  if (fromRoute.value === 'transfer') {
+    router.push({ name: 'transfer' });
+  } else {
+    router.push({ name: 'safety' });
+  }
 };
 
 const initialize2FA = async () => {
   const result = await walletStore.enable2FA();
   if (result.success) {
     qrImage.value = result.qrImage;
+    otpauthUrl.value = result.key;
     authKey.value = parseSecretFromUrl(result.key);
   } else {
     // Если не удалось получить QR код, возвращаемся назад
@@ -69,8 +75,8 @@ const copyKey = () => {
 };
 
 const openAuthenticatorApp = () => {
-  if (authKey.value) {
-    window.open(authKey.value, '_blank');
+  if (otpauthUrl.value) {
+    window.open(otpauthUrl.value, '_blank');
   }
 };
 
@@ -146,6 +152,14 @@ onMounted(async () => {
           <div class="loader" v-else>
             <p>{{ t('loading') }}...</p>
           </div>
+          <button 
+            class="btn secondary-btn" 
+            @click="openAuthenticatorApp"
+            v-if="otpauthUrl"
+            style="margin-top: 16px;"
+          >
+            {{ t('open_in_app') || 'Открыть в приложении' }}
+          </button>
         </div>
         <button 
           class="btn btn-primary" 
