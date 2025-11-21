@@ -36,10 +36,28 @@ const initialize2FA = async () => {
   const result = await walletStore.enable2FA();
   if (result.success) {
     qrImage.value = result.qrImage;
-    authKey.value = result.key;
+    authKey.value = parseSecretFromUrl(result.key);
   } else {
     // Если не удалось получить QR код, возвращаемся назад
     goBack();
+  }
+};
+
+const parseSecretFromUrl = (url) => {
+  try {
+    // Если это уже не URL, возвращаем как есть
+    if (!url || !url.startsWith('otpauth://')) {
+      return url;
+    }
+    
+    // Парсим URL
+    const urlObj = new URL(url);
+    // Извлекаем параметр secret
+    const secret = urlObj.searchParams.get('secret');
+    return secret || url; // Если secret не найден, возвращаем оригинальную строку
+  } catch (error) {
+    console.error('Error parsing 2FA URL:', error);
+    return url; // В случае ошибки возвращаем оригинальную строку
   }
 };
 
@@ -80,6 +98,12 @@ const verifyCode = async () => {
     }, 1500);
   } else {
     verificationCode.value = '';
+  }
+};
+
+const pasteKeyToInput = () => {
+  if (authKey.value) {
+    verificationCode.value = authKey.value;
   }
 };
 
@@ -140,14 +164,6 @@ onMounted(async () => {
           <div class="loader" v-else>
             <p>{{ t('loading') }}...</p>
           </div>
-          <div class="key-section" v-if="authKey">
-            <label class="key-label">{{ t('your_code') }}</label>
-            <div class="key-container" :class="{ copied: keyCopied }" @click="copyKey">
-              <span class="key-text">{{ authKey }}</span>
-              <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
-            </div>
-            <p class="hint">{{ t('tap_to_copy_wallet') }}</p>
-          </div>
         </div>
         <button 
           class="btn btn-primary" 
@@ -177,6 +193,21 @@ onMounted(async () => {
             inputmode="numeric"
             class="code-input"
           />
+          <button 
+            class="paste-btn"
+            @click="pasteKeyToInput"
+            v-if="authKey"
+          >
+            {{ t('paste_key') || 'Вставить ключ' }}
+          </button>
+        </div>
+        <div class="key-section" v-if="authKey">
+          <label class="key-label">{{ t('your_code') }}</label>
+          <div class="key-container" :class="{ copied: keyCopied }" @click="copyKey">
+            <span class="key-text">{{ authKey }}</span>
+            <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
+          </div>
+          <p class="hint">{{ t('tap_to_copy_wallet') }}</p>
         </div>
         <button 
           class="btn" 
@@ -600,6 +631,27 @@ onMounted(async () => {
 .code-input-container {
   width: 100%;
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.paste-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.paste-btn:hover {
+  background-color: #e9ecef;
+  border-color: #deec51;
 }
 
 .code-input {
