@@ -91,7 +91,12 @@ onMounted(async () => {
 
 <template>
   <header class="header">
-    <div class="emp"></div>
+    <img
+      class="arrow"
+      src="../../assets/arrow-left.svg"
+      alt=""
+      @click="goBack()"
+    />
     <h1>{{ t('two_factor_auth') }}</h1>
     <div class="emp"></div>
   </header>
@@ -232,6 +237,17 @@ onMounted(async () => {
 
 .emp {
   width: 32px;
+}
+
+.arrow {
+  height: 32px;
+  width: 32px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.arrow:hover {
+  transform: translateX(-3px);
 }
 
 .step-container {
@@ -610,7 +626,6 @@ onMounted(async () => {
 .container {
   padding-bottom: 40px;
   min-height: calc(100vh - 80px); /* Высота экрана минус высота навбара */
-  overflow-y: scroll; /* Добавляем прокрутку */
   -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
 }
 
