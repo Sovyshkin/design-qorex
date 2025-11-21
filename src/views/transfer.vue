@@ -14,6 +14,7 @@ const myWallet = ref("");
 const twoFactorCode = ref("");
 const twoFactorKey = ref("");
 const isTwoFactorSetupComplete = ref(false); // Новое состояние для подтверждения успешного подключения 2FA
+const walletCopied = ref(false);
 
 const isFormValid = computed(() => {
   return amount.value && 
@@ -39,6 +40,17 @@ const copyKey = () => {
   if (twoFactorKey.value) {
     navigator.clipboard.writeText(twoFactorKey.value);
     walletStore.showMessage(t('key_copied'), 'success', 1500);
+  }
+};
+
+const copyWallet = () => {
+  if (myWallet.value) {
+    navigator.clipboard.writeText(myWallet.value);
+    walletCopied.value = true;
+    walletStore.showMessage(t('wallet_copied') || t('copied'), 'success', 1500);
+    setTimeout(() => {
+      walletCopied.value = false;
+    }, 1500);
   }
 };
 
@@ -130,7 +142,7 @@ onMounted(async () => {
         <div class="section-header">
           <h3>{{ t('my_wallet') }}</h3>
         </div>
-        <div class="wallet-card" @click="copyWallet">
+        <div class="wallet-card" :class="{ copied: walletCopied }" @click="copyWallet">
           <div class="wallet-info">
             <span class="wallet-label">{{ t('wallet_number') }}</span>
             <span class="wallet-number">{{ myWallet || t('loading') }}</span>
@@ -243,6 +255,12 @@ h1 {
 
 .wallet-card:hover {
   border-color: #deec51;
+}
+
+.wallet-card.copied {
+  border-color: #28a745;
+  background-color: rgba(40, 167, 69, 0.05);
+  animation: walletCopiedPulse 0.6s ease-out;
 }
 
 .wallet-info {
@@ -593,5 +611,24 @@ select::placeholder {
 
 .submit-btn:active:not(:disabled) {
   transform: translateY(-1px) scale(0.98);
+}
+
+@keyframes walletCopiedPulse {
+  0% {
+    transform: scale(1);
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.05);
+  }
+  50% {
+    transform: scale(1.02);
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+    box-shadow: 0 0 20px rgba(40, 167, 69, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.05);
+  }
 }
 </style>
