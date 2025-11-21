@@ -54,6 +54,13 @@ const copyWallet = () => {
   }
 };
 
+const preventNegativeAmount = (event) => {
+  const value = parseFloat(event.target.value);
+  if (value < 0) {
+    amount.value = '';
+  }
+};
+
 const goToTwoFactorSetup = () => {
   router.push({ name: 'twoFactorAuth', query: { from: 'transfer' } });
 };
@@ -167,6 +174,8 @@ onMounted(async () => {
             type="number" 
             :placeholder="t('select_amount')" 
             v-model="amount"
+            min="0"
+            @input="preventNegativeAmount"
           />
           <span class="group-item">USDT</span>
         </div>
