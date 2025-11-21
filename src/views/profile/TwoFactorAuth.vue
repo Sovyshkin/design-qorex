@@ -26,6 +26,11 @@ const goBack = () => {
   router.push({ name: 'safety' });
 };
 
+const startSetup = async () => {
+  step.value = 1;
+  await initialize2FA();
+};
+
 const initialize2FA = async () => {
   const result = await walletStore.enable2FA();
   if (result.success) {
@@ -109,7 +114,7 @@ onMounted(async () => {
         </div>
         <h2>{{ t('setup_2fa') }}</h2>
         <p class="description">{{ t('setup_2fa_description') }}</p>
-        <button class="btn btn-primary" @click="step = 1">
+        <button class="btn btn-primary" @click="startSetup()">
           {{ t('setup_2fa_button') }}
         </button>
       </div>
