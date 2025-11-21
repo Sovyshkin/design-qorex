@@ -158,8 +158,16 @@ onMounted(async () => {
             v-if="otpauthUrl"
             style="margin-top: 16px;"
           >
-            {{ t('open_in_app') || 'Открыть в приложении' }}
+            {{ t('open_authenticator') }}
           </button>
+        </div>
+        <div class="key-section" v-if="authKey">
+          <label class="key-label">{{ t('your_code') }}</label>
+          <div class="key-container" :class="{ copied: keyCopied }" @click="copyKey">
+            <span class="key-text">{{ authKey }}</span>
+            <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
+          </div>
+          <p class="hint">{{ t('tap_to_copy_wallet') }}</p>
         </div>
         <button 
           class="btn btn-primary" 
