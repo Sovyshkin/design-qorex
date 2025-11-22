@@ -808,13 +808,6 @@ const changeLang = async (lang: string) => {
   };
 
   const transferFunds = async (recipientWallet: string, amount: string, twoFactorCode: string) => {
-    // Проверяем, включен ли 2FA
-    if (!has2FA.value) {
-      showMessage(t('transfer_requires_2fa'), 'error');
-      router.push({ name: 'twoFactorAuth' });
-      return false;
-    }
-
     try {
       loaderScan.value = true;
       
