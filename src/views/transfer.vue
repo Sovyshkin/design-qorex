@@ -21,8 +21,7 @@ const isFormValid = computed(() => {
   const valid = amount.value &&
          recipientWallet.value &&
          parseFloat(amount.value) > 0 &&
-         code.length === 6 &&
-         walletStore.has2FA;
+         code.length === 6
 
   console.log('Form validation:', {
     amount: amount.value,
