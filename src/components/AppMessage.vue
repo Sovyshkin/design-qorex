@@ -35,7 +35,7 @@ const clearMessage = () => {
         stroke-linecap="round"
       ></path>
     </svg>
-    <p class="text-xs font-semibold">Success - Everything went smoothly!</p>
+    <p class="text-xs font-semibold">{{ walletStore.errMessage }}</p>
   </div>
 
   <!-- Info Alert -->
@@ -60,7 +60,7 @@ const clearMessage = () => {
       ></path>
     </svg>
     <p class="text-xs font-semibold">
-      Info - This is some information for you.
+      {{ walletStore.errMessage }}
     </p>
   </div>
 
@@ -86,7 +86,7 @@ const clearMessage = () => {
       ></path>
     </svg>
     <p class="text-xs font-semibold">
-      Warning - Be careful with this next step.
+      {{ walletStore.errMessage }}
     </p>
   </div>
 
@@ -111,7 +111,7 @@ const clearMessage = () => {
         stroke-linecap="round"
       ></path>
     </svg>
-    <p class="text-xs font-semibold">Error - Something went wrong.</p>
+    <p class="text-xs font-semibold">{{ walletStore.errMessage }}</p>
   </div>
 </template>
 

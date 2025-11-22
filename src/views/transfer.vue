@@ -18,15 +18,18 @@ const walletCopied = ref(false);
 
 const isFormValid = computed(() => {
   const code = twoFactorCode.value.trim();
+  const amountNum = parseFloat(amount.value);
   const valid = amount.value &&
          recipientWallet.value &&
-         parseFloat(amount.value) > 0 &&
+         amountNum > 0 &&
+         amountNum <= walletStore.balance &&
          code.length === 6
 
   console.log('Form validation:', {
     amount: amount.value,
+    amountNum,
+    balance: walletStore.balance,
     recipientWallet: recipientWallet.value,
-    amountParsed: parseFloat(amount.value),
     twoFactorCode: code,
     twoFactorCodeLength: code.length,
     has2FA: walletStore.has2FA,
@@ -68,6 +71,8 @@ const preventNegativeAmount = (event) => {
   const value = parseFloat(event.target.value);
   if (value < 0) {
     amount.value = '';
+  } else if (value > walletStore.balance) {
+    amount.value = walletStore.balance.toString();
   }
 };
 
@@ -179,9 +184,15 @@ onMounted(async () => {
             :placeholder="t('select_amount')" 
             v-model="amount"
             min="0"
+            :max="walletStore.balance"
+            :class="{ 'error': parseFloat(amount) > walletStore.balance }"
             @input="preventNegativeAmount"
           />
           <span class="group-item">USDT</span>
+        </div>
+
+        <div v-if="parseFloat(amount) > walletStore.balance" class="error-message">
+          {{ t('insufficient_balance') || 'Недостаточно средств на балансе' }}
         </div>
 
         <div class="balance-info">
@@ -344,15 +355,16 @@ h1 {
   cursor: not-allowed;
 }
 
-input,
-textarea,
-select {
-  width: 100%;
-  border: 1px solid black;
-  border-radius: 10px;
-  padding: 16px;
-  background: none;
-  outline: none;
+input.error {
+  border-color: #dc3545 !important;
+  background-color: rgba(220, 53, 69, 0.05) !important;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: -8px;
+  margin-bottom: 8px;
 }
 
 input::placeholder,

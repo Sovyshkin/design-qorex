@@ -849,7 +849,7 @@ const changeLang = async (lang: string) => {
       if (err.response?.status === 404) {
         showMessage(t('invalid_2fa_code'), 'error');
       } else if (err.response?.data?.detail) {
-        showMessage(err.response.data.detail, 'error');
+        showMessage(t('transfer_failed'), 'error');
       } else {
         showMessage(t('transfer_failed'), 'error');
       }
