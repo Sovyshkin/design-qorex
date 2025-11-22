@@ -33,13 +33,30 @@ const goBack = () => {
 };
 
 const initialize2FA = async () => {
-  const result = await walletStore.enable2FA();
-  if (result.success) {
-    qrImage.value = result.qrImage;
-    otpauthUrl.value = result.key;
-    authKey.value = parseSecretFromUrl(result.key);
-  } else {
-    // Если не удалось получить QR код, возвращаемся назад
+  try {
+    console.log('initialize2FA: calling walletStore.enable2FA()');
+    const result = await walletStore.enable2FA();
+    console.log('initialize2FA: result =', result);
+    
+    if (result.success) {
+      qrImage.value = result.qrImage;
+      otpauthUrl.value = result.key;
+      authKey.value = parseSecretFromUrl(result.key);
+      console.log('initialize2FA: success, qrImage set, qrImage =', qrImage.value);
+      
+      if (!qrImage.value) {
+        console.error('initialize2FA: qrImage is empty');
+        walletStore.showMessage(t('error_occurred'), 'error');
+        goBack();
+        return;
+      }
+    } else {
+      console.log('initialize2FA: not success, going back');
+      // Если не удалось получить QR код, возвращаемся назад
+      goBack();
+    }
+  } catch (error) {
+    console.error('initialize2FA error:', error);
     goBack();
   }
 };
@@ -112,15 +129,30 @@ const pasteKeyToInput = () => {
 };
 
 onMounted(async () => {
-  // Проверяем статус 2FA первым делом
-  await walletStore.check2FAStatus();
-  if (!walletStore.has2FA) {
-    step.value = 1; // Начинаем настройку 2FA
-    await initialize2FA();
-  } else {
-    step.value = 3; // Если уже включено, показываем статус
+  try {
+    console.log('TwoFactorAuth onMounted: checking 2FA status');
+    // Проверяем статус 2FA первым делом
+    await walletStore.check2FAStatus();
+    console.log('TwoFactorAuth onMounted: has2FA =', walletStore.has2FA);
+    
+    if (!walletStore.has2FA) {
+      step.value = 1; // Начинаем настройку 2FA
+      console.log('TwoFactorAuth onMounted: initializing 2FA');
+      await initialize2FA();
+    } else {
+      step.value = 3; // Если уже включено, показываем статус
+      console.log('TwoFactorAuth onMounted: 2FA already enabled, showing status');
+    }
+  } catch (error) {
+    console.error('TwoFactorAuth onMounted error:', error);
+    // В случае ошибки перенаправляем обратно
+    goBack();
+    return;
   }
+  
+  console.log('TwoFactorAuth onMounted: setting loading to false');
   loading.value = false;
+  console.log('TwoFactorAuth: final step =', step.value, 'loading =', loading.value);
 });
 </script>
 
