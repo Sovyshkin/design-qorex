@@ -93,10 +93,12 @@ const verifyCode = async () => {
   const success = await walletStore.verify2FACode(verificationCode.value);
   
   if (success) {
+    // Обновляем статус 2FA
+    await walletStore.check2FAStatus();
     // Успешно - перенаправляем на страницу безопасности
     setTimeout(() => {
       verificationCode.value = '';
-      router.push({ name: 'main' });
+      router.push({ name: 'safety' });
     }, 1500);
   } else {
     verificationCode.value = '';

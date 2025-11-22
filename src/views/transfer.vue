@@ -17,14 +17,25 @@ const isTwoFactorSetupComplete = ref(false); // Новое состояние д
 const walletCopied = ref(false);
 
 const isFormValid = computed(() => {
-  return amount.value && 
-         recipientWallet.value && 
+  const code = twoFactorCode.value.trim();
+  const valid = amount.value &&
+         recipientWallet.value &&
          parseFloat(amount.value) > 0 &&
-         twoFactorCode.value.length === 6 &&
+         code.length === 6 &&
          walletStore.has2FA;
-});
 
-const handleTransfer = async () => {
+  console.log('Form validation:', {
+    amount: amount.value,
+    recipientWallet: recipientWallet.value,
+    amountParsed: parseFloat(amount.value),
+    twoFactorCode: code,
+    twoFactorCodeLength: code.length,
+    has2FA: walletStore.has2FA,
+    valid
+  });
+
+  return valid;
+});const handleTransfer = async () => {
   if (!isFormValid.value) return;
   
   // Проверка, что не переводим самому себе
@@ -33,7 +44,7 @@ const handleTransfer = async () => {
     return;
   }
   
-  await walletStore.transferFunds(recipientWallet.value, amount.value, twoFactorCode.value);
+  await walletStore.transferFunds(recipientWallet.value, amount.value, twoFactorCode.value.trim());
 };
 
 const copyKey = () => {
@@ -112,6 +123,8 @@ const checkTwoFactorAccess = async () => {
 };
 
 onMounted(async () => {
+  // Обновляем статус 2FA при загрузке страницы
+  await walletStore.check2FAStatus();
   // Проверяем доступ к странице перевода через 2FA
   await checkTwoFactorAccess();
 });
