@@ -356,8 +356,8 @@ h1 {
 }
 
 input.error {
-  border-color: #dc3545 !important;
-  background-color: rgba(220, 53, 69, 0.05) !important;
+  border-color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.05);
 }
 
 .error-message {
@@ -365,6 +365,18 @@ input.error {
   font-size: 12px;
   margin-top: -8px;
   margin-bottom: 8px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #000;
+  border-radius: 10px;
+  padding: 16px;
+  background: none;
+  outline: none;
+  font-size: 14px;
 }
 
 input::placeholder,
