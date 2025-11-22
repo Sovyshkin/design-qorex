@@ -74,7 +74,19 @@ const verifyTwoFactorSetup = async () => {
 
 const checkTwoFactorAccess = async () => {
   try {
-    // Делаем запрос на /fa_take для проверки статуса 2FA
+    // Сначала проверяем статус 2FA
+    await walletStore.check2FAStatus();
+    
+    if (walletStore.has2FA) {
+      // 2FA уже настроен - разрешаем доступ к форме
+      isTwoFactorSetupComplete.value = true;
+      // Загружаем кошелек пользователя
+      await walletStore.getUserWallet();
+      myWallet.value = walletStore.userWallet;
+      return;
+    }
+    
+    // Если 2FA не настроен, делаем запрос на /fa_take для проверки
     const result = await walletStore.enable2FA();
     
     if (result.success && result.qrImage && result.key) {

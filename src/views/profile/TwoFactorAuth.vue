@@ -93,9 +93,10 @@ const verifyCode = async () => {
   const success = await walletStore.verify2FACode(verificationCode.value);
   
   if (success) {
-    // Успешно - перенаправляем на страницу перевода средств
+    // Успешно - перенаправляем на страницу безопасности
     setTimeout(() => {
-      router.push({ name: 'transfer' });
+      verificationCode.value = '';
+      router.push({ name: 'main' });
     }, 1500);
   } else {
     verificationCode.value = '';
