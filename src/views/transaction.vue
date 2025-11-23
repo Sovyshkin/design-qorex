@@ -95,7 +95,7 @@ onMounted(() => {
         alt=""
         @click="goBack()"
       />
-      <h1>{{ t(walletStore.transaction.type_trans) }}</h1>
+      <h1>{{ walletStore.transaction.type_trans === 'transfer' ? t('transfer_transaction') : t(walletStore.transaction.type_trans) }}</h1>
       <div class="emp"></div>
     </header>
 
@@ -113,6 +113,11 @@ onMounted(() => {
             alt="transaction-type"
           />
           <img
+            v-else-if="walletStore.transaction.type_trans === 'transfer'"
+            src="../assets/pay_out.svg"
+            alt="transaction-type"
+          />
+          <img
             v-else
             :src="`../assets/type-${walletStore.transaction.type_trans}.svg`"
             alt="transaction-type"
@@ -125,6 +130,8 @@ onMounted(() => {
                 ? "-"
                 : walletStore.transaction.type_trans === "output"
                 ? "-"
+                : walletStore.transaction.type_trans === "transfer"
+                ? "-"
                 : "+"
             }}{{ walletStore.roundToHundredths(walletStore.transaction.amount) }} USDT</span
           >
@@ -133,6 +140,8 @@ onMounted(() => {
               walletStore.transaction.type_trans === "buy"
                 ? "-"
                 : walletStore.transaction.type_trans === "output"
+                ? "-"
+                : walletStore.transaction.type_trans === "transfer"
                 ? "-"
                 : "+"
             }}{{ walletStore.roundToHundredths(walletStore.transaction.amountRub) }} ₽</span

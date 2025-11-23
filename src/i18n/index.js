@@ -157,7 +157,8 @@ const messages = {
     transfer_modal_title: "Важное уведомление",
     transfer_modal_text: "Переводы средств возможны только между пользователями платформы Qorex Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.",
     transfer_modal_button: "Понятно",
-    receiving: "Получение"
+    receiving: "Получение",
+    transfer_transaction: "Перевод"
   },
   EN: {
     referal: "Referral program",
@@ -317,7 +318,8 @@ const messages = {
     transfer_modal_title: "Important Notice",
     transfer_modal_text: "Funds transfers are only possible between Qorex Wallet platform users. Minimum transfer amount - 1 USDT. Transfer fee is 0.5% of the amount. Make sure the recipient's wallet number belongs to a registered platform user.",
     transfer_modal_button: "Understood",
-    receiving: "Receiving"
+    receiving: "Receiving",
+    transfer_transaction: "Transfer"
   },
 };
 

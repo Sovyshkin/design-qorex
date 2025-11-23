@@ -232,6 +232,11 @@ onMounted(async () => {
                     alt="transaction-type"
                   />
                   <img
+                    v-else-if="item.type_trans === 'transfer'"
+                    src="../assets/pay_out.svg"
+                    alt="transaction-type"
+                  />
+                  <img
                     v-else-if="item.type_trans"
                     :src="`../assets/type-${item.type_trans}.svg`"
                     alt="transaction-type"
@@ -243,7 +248,9 @@ onMounted(async () => {
                   />
                 </div>
                 <div class="history-more-info">
-                  <span class="history-type" v-if="item.type_trans">{{ t(item.type_trans) }}</span>
+                  <span class="history-type" v-if="item.type_trans">
+                    {{ item.type_trans === 'transfer' ? t('transfer_transaction') : t(item.type_trans) }}
+                  </span>
                   <span class="history-type" v-else>{{ t('buy') }}</span>
                   <span 
                     :class="`history-status ${getTransactionStatus(item.bool_suecess).class}`"
@@ -259,6 +266,8 @@ onMounted(async () => {
                       ? "-"
                       : item.type_trans === "output"
                       ? "-"
+                      : item.type_trans === "transfer"
+                      ? "-"
                       : "+"
                   }}
                   {{ walletStore.roundToHundredths(item.amount) }} USDT
@@ -269,6 +278,8 @@ onMounted(async () => {
                     item.type_trans === "buy"
                       ? "-"
                       : item.type_trans === "output"
+                      ? "-"
+                      : item.type_trans === "transfer"
                       ? "-"
                       : "+"
                   }}
