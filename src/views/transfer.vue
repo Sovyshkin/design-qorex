@@ -247,7 +247,7 @@ onMounted(async () => {
           <button class="close-btn" @click="closeModal">&times;</button>
         </div>
         <div class="modal-body">
-          <img src="../assets/warning-icon.svg" alt="warning" class="modal-icon" />
+          <img src="../assets/error.svg" alt="warning" class="modal-icon" />
           <p>Переводы средств возможны только между пользователями платформы Qorex Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.</p>
         </div>
         <div class="modal-footer">
