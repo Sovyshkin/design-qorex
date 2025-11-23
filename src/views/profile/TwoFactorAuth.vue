@@ -12,6 +12,7 @@ const router = useRouter();
 const step = ref(1); // 1 - показ QR, 2 - ввод кода
 const qrImage = ref('');
 const loading = ref(true);
+const error = ref('');
 // Корректный src для QR-кода
 const qrSrc = computed(() => {
   if (!qrImage.value) return '';
@@ -145,9 +146,8 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('TwoFactorAuth onMounted error:', error);
-    // В случае ошибки перенаправляем обратно
-    goBack();
-    return;
+    // В случае ошибки показываем сообщение и остаемся на странице
+    walletStore.showMessage(t('error_occurred'), 'error');
   }
   
   console.log('TwoFactorAuth onMounted: setting loading to false');
@@ -167,7 +167,18 @@ onMounted(async () => {
     <h1>{{ t('two_factor_auth') }}</h1>
     <div class="emp"></div>
   </header>
-  <main v-if="!loading" class="container">
+  
+  <!-- Error state -->
+  <div v-if="error" class="error-container">
+    <div class="error-card">
+      <img src="../../assets/error.svg" alt="error" class="error-icon" />
+      <h2>{{ t('error') }}</h2>
+      <p>{{ error }}</p>
+      <button class="btn" @click="goBack()">{{ t('go_back') }}</button>
+    </div>
+  </div>
+  
+  <main v-if="!loading && !error" class="container">
     <!-- Шаг 1: Показ QR кода и ключа -->
     <transition name="step-fade" appear>
       <div v-if="step === 1" class="step-container">
@@ -1013,5 +1024,48 @@ onMounted(async () => {
     padding-bottom: 100px; /* Дополнительный отступ для навбара на маленьких экранах */
     min-height: calc(100vh - 100px);
   }
+}
+
+/* Error state */
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  padding: 20px;
+}
+
+.error-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.error-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.error-card h2 {
+  color: #dc3545;
+  margin: 0 0 12px 0;
+  font-size: 20px;
+}
+
+.error-card p {
+  color: #666;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.error-card .btn {
+  width: 100%;
+  max-width: 200px;
 }
 </style>

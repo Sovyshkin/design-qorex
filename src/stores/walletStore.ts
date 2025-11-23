@@ -848,6 +848,8 @@ const changeLang = async (lang: string) => {
     } catch (err) {
       if (err.response?.status === 404) {
         showMessage(t('invalid_2fa_code'), 'error');
+      } else if (err.response?.data?.detail === "Пользователь не найден" || err.response?.data?.detail === "User not found") {
+        showMessage(t('user_not_found'), 'error');
       } else if (err.response?.data?.detail) {
         showMessage(t('transfer_failed'), 'error');
       } else {

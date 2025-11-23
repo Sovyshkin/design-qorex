@@ -155,10 +155,11 @@ const messages = {
     go_back: "Назад",
     minimum_transfer_amount: "Минимальная сумма перевода - 1 USDT",
     transfer_modal_title: "Важное уведомление",
-    transfer_modal_text: "Переводы средств возможны только между пользователями платформы Qorex Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.",
+    transfer_modal_text: "Переводы средств возможны только между пользователями платформы Garda Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.",
     transfer_modal_button: "Понятно",
     receiving: "Получение",
-    transfer_transaction: "Перевод"
+    transfer_transaction: "Перевод",
+    user_not_found: "Пользователь с таким номером кошелька не найден"
   },
   EN: {
     referal: "Referral program",
@@ -316,10 +317,11 @@ const messages = {
     go_back: "Go Back",
     minimum_transfer_amount: "Minimum transfer amount - 1 USDT",
     transfer_modal_title: "Important Notice",
-    transfer_modal_text: "Funds transfers are only possible between Qorex Wallet platform users. Minimum transfer amount - 1 USDT. Transfer fee is 0.5% of the amount. Make sure the recipient's wallet number belongs to a registered platform user.",
+    transfer_modal_text: "Funds transfers are only possible between Garda Wallet platform users. Minimum transfer amount - 1 USDT. Transfer fee is 0.5% of the amount. Make sure the recipient's wallet number belongs to a registered platform user.",
     transfer_modal_button: "Understood",
     receiving: "Receiving",
-    transfer_transaction: "Transfer"
+    transfer_transaction: "Transfer",
+    user_not_found: "User with this wallet number not found"
   },
 };
 
