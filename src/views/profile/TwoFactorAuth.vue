@@ -22,7 +22,7 @@ const qrSrc = computed(() => {
 const authKey = ref('');
 const otpauthUrl = ref('');
 const verificationCode = ref('');
-const fromRoute = ref(router.currentRoute.value.query.from);
+const fromRoute = ref(router.currentRoute?.value?.query?.from || '');
 const keyCopied = ref(false);
 
 const goBack = () => {
@@ -131,6 +131,7 @@ const pasteKeyToInput = () => {
 };
 
 onMounted(async () => {
+  console.log('TwoFactorAuth onMounted: START');
   try {
     console.log('TwoFactorAuth onMounted: checking 2FA status');
     // Проверяем статус 2FA первым делом
@@ -140,7 +141,13 @@ onMounted(async () => {
     if (!walletStore.has2FA) {
       step.value = 1; // Начинаем настройку 2FA
       console.log('TwoFactorAuth onMounted: initializing 2FA');
-      await initialize2FA();
+      try {
+        await initialize2FA();
+      } catch (initError) {
+        console.error('TwoFactorAuth onMounted: initialize2FA error:', initError);
+        error.value = t('error_occurred');
+        walletStore.showMessage(t('error_occurred'), 'error');
+      }
     } else {
       step.value = 3; // Если уже включено, показываем статус
       console.log('TwoFactorAuth onMounted: 2FA already enabled, showing status');
