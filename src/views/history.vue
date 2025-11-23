@@ -223,17 +223,22 @@ onMounted(async () => {
                 <div class="wrap-img">
                   <img
                     v-if="item.type_trans === 'referal'"
-                    src="/assets/referal.svg"
+                    src="../assets/referal.svg"
+                    alt="transaction-type"
+                  />
+                  <img
+                    v-else-if="item.type_trans === 'receiving'"
+                    src="../assets/deposit.svg"
                     alt="transaction-type"
                   />
                   <img
                     v-else-if="item.type_trans"
-                    :src="`/assets/type-${item.type_trans}.svg`"
+                    :src="`../assets/type-${item.type_trans}.svg`"
                     alt="transaction-type"
                   />
                   <img
                     v-else
-                    :src="`/assets/type-buy.svg`"
+                    src="../assets/deposit.svg"
                     alt="transaction-type"
                   />
                 </div>
