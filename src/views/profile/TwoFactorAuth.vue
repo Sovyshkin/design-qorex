@@ -47,18 +47,19 @@ const initialize2FA = async () => {
       
       if (!qrImage.value) {
         console.error('initialize2FA: qrImage is empty');
+        error.value = t('error_occurred');
         walletStore.showMessage(t('error_occurred'), 'error');
-        goBack();
         return;
       }
     } else {
-      console.log('initialize2FA: not success, going back');
-      // Если не удалось получить QR код, возвращаемся назад
-      goBack();
+      console.log('initialize2FA: not success');
+      error.value = t('error_occurred');
+      walletStore.showMessage(t('error_occurred'), 'error');
     }
   } catch (error) {
     console.error('initialize2FA error:', error);
-    goBack();
+    error.value = t('error_occurred');
+    walletStore.showMessage(t('error_occurred'), 'error');
   }
 };
 
