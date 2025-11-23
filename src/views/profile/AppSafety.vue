@@ -106,7 +106,7 @@ onMounted(async () => {
         />
       </div>
 
-      <div class="list-item">
+      <!-- <div class="list-item">
         <div class="info">
           <div class="wrap-img">
             <img src="/assets/safety.svg" alt="2fa" />
@@ -117,7 +117,7 @@ onMounted(async () => {
           :modelValue="twoFactorActive"
           @update:modelValue="toggleTwoFactor"
         />
-      </div>
+      </div> -->
 
       <div class="list-item">
         <div class="info">
