@@ -21,7 +21,7 @@ const isFormValid = computed(() => {
   const amountNum = parseFloat(amount.value);
   const valid = amount.value &&
          recipientWallet.value &&
-         amountNum > 0 &&
+         amountNum >= 1 &&
          amountNum <= walletStore.balance &&
          code.length === 6
 
@@ -37,7 +37,9 @@ const isFormValid = computed(() => {
   });
 
   return valid;
-});const handleTransfer = async () => {
+});
+
+const showModal = ref(false);const handleTransfer = async () => {
   if (!isFormValid.value) return;
   
   // Проверка, что не переводим самому себе
@@ -126,11 +128,20 @@ const checkTwoFactorAccess = async () => {
   }
 };
 
+const closeModal = () => {
+  showModal.value = false;
+};
+
 onMounted(async () => {
   // Обновляем статус 2FA при загрузке страницы
   await walletStore.check2FAStatus();
   // Проверяем доступ к странице перевода через 2FA
   await checkTwoFactorAccess();
+  
+  // Показываем модальное окно через небольшую задержку
+  setTimeout(() => {
+    showModal.value = true;
+  }, 500);
 });
 </script>
 
@@ -195,6 +206,10 @@ onMounted(async () => {
           {{ t('insufficient_balance') || 'Недостаточно средств на балансе' }}
         </div>
 
+        <div v-if="parseFloat(amount) > 0 && parseFloat(amount) < 1" class="error-message">
+          Минимальная сумма перевода - 1 USDT
+        </div>
+
         <div class="balance-info">
           <span>{{ t('available_balance') }}:</span>
           <span class="balance-value">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
@@ -223,6 +238,23 @@ onMounted(async () => {
         {{ t("transfer_funds") }}
       </button>
     </main>
+
+    <!-- Модальное окно -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Важное уведомление</h3>
+          <button class="close-btn" @click="closeModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <img src="../assets/warning-icon.svg" alt="warning" class="modal-icon" />
+          <p>Переводы средств возможны только между пользователями платформы Qorex Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn" @click="closeModal">Понятно</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -666,6 +698,128 @@ select::placeholder {
     transform: scale(1);
     border-color: #28a745;
     background-color: rgba(40, 167, 69, 0.05);
+  }
+}
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.modal-body {
+  padding: 24px;
+  text-align: center;
+}
+
+.modal-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.modal-body p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #141414;
+}
+
+.modal-footer {
+  padding: 16px 24px 24px;
+  text-align: center;
+}
+
+.modal-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #141414;
+  background-color: #deec51;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.modal-btn:hover {
+  opacity: 0.9;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 </style>
