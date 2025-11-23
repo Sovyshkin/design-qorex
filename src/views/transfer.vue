@@ -207,7 +207,7 @@ onMounted(async () => {
         </div>
 
         <div v-if="parseFloat(amount) > 0 && parseFloat(amount) < 1" class="error-message">
-          Минимальная сумма перевода - 1 USDT
+          {{ t('minimum_transfer_amount') }}
         </div>
 
         <div class="balance-info">
@@ -243,15 +243,15 @@ onMounted(async () => {
     <div v-if="showModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Важное уведомление</h3>
+          <h3>{{ t('transfer_modal_title') }}</h3>
           <button class="close-btn" @click="closeModal">&times;</button>
         </div>
         <div class="modal-body">
           <img src="../assets/error.svg" alt="warning" class="modal-icon" />
-          <p>Переводы средств возможны только между пользователями платформы Qorex Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.</p>
+          <p>{{ t('transfer_modal_text') }}</p>
         </div>
         <div class="modal-footer">
-          <button class="modal-btn" @click="closeModal">Понятно</button>
+          <button class="modal-btn" @click="closeModal">{{ t('transfer_modal_button') }}</button>
         </div>
       </div>
     </div>

@@ -152,7 +152,11 @@ const messages = {
     require_2fa_title: "Требуется 2FA",
     require_2fa_description: "Для использования функции переводов необходимо включить двухфакторную аутентификацию. Это обеспечит дополнительную защиту ваших средств.",
     enable_2fa: "Включить 2FA",
-    go_back: "Назад"
+    go_back: "Назад",
+    minimum_transfer_amount: "Минимальная сумма перевода - 1 USDT",
+    transfer_modal_title: "Важное уведомление",
+    transfer_modal_text: "Переводы средств возможны только между пользователями платформы Garda Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.",
+    transfer_modal_button: "Понятно"
   },
   EN: {
     referal: "Referral program",
@@ -307,7 +311,11 @@ const messages = {
     require_2fa_title: "2FA Required",
     require_2fa_description: "Two-factor authentication is required to use the transfer feature. This provides additional protection for your funds.",
     enable_2fa: "Enable 2FA",
-    go_back: "Go Back"
+    go_back: "Go Back",
+    minimum_transfer_amount: "Minimum transfer amount - 1 USDT",
+    transfer_modal_title: "Important Notice",
+    transfer_modal_text: "Funds transfers are only possible between Garda Wallet platform users. Minimum transfer amount - 1 USDT. Transfer fee is 0.5% of the amount. Make sure the recipient's wallet number belongs to a registered platform user.",
+    transfer_modal_button: "Understood"
   },
 };
 
