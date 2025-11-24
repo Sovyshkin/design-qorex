@@ -228,7 +228,7 @@ onMounted(async () => {
                   />
                   <img
                     v-else-if="item.type_trans === 'receiving'"
-                    src="../assets/deposit.svg"
+                    src="../assets/send.png"
                     alt="transaction-type"
                   />
                   <img
