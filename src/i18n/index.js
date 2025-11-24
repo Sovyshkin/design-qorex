@@ -136,11 +136,11 @@ const messages = {
     error_occurred: "Произошла ошибка. Попробуйте позже",
     transfer: "Перевести",
     transfer_page: "Перевод средств",
-    my_wallet: "Мой кошелек",
-    wallet_number: "Номер кошелька",
+    my_wallet: "Мой UID",
+    wallet_number: "Номер UID",
     tap_to_copy_wallet: "Нажмите, чтобы скопировать",
     transfer_to_user: "Перевод пользователю",
-    recipient_wallet_number: "Номер кошелька получателя",
+    recipient_wallet_number: "Номер UID получателя",
     transfer_funds: "Перевести средства",
     transfer_2fa_required: "⚠️ Для переводов необходимо включить двухфакторную аутентификацию (2FA) в настройках безопасности",
     transfer_requires_2fa: "Для переводов требуется 2FA. Включите в настройках безопасности",
@@ -155,11 +155,11 @@ const messages = {
     go_back: "Назад",
     minimum_transfer_amount: "Минимальная сумма перевода - 1 USDT",
     transfer_modal_title: "Важное уведомление",
-    transfer_modal_text: "Переводы средств возможны только между пользователями платформы Garda Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер кошелька получателя принадлежит зарегистрированному пользователю платформы.",
+    transfer_modal_text: "Переводы средств возможны только между пользователями платформы Garda Wallet. Минимальная сумма перевода - 1 USDT. Комиссия за перевод составляет 0.5% от суммы. Убедитесь, что номер UID получателя принадлежит зарегистрированному пользователю платформы.",
     transfer_modal_button: "Понятно",
     receiving: "Получение",
     transfer_transaction: "Перевод",
-    user_not_found: "Пользователь с таким номером кошелька не найден"
+    user_not_found: "Пользователь с таким номером UID не найден"
   },
   EN: {
     referal: "Referral program",
@@ -298,11 +298,11 @@ const messages = {
     error_occurred: "An error occurred. Please try again later",
     transfer: "Transfer",
     transfer_page: "Transfer Funds",
-    my_wallet: "My Wallet",
-    wallet_number: "Wallet Number",
+    my_wallet: "My UID",
+    wallet_number: "UID Number",
     tap_to_copy_wallet: "Tap to copy",
     transfer_to_user: "Transfer to User",
-    recipient_wallet_number: "Recipient Wallet Number",
+    recipient_wallet_number: "Recipient UID Number",
     transfer_funds: "Transfer Funds",
     transfer_2fa_required: "⚠️ Two-factor authentication (2FA) is required for transfers. Enable it in security settings",
     transfer_requires_2fa: "2FA is required for transfers. Enable it in security settings",
@@ -317,11 +317,11 @@ const messages = {
     go_back: "Go Back",
     minimum_transfer_amount: "Minimum transfer amount - 1 USDT",
     transfer_modal_title: "Important Notice",
-    transfer_modal_text: "Funds transfers are only possible between Garda Wallet platform users. Minimum transfer amount - 1 USDT. Transfer fee is 0.5% of the amount. Make sure the recipient's wallet number belongs to a registered platform user.",
+    transfer_modal_text: "Funds transfers are only possible between Garda Wallet platform users. Minimum transfer amount - 1 USDT. Transfer fee is 0.5% of the amount. Make sure the recipient's UID number belongs to a registered platform user.",
     transfer_modal_button: "Understood",
     receiving: "Receiving",
     transfer_transaction: "Transfer",
-    user_not_found: "User with this wallet number not found"
+    user_not_found: "User with this UID number not found"
   },
 };
 
