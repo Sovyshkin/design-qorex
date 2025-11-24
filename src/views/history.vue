@@ -211,7 +211,7 @@ onMounted(async () => {
                 class="history-group"
               >
                 <h2 class="history-date">{{ group.displayDate }}</h2>
-            <transition-group name="history-item-appear" tag="div">
+            <transition-group name="history-item-appear" tag="div" class="wrap-history-items">
               <div
                 v-for="(item, index) in group.items"
                 :key="`${dateKey}-${index}`"
@@ -358,6 +358,12 @@ h1 {
   flex-direction: column;
   gap: 15px;
   margin-bottom: 20px;
+}
+
+.wrap-history-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .history-date {
