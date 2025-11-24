@@ -25,6 +25,12 @@ const sensitiveRoutes = ['scanner', 'main', 'profile', 'history', 'deposit', 'wi
 const twoFactorRequiredRoutes = ['transfer'];
 
 router.beforeEach(async (to, from, next) => {
+console.log('Navigation:', {
+    from: from.name,
+    to: to.name,
+    fullPath: to.fullPath
+  });
+
   walletStore.isLoading = false;
 
   try {
