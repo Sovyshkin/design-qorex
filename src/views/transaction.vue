@@ -114,7 +114,7 @@ onMounted(() => {
           />
           <img
             v-else-if="walletStore.transaction.type_trans === 'transfer'"
-            src="../assets/pay_out.svg"
+            src="../assets/send.png"
             alt="transaction-type"
           />
           <img

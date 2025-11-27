@@ -91,40 +91,30 @@ const verifyTwoFactorSetup = async () => {
 
 const checkTwoFactorAccess = async () => {
   try {
-    // Сначала проверяем статус 2FA
-    await walletStore.check2FAStatus();
-    
-    if (walletStore.has2FA) {
-      // 2FA уже настроен - разрешаем доступ к форме
-      isTwoFactorSetupComplete.value = true;
-      // Загружаем кошелек пользователя
-      await walletStore.getUserWallet();
-      myWallet.value = walletStore.userWallet;
-      return;
-    }
-    
-    // Если 2FA не настроен, делаем запрос на /fa_take для проверки
+    // Делаем только один запрос на /fa_take для проверки статуса
     const result = await walletStore.enable2FA();
     
     if (result.success && result.qrImage && result.key) {
       // В ответе есть QR и ключ - нужно настроить 2FA
       twoFactorKey.value = result.key;
       // Не показываем форму перевода, пока 2FA не настроен
-    } else {
-      // 2FA уже подключен или другой случай - разрешаем доступ к форме
+    } else if (result.detail === "Уже подключено!") {
+      // 2FA уже подключен - устанавливаем флаг и разрешаем доступ к форме
+      walletStore.has2FA = true;
       isTwoFactorSetupComplete.value = true;
-      // Загружаем кошелек пользователя
+      await walletStore.getUserWallet();
+      myWallet.value = walletStore.userWallet;
+    } else {
+      // Другой случай - разрешаем доступ к форме
+      isTwoFactorSetupComplete.value = true;
+      // Загружаем кошелек пользователя через take_user_w
       await walletStore.getUserWallet();
       myWallet.value = walletStore.userWallet;
     }
   } catch (error) {
-    // В случае ошибки пробуем проверить статус обычным способом
-    await verifyTwoFactorSetup();
-    if (isTwoFactorSetupComplete.value) {
-      // Если 2FA настроен, загружаем кошелек
-      await walletStore.getUserWallet();
-      myWallet.value = walletStore.userWallet;
-    }
+    console.error('Error checking 2FA access:', error);
+    // Если ошибка в fa_take, значит 2FA не настроен, показываем Require2FA
+    isTwoFactorSetupComplete.value = false;
   }
 };
 
@@ -133,8 +123,6 @@ const closeModal = () => {
 };
 
 onMounted(async () => {
-  // Обновляем статус 2FA при загрузке страницы
-  await walletStore.check2FAStatus();
   // Проверяем доступ к странице перевода через 2FA
   await checkTwoFactorAccess();
   
@@ -147,7 +135,7 @@ onMounted(async () => {
 
 <template>
   <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
-  <Require2FA v-if="twoFactorKey && !isTwoFactorSetupComplete" />
+  <Require2FA v-if="!isTwoFactorSetupComplete" />
 
   <!-- Показываем форму перевода, если 2FA успешно подключен -->
   <div v-else-if="isTwoFactorSetupComplete">

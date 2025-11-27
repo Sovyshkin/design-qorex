@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import NavBar from './components/NavBar.vue';
 import AppLoader from './components/AppLoader.vue';
@@ -10,71 +10,19 @@ const router = useRouter();
 const walletStore = useWalletStore()
 const accessDenied = ref(false);
 
-// Функция для проверки необходимости ввода PIN
-const requirePin = () => {
-  return walletStore.isPinRequired();
-}
-
-// Список маршрутов, которые не требуют PIN-кода
+// Список публичных маршрутов, которые не требуют аутентификации
 const publicRoutes = ['enterPin', 'createPin'];
 
-// Маршруты, которые требуют проверки PIN перед доступом
-const sensitiveRoutes = ['scanner', 'main', 'profile', 'history', 'deposit', 'withdraw', 'transfer'];
-
-// Маршруты, которые требуют включенного 2FA
-const twoFactorRequiredRoutes = ['transfer'];
-
+// Упрощенный router guard - только для базовой навигации
 router.beforeEach(async (to, from, next) => {
-console.log('Navigation:', {
-    from: from.name,
-    to: to.name,
-    fullPath: to.fullPath
-  });
-
-  walletStore.isLoading = false;
-
   try {
-    // Проверяем, загружены ли данные пользователя
-    if (!walletStore.user.tg_id) {
-      // Если данные не загружены, загружаем их
-      await walletStore.getUserInfo();
-      if (walletStore.userTg && walletStore.userTg.id) {
-        await walletStore.getUser();
-      }
-    }
-
-    // Проверяем, является ли маршрут публичным
-    const isPublicRoute = publicRoutes.includes(to.name);
-    const isSensitiveRoute = sensitiveRoutes.includes(to.name);
-    const requiresTwoFactor = twoFactorRequiredRoutes.includes(to.name);
-
-    // Проверка PIN для всех основных страниц приложения
-    console.log('Router Guard PIN Check:', {
-      to: to.name,
-      from: from.name,
-      isSensitiveRoute,
-      hasPinCode: walletStore.hasPinCode(),
-      codePasswordActive: walletStore.codePasswordActive,
-      pinCode: walletStore.pinCode,
-      requirePin: requirePin()
-    });
-
-    // Избегаем циклических перенаправлений
+    // Разрешаем навигацию к PIN маршрутам
     if (to.name === 'enterPin' || to.name === 'createPin') {
       walletStore.isLoading = false;
       return next();
     }
 
-    if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
-      console.log('Router Guard: Перенаправляем на enterPin');
-      walletStore.isLoading = false;
-      return next({
-        name: 'enterPin',
-        query: { returnTo: to.fullPath }
-      });
-    }
-
-    // Блокируем доступ к созданию PIN-кода если он уже установлен
+    // Если пользователь пытается попасть на createPin, но PIN уже есть
     if (to.name === 'createPin' && walletStore.hasPinCode()) {
       walletStore.isLoading = false;
       return next({ name: 'main' });
@@ -85,9 +33,7 @@ console.log('Navigation:', {
     console.error('Router guard error:', error);
     next();
   } finally {
-    setTimeout(() => {
-      walletStore.isLoading = false;
-    }, 500);
+    walletStore.isLoading = false;
   }
 });
 
@@ -95,12 +41,10 @@ console.log('Navigation:', {
 const checkAccessByWhitelist = (userId) => {
   const allowedIds = import.meta.env.VITE_ALLOWED_TELEGRAM_IDS;
   
-  // Если белый список не задан или пустой - разрешаем доступ всем
   if (!allowedIds || allowedIds.trim() === '') {
     return true;
   }
   
-  // Парсим белый список и проверяем ID пользователя
   const allowedIdsArray = allowedIds.split(',').map(id => id.trim());
   return allowedIdsArray.includes(String(userId));
 };
@@ -108,43 +52,22 @@ const checkAccessByWhitelist = (userId) => {
 // Функция для инициализации приложения
 const initializeApp = async () => {
   try {
-    // Получаем информацию о пользователе из Telegram
     await walletStore.getUserInfo();
 
-    // Если это Telegram Web App, создаем/получаем пользователя
     if (window.Telegram && window.Telegram.WebApp) {
-      // Исправлено: правильное обращение к userTg
       if (walletStore.userTg && walletStore.userTg.id) {
-        // Проверяем доступ по белому списку
         if (!checkAccessByWhitelist(walletStore.userTg.id)) {
-          // Показываем экран блокировки доступа
           accessDenied.value = true;
           walletStore.isLoading = false;
           return;
         }
 
-        // Загружаем данные пользователя (включая пин-код) из базы данных
         await walletStore.getUser();
-
-        // Сбрасываем pinVerified после загрузки данных пользователя
-        // Это важно для Telegram WebApp, т.к. каждое открытие бота - новая сессия
         localStorage.removeItem('pinVerified');
 
-        // Проверяем, нужно ли запросить PIN-код сразу после загрузки данных
-        const currentRoute = router.currentRoute.value;
-        const isSensitiveRoute = sensitiveRoutes.includes(currentRoute.name);
-
-        console.log('Инициализация: проверка PIN-кода', {
-          currentRoute: currentRoute.name,
-          isSensitiveRoute,
-          hasPinCode: walletStore.hasPinCode(),
-          codePasswordActive: walletStore.codePasswordActive,
-          pinCode: walletStore.pinCode,
-          requirePin: requirePin()
-        });
-
-        if (isSensitiveRoute && walletStore.hasPinCode() && requirePin()) {
-          console.log('Инициализация: перенаправляем на enterPin');
+        // Проверяем PIN только при запуске приложения
+        if (walletStore.hasPinCode() && walletStore.isPinRequired()) {
+          const currentRoute = router.currentRoute.value;
           router.push({
             name: 'enterPin',
             query: { returnTo: currentRoute.fullPath }
@@ -158,39 +81,13 @@ const initializeApp = async () => {
 }
 
 onMounted(() => {
-
   initializeApp();
 });
 
-// Компьютед свойство для отображения контента (исключая страницы PIN-кода)
+// Компьютед свойство для отображения контента
 const showContent = computed(() => {
   const currentRoute = router.currentRoute.value;
-  const shouldShow = !publicRoutes.includes(currentRoute.name);
-
-  console.log('showContent computed:', {
-    currentRoute: currentRoute.name,
-    publicRoutes,
-    shouldShow,
-    accessDenied: accessDenied.value
-  });
-
-  return shouldShow;
-});
-
-// Добавляем отладочную информацию
-const debugInfo = computed(() => {
-  return {
-    currentRoute: router.currentRoute.value.name,
-    hasPinCode: walletStore.hasPinCode(),
-    codePasswordActive: walletStore.codePasswordActive,
-    pinCode: walletStore.pinCode,
-    pinVerified: localStorage.getItem('pinVerified'),
-    requirePin: requirePin(),
-    showContent: showContent.value,
-    userTg: walletStore.userTg,
-    user: walletStore.user,
-    isLoading: walletStore.isLoading
-  };
+  return !publicRoutes.includes(currentRoute.name);
 });
 </script>
 
@@ -229,9 +126,7 @@ const debugInfo = computed(() => {
               <AppLoader/>
             </div>
             <router-view v-else v-slot="{ Component }">
-              <transition name="page-transition" mode="out-in">
-                <component :is="Component" />
-              </transition>
+              <component :is="Component" />
             </router-view>
           </div>
         </transition>

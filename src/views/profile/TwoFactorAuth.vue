@@ -1,92 +1,94 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useWalletStore } from '@/stores/walletStore.ts';
-import { useRouter } from 'vue-router';
-import AppLoader from '@/components/AppLoader.vue';
+import { ref, onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useWalletStore } from "@/stores/walletStore.ts";
+import { useRouter } from "vue-router";
+import AppLoader from "@/components/AppLoader.vue";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
 const router = useRouter();
 
 const step = ref(1); // 1 - показ QR, 2 - ввод кода
-const qrImage = ref('');
+const qrImage = ref("");
 const loading = ref(true);
-const error = ref('');
+const error = ref("");
 // Корректный src для QR-кода
 const qrSrc = computed(() => {
-  if (!qrImage.value) return '';
-  if (qrImage.value.startsWith('data:image')) return qrImage.value;
+  if (!qrImage.value) return "";
+  if (qrImage.value.startsWith("data:image")) return qrImage.value;
   return `data:image/png;base64,${qrImage.value}`;
 });
-const authKey = ref('');
-const otpauthUrl = ref('');
-const verificationCode = ref('');
-const fromRoute = ref(router.currentRoute?.value?.query?.from || '');
+const authKey = ref("");
+const otpauthUrl = ref("");
+const verificationCode = ref("");
+const fromRoute = ref(router.currentRoute?.value?.query?.from || "");
 const keyCopied = ref(false);
 
 const goBack = () => {
-  if (fromRoute.value === 'transfer') {
-    router.push({ name: 'transfer' });
+  if (fromRoute.value === "transfer") {
+    router.push({ name: "transfer" });
   } else {
-    router.push({ name: 'safety' });
+    router.push({ name: "safety" });
   }
 };
 
 const initialize2FA = async () => {
   try {
-    console.log('initialize2FA: calling walletStore.enable2FA()');
+    console.log("initialize2FA: calling walletStore.enable2FA()");
     const result = await walletStore.enable2FA();
-    console.log('initialize2FA: result =', result);
-    
+    console.log("initialize2FA: result =", result);
+
     if (result.success) {
       qrImage.value = result.qrImage;
       otpauthUrl.value = result.key;
       authKey.value = parseSecretFromUrl(result.key);
-      console.log('initialize2FA: success, qrImage set, qrImage =', qrImage.value);
-      
+      console.log(
+        "initialize2FA: success, qrImage set, qrImage =",
+        qrImage.value
+      );
+
       if (!qrImage.value) {
-        console.error('initialize2FA: qrImage is empty');
-        error.value = t('error_occurred');
-        walletStore.showMessage(t('error_occurred'), 'error');
+        console.error("initialize2FA: qrImage is empty");
+        error.value = t("error_occurred");
+        walletStore.showMessage(t("error_occurred"), "error");
         return;
       }
     } else {
-      console.log('initialize2FA: not success');
-      error.value = t('error_occurred');
-      walletStore.showMessage(t('error_occurred'), 'error');
+      console.log("initialize2FA: not success");
+      error.value = t("error_occurred");
+      walletStore.showMessage(t("error_occurred"), "error");
     }
   } catch (error) {
-    console.error('initialize2FA error:', error);
-    error.value = t('error_occurred');
-    walletStore.showMessage(t('error_occurred'), 'error');
+    console.error("initialize2FA error:", error);
+    error.value = t("error_occurred");
+    walletStore.showMessage(t("error_occurred"), "error");
   }
 };
 
 const parseSecretFromUrl = (url) => {
   try {
     // Если это уже не URL, возвращаем как есть
-    if (!url || !url.startsWith('otpauth://')) {
+    if (!url || !url.startsWith("otpauth://")) {
       return url;
     }
-    
+
     // Парсим URL
     const urlObj = new URL(url);
     // Извлекаем параметр secret
-    const secret = urlObj.searchParams.get('secret');
+    const secret = urlObj.searchParams.get("secret");
     return secret || url; // Если secret не найден, возвращаем оригинальную строку
   } catch (error) {
-    console.error('Error parsing 2FA URL:', error);
+    console.error("Error parsing 2FA URL:", error);
     return url; // В случае ошибки возвращаем оригинальную строку
   }
 };
-
 
 const copyKey = () => {
   if (authKey.value) {
     navigator.clipboard.writeText(authKey.value);
     keyCopied.value = true;
-    walletStore.showMessage(t('copied'), 'success', 1500);
+    walletStore.showMessage(t("copied"), "success", 1500);
     setTimeout(() => {
       keyCopied.value = false;
     }, 1500);
@@ -95,7 +97,7 @@ const copyKey = () => {
 
 const openAuthenticatorApp = () => {
   if (otpauthUrl.value) {
-    window.open(otpauthUrl.value, '_blank');
+    window.open(otpauthUrl.value, "_blank");
   }
 };
 
@@ -105,22 +107,22 @@ const goToVerification = () => {
 
 const verifyCode = async () => {
   if (verificationCode.value.length !== 6) {
-    walletStore.showMessage(t('enter_6_digit_code'), 'error');
+    walletStore.showMessage(t("enter_6_digit_code"), "error");
     return;
   }
 
   const success = await walletStore.verify2FACode(verificationCode.value);
-  
+
   if (success) {
     // Обновляем статус 2FA
     await walletStore.check2FAStatus();
     // Успешно - перенаправляем на страницу безопасности
     setTimeout(() => {
-      verificationCode.value = '';
-      router.push({ name: 'safety' });
+      verificationCode.value = "";
+      router.push({ name: "transfer" });
     }, 1500);
   } else {
-    verificationCode.value = '';
+    verificationCode.value = "";
   }
 };
 
@@ -131,36 +133,31 @@ const pasteKeyToInput = () => {
 };
 
 onMounted(async () => {
-  console.log('TwoFactorAuth onMounted: START');
+  console.log("TwoFactorAuth onMounted: START");
   try {
-    console.log('TwoFactorAuth onMounted: checking 2FA status');
-    // Проверяем статус 2FA первым делом
-    await walletStore.check2FAStatus();
-    console.log('TwoFactorAuth onMounted: has2FA =', walletStore.has2FA);
-    
-    if (!walletStore.has2FA) {
-      step.value = 1; // Начинаем настройку 2FA
-      console.log('TwoFactorAuth onMounted: initializing 2FA');
-      try {
-        await initialize2FA();
-      } catch (initError) {
-        console.error('TwoFactorAuth onMounted: initialize2FA error:', initError);
-        error.value = t('error_occurred');
-        walletStore.showMessage(t('error_occurred'), 'error');
-      }
-    } else {
-      step.value = 3; // Если уже включено, показываем статус
-      console.log('TwoFactorAuth onMounted: 2FA already enabled, showing status');
+    step.value = 1; // Начинаем настройку 2FA
+    console.log("TwoFactorAuth onMounted: initializing 2FA");
+    try {
+      await initialize2FA();
+    } catch (initError) {
+      console.error("TwoFactorAuth onMounted: initialize2FA error:", initError);
+      error.value = t("error_occurred");
+      walletStore.showMessage(t("error_occurred"), "error");
     }
   } catch (error) {
-    console.error('TwoFactorAuth onMounted error:', error);
+    console.error("TwoFactorAuth onMounted error:", error);
     // В случае ошибки показываем сообщение и остаемся на странице
-    walletStore.showMessage(t('error_occurred'), 'error');
+    walletStore.showMessage(t("error_occurred"), "error");
   }
-  
-  console.log('TwoFactorAuth onMounted: setting loading to false');
+
+  console.log("TwoFactorAuth onMounted: setting loading to false");
   loading.value = false;
-  console.log('TwoFactorAuth: final step =', step.value, 'loading =', loading.value);
+  console.log(
+    "TwoFactorAuth: final step =",
+    step.value,
+    "loading =",
+    loading.value
+  );
 });
 </script>
 
@@ -172,31 +169,31 @@ onMounted(async () => {
       alt=""
       @click="goBack()"
     />
-    <h1>{{ t('two_factor_auth') }}</h1>
+    <h1>{{ t("two_factor_auth") }}</h1>
     <div class="emp"></div>
   </header>
-  
+
   <!-- Error state -->
   <div v-if="error" class="error-container">
     <div class="error-card">
       <img src="../../assets/error.svg" alt="error" class="error-icon" />
-      <h2>{{ t('error') }}</h2>
+      <h2>{{ t("error") }}</h2>
       <p>{{ error }}</p>
-      <button class="btn" @click="goBack()">{{ t('go_back') }}</button>
+      <button class="btn" @click="goBack()">{{ t("go_back") }}</button>
     </div>
   </div>
-  
+
   <main v-if="!loading && !error" class="container">
     <!-- Шаг 1: Показ QR кода и ключа -->
     <transition name="step-fade" appear>
       <div v-if="step === 1" class="step-container">
         <div class="instructions">
-          <h2>{{ t('setup_2fa') }}</h2>
-          <p>{{ t('2fa_instruction_1') }}</p>
+          <h2>{{ t("setup_2fa") }}</h2>
+          <p>{{ t("2fa_instruction_1") }}</p>
           <ol>
-            <li>{{ t('2fa_instruction_2') }}</li>
-            <li>{{ t('2fa_instruction_3') }}</li>
-            <li>{{ t('2fa_instruction_4') }}</li>
+            <li>{{ t("2fa_instruction_2") }}</li>
+            <li>{{ t("2fa_instruction_3") }}</li>
+            <li>{{ t("2fa_instruction_4") }}</li>
           </ol>
         </div>
         <div class="qr-block">
@@ -204,32 +201,36 @@ onMounted(async () => {
             <img :src="qrSrc" alt="QR Code" class="qr-code" />
           </div>
           <div class="loader" v-else>
-            <p>{{ t('loading') }}...</p>
+            <p>{{ t("loading") }}...</p>
           </div>
-          <button 
-            class="btn secondary-btn" 
+          <button
+            class="btn secondary-btn"
             @click="openAuthenticatorApp"
             v-if="otpauthUrl"
-            style="margin-top: 16px;"
+            style="margin-top: 16px"
           >
-            {{ t('open_authenticator') }}
+            {{ t("open_authenticator") }}
           </button>
         </div>
         <div class="key-section" v-if="authKey">
-          <label class="key-label">{{ t('your_code') }}</label>
-          <div class="key-container" :class="{ copied: keyCopied }" @click="copyKey">
+          <label class="key-label">{{ t("your_code") }}</label>
+          <div
+            class="key-container"
+            :class="{ copied: keyCopied }"
+            @click="copyKey"
+          >
             <span class="key-text">{{ authKey }}</span>
             <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
           </div>
-          <p class="hint">{{ t('tap_to_copy_wallet') }}</p>
+          <p class="hint">{{ t("tap_to_copy_wallet") }}</p>
         </div>
-        <button 
-          class="btn btn-primary" 
+        <button
+          class="btn btn-primary"
           @click="goToVerification"
           :disabled="!qrImage"
-          style="margin-top: 24px;"
+          style="margin-top: 24px"
         >
-          {{ t('continue') }}
+          {{ t("continue") }}
         </button>
       </div>
     </transition>
@@ -238,12 +239,12 @@ onMounted(async () => {
     <transition name="step-fade" appear>
       <div v-if="step === 2" class="step-container">
         <div class="instructions">
-          <h2>{{ t('verify_2fa') }}</h2>
-          <p>{{ t('enter_code_from_app') }}</p>
+          <h2>{{ t("verify_2fa") }}</h2>
+          <p>{{ t("enter_code_from_app") }}</p>
         </div>
         <div class="code-input-container">
-          <input 
-            type="text" 
+          <input
+            type="text"
             v-model="verificationCode"
             :placeholder="t('enter_6_digit_code')"
             maxlength="6"
@@ -251,36 +252,36 @@ onMounted(async () => {
             inputmode="numeric"
             class="code-input"
           />
-          <button 
-            class="paste-btn"
-            @click="pasteKeyToInput"
-            v-if="authKey"
-          >
-            {{ t('paste_key') || 'Вставить ключ' }}
+          <button class="paste-btn" @click="pasteKeyToInput" v-if="authKey">
+            {{ t("paste_key") || "Вставить ключ" }}
           </button>
         </div>
         <div class="key-section" v-if="authKey">
-          <label class="key-label">{{ t('your_code') }}</label>
-          <div class="key-container" :class="{ copied: keyCopied }" @click="copyKey">
+          <label class="key-label">{{ t("your_code") }}</label>
+          <div
+            class="key-container"
+            :class="{ copied: keyCopied }"
+            @click="copyKey"
+          >
             <span class="key-text">{{ authKey }}</span>
             <img src="../../assets/copy.svg" alt="copy" class="copy-icon" />
           </div>
-          <p class="hint">{{ t('tap_to_copy_wallet') }}</p>
+          <p class="hint">{{ t("tap_to_copy_wallet") }}</p>
         </div>
-        <button 
-          class="btn" 
+        <button
+          class="btn"
           @click="verifyCode"
           :disabled="verificationCode.length !== 6"
           :class="{ disabled: verificationCode.length !== 6 }"
         >
-          {{ t('verify_and_enable') }}
+          {{ t("verify_and_enable") }}
         </button>
-        <button 
-          class="btn secondary-btn" 
+        <button
+          class="btn secondary-btn"
           @click="step = 1"
-          style="margin-top: 12px;"
+          style="margin-top: 12px"
         >
-          {{ t('back_to_qr') }}
+          {{ t("back_to_qr") }}
         </button>
       </div>
     </transition>
@@ -290,11 +291,15 @@ onMounted(async () => {
       <div v-if="step === 3" class="step-container enabled-container">
         <div class="status-card">
           <div class="status-icon">
-            <img src="../../assets/check.svg" alt="enabled" class="check-icon" />
+            <img
+              src="../../assets/check.svg"
+              alt="enabled"
+              class="check-icon"
+            />
           </div>
           <div class="status-content">
-            <h2>{{ t('2fa_enabled') }}</h2>
-            <p>{{ t('2fa_enabled_description') }}</p>
+            <h2>{{ t("2fa_enabled") }}</h2>
+            <p>{{ t("2fa_enabled_description") }}</p>
           </div>
         </div>
         <div class="info-card">
@@ -302,12 +307,12 @@ onMounted(async () => {
             <img src="/assets/info.svg" alt="info" />
           </div>
           <div class="info-content">
-            <h3>{{ t('important') }}</h3>
-            <p>{{ t('2fa_disable_warning') }}</p>
+            <h3>{{ t("important") }}</h3>
+            <p>{{ t("2fa_disable_warning") }}</p>
           </div>
         </div>
         <button class="btn" @click="goBack()">
-          {{ t('back_to_profile') }}
+          {{ t("back_to_profile") }}
         </button>
       </div>
     </transition>
@@ -316,7 +321,7 @@ onMounted(async () => {
   <!-- Loading state -->
   <div v-else class="loading-container">
     <AppLoader />
-    <p class="loading-text">{{ t('loading') }}...</p>
+    <p class="loading-text">{{ t("loading") }}...</p>
   </div>
 </template>
 
@@ -357,9 +362,7 @@ onMounted(async () => {
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 8px 32px rgba(222, 236, 81, 0.1),
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(222, 236, 81, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   position: relative;
   overflow: hidden;
@@ -367,7 +370,7 @@ onMounted(async () => {
 }
 
 .step-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -387,7 +390,8 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  box-shadow: 0 20px 40px rgba(222, 236, 81, 0.3), 0 0 0 8px rgba(222, 236, 81, 0.1);
+  box-shadow: 0 20px 40px rgba(222, 236, 81, 0.3),
+    0 0 0 8px rgba(222, 236, 81, 0.1);
   animation: lockPulse 2s ease-in-out infinite;
 }
 
@@ -473,13 +477,18 @@ onMounted(async () => {
 }
 
 .btn-primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.6s ease;
 }
 
@@ -513,13 +522,18 @@ onMounted(async () => {
 }
 
 .btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -563,21 +577,23 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 20px;
   padding: 24px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 4px 16px rgba(222, 236, 81, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(222, 236, 81, 0.1);
   animation: fadeInUp 0.6s ease-out 0.4s both;
   position: relative;
 }
 
 .qr-block::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(135deg, rgba(222, 236, 81, 0.3), rgba(184, 212, 60, 0.3));
+  background: linear-gradient(
+    135deg,
+    rgba(222, 236, 81, 0.3),
+    rgba(184, 212, 60, 0.3)
+  );
   border-radius: 22px;
   z-index: -1;
   opacity: 0;
@@ -595,8 +611,7 @@ onMounted(async () => {
   margin-bottom: 12px;
   animation: fadeInUp 0.8s ease-out, gentlePulse 4s infinite 1s;
   border-radius: 16px;
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.15),
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
     0 4px 16px rgba(222, 236, 81, 0.2);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -607,9 +622,7 @@ onMounted(async () => {
 
 .qr-code:hover {
   transform: scale(1.05) rotate(1deg);
-  box-shadow:
-    0 16px 50px rgba(0, 0, 0, 0.2),
-    0 6px 20px rgba(222, 236, 81, 0.3);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(222, 236, 81, 0.3);
 }
 
 .key-section {
@@ -642,13 +655,18 @@ onMounted(async () => {
 }
 
 .key-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(222, 236, 81, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(222, 236, 81, 0.1),
+    transparent
+  );
   transition: left 0.6s ease;
 }
 
@@ -660,9 +678,7 @@ onMounted(async () => {
   border-color: rgba(222, 236, 81, 0.6);
   background: rgba(255, 255, 255, 0.95);
   transform: translateY(-3px);
-  box-shadow:
-    0 12px 40px rgba(222, 236, 81, 0.2),
-    0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 40px rgba(222, 236, 81, 0.2), 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .key-text {
@@ -729,7 +745,7 @@ onMounted(async () => {
 
 .code-input:focus {
   border-color: #deec51 !important;
-  box-shadow: 0 0 0 4px rgba(222, 236, 81, 0.2), 0 8px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 0 0 4px rgba(222, 236, 81, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
   transform: scale(1.02);
 }
 
@@ -863,7 +879,8 @@ onMounted(async () => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -872,13 +889,16 @@ onMounted(async () => {
 }
 
 @keyframes lockPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
-    box-shadow: 0 20px 40px rgba(222, 236, 81, 0.3), 0 0 0 8px rgba(222, 236, 81, 0.1);
+    box-shadow: 0 20px 40px rgba(222, 236, 81, 0.3),
+      0 0 0 8px rgba(222, 236, 81, 0.1);
   }
   50% {
     transform: scale(1.1);
-    box-shadow: 0 25px 50px rgba(222, 236, 81, 0.4), 0 0 0 12px rgba(222, 236, 81, 0.15);
+    box-shadow: 0 25px 50px rgba(222, 236, 81, 0.4),
+      0 0 0 12px rgba(222, 236, 81, 0.15);
   }
 }
 
@@ -963,13 +983,22 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeInOut {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInUp {
@@ -993,16 +1022,15 @@ onMounted(async () => {
 }
 
 @keyframes gentlePulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
-    box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.15),
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
       0 4px 16px rgba(222, 236, 81, 0.2);
   }
   50% {
     transform: scale(1.02);
-    box-shadow:
-      0 16px 50px rgba(0, 0, 0, 0.2),
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2),
       0 6px 20px rgba(222, 236, 81, 0.3);
   }
 }

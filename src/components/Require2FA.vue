@@ -27,8 +27,7 @@ const router = useRouter();
 
 const goToSecurity = () => {
   router.push({ name: 'twoFactorAuth', query: { from: 'transfer' } });
-};
-
+}
 const goBack = () => {
   router.back();
 };
