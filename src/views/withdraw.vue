@@ -45,13 +45,25 @@ const handleWithdraw = async () => {
   
   isWithdrawing.value = true;
   try {
-    await walletStore.withdrawFunds(
+    console.log('Starting withdraw with params:', {
+      amount: amount.value,
+      networkId,
+      walletAddress: walletAddress.value,
+      memo: memo.value,
+      twoFactorCode: twoFactorCode.value.length
+    });
+    
+    const result = await walletStore.withdrawFunds(
       amount.value,
       networkId,
       walletAddress.value,
       memo.value,
       twoFactorCode.value.trim()
     );
+    
+    console.log('Withdraw result:', result);
+  } catch (error) {
+    console.error('Withdraw error in component:', error);
   } finally {
     isWithdrawing.value = false;
   }

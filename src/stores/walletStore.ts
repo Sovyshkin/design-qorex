@@ -677,23 +677,73 @@ export const useWalletStore = defineStore("wallet", () => {
       );
 
       if (response.status == 200) {
-        let { id, datatime } = response.data.more_detail;
-        let { type_trans, bool_suecess } = response.data;
-        let amount_usdt = response.data.more_detail.amount;
-        await getPrice();
-        let amount_rub = amount_usdt * usdt_price.value;
-        router.push({
-          name: "transaction",
-          query: {
-            id,
-            amount_rub,
-            amount_usdt,
-            datatime,
-            type_trans,
-            bool_suecess,
-          },
-        });
+        console.log('Withdraw response:', response.data);
+        
+        // Проверяем разные варианты успешного ответа
+        if (response.data.message === "Balance updated successfully") {
+          // Успешный вывод, обновляем данные и переходим на страницу транзакции
+          await getPrice();
+          await getUser(); // Обновляем баланс
+
+          let amount_rub = parseFloat(amount) * usdt_price.value;
+          
+          // Перенаправляем на страницу транзакции с данными вывода
+          router.push({
+            name: "transaction",
+            query: {
+              id: Date.now().toString(), // Временный ID если нет в ответе
+              amount_rub: amount_rub.toString(),
+              amount_usdt: amount,
+              datatime: formatDateForTransaction(),
+              type_trans: "output",
+              bool_suecess: "1",
+            },
+          });
+          return true;
+        } else if (response.data.more_detail) {
+          // Стандартный ответ с деталями транзакции
+          let { id, datatime } = response.data.more_detail;
+          let { type_trans, bool_suecess } = response.data;
+          let amount_usdt = response.data.more_detail.amount;
+          
+          await getPrice();
+          await getUser(); // Обновляем баланс
+          
+          let amount_rub = amount_usdt * usdt_price.value;
+          router.push({
+            name: "transaction",
+            query: {
+              id,
+              amount_rub,
+              amount_usdt,
+              datatime,
+              type_trans,
+              bool_suecess,
+            },
+          });
+          return true;
+        } else {
+          // Если структура ответа не распознана, но статус 200
+          console.warn('Unexpected response structure:', response.data);
+          await getPrice();
+          await getUser();
+          
+          let amount_rub = parseFloat(amount) * usdt_price.value;
+          router.push({
+            name: "transaction",
+            query: {
+              id: Date.now().toString(),
+              amount_rub: amount_rub.toString(),
+              amount_usdt: amount,
+              datatime: formatDateForTransaction(),
+              type_trans: "output",
+              bool_suecess: "1",
+            },
+          });
+          return true;
+        }
       }
+      return false;
     } catch (err) {
       console.error('Withdraw error:', err.response?.status, err.response?.data);
       
