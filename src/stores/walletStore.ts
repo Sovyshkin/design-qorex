@@ -647,7 +647,8 @@ export const useWalletStore = defineStore("wallet", () => {
     amount: string,
     network: string,
     wallet: string,
-    memo?: string
+    memo?: string,
+    twoFactorCode?: string
   ) => {
     try {
       loaderScan.value = true;
@@ -663,6 +664,11 @@ export const useWalletStore = defineStore("wallet", () => {
       // Добавляем memo только если оно заполнено
       if (memo && memo.trim() !== "") {
         params.append("memo", memo);
+      }
+
+      // Добавляем 2FA код если передан
+      if (twoFactorCode && twoFactorCode.trim() !== "") {
+        params.append("key", twoFactorCode.trim());
       }
 
       let response = await axios.post(
@@ -689,8 +695,12 @@ export const useWalletStore = defineStore("wallet", () => {
         });
       }
     } catch (err) {
+      console.error('Withdraw error:', err.response?.status, err.response?.data);
+      
       if (err.response?.data?.detail == "Недостаточно средств") {
         errMessage.value = t("insufficient_funds");
+      } else if (err.response?.data?.detail === "Неверный код" || err.response?.data?.detail === "Invalid code") {
+        errMessage.value = t("invalid_2fa_code");
       } else {
         errMessage.value = t("failed_text");
       }

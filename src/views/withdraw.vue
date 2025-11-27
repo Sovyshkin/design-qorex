@@ -1,16 +1,23 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import AppLoader from '@/components/AppLoader.vue';
+import Require2FA from '@/components/Require2FA.vue';
+import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
+const router = useRouter();
 const amount = ref("");
 const walletAddress = ref("");
 const memo = ref("");
 const selectedNetwork = ref("USDT_TRC20");
 const isWithdrawing = ref(false); // Состояние загрузки для кнопки вывода
+const twoFactorCode = ref("");
+const twoFactorKey = ref("");
+const isTwoFactorSetupComplete = ref(false);
+const isLoading = ref(true);
 
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
@@ -19,7 +26,15 @@ const networks = [
 ];
 
 const isFormValid = computed(() => {
-  return amount.value && walletAddress.value && selectedNetwork.value && !isWithdrawing.value;
+  const code = twoFactorCode.value.trim();
+  const amountNum = parseFloat(amount.value);
+  return amount.value &&
+         walletAddress.value &&
+         selectedNetwork.value &&
+         amountNum > 0 &&
+         amountNum <= walletStore.balance &&
+         code.length === 6 &&
+         !isWithdrawing.value;
 });
 
 const handleWithdraw = async () => {
@@ -34,34 +49,99 @@ const handleWithdraw = async () => {
       amount.value,
       networkId,
       walletAddress.value,
-      memo.value
+      memo.value,
+      twoFactorCode.value.trim()
     );
   } finally {
     isWithdrawing.value = false;
   }
 };
+
+const checkTwoFactorAccess = async () => {
+  try {
+    // Делаем только один запрос на /fa_take для проверки статуса
+    const result = await walletStore.enable2FA();
+    
+    if (result.success && result.qrImage && result.key) {
+      // В ответе есть QR и ключ - нужно настроить 2FA
+      twoFactorKey.value = result.key;
+      // Не показываем форму вывода, пока 2FA не настроен
+    } else if (result.detail === "Уже подключено!") {
+      // 2FA уже подключен - устанавливаем флаг и разрешаем доступ к форме
+      walletStore.has2FA = true;
+      isTwoFactorSetupComplete.value = true;
+    } else {
+      // Другой случай - разрешаем доступ к форме
+      isTwoFactorSetupComplete.value = true;
+    }
+  } catch (error) {
+    console.error('Error checking 2FA access:', error);
+    // Если ошибка в fa_take, значит 2FA не настроен, показываем Require2FA
+    isTwoFactorSetupComplete.value = false;
+  } finally {
+    // Всегда завершаем загрузку
+    isLoading.value = false;
+  }
+};
+
+const preventNegativeAmount = (event) => {
+  const value = parseFloat(event.target.value);
+  if (value < 0) {
+    amount.value = '';
+  } else if (value > walletStore.balance) {
+    amount.value = walletStore.balance.toString();
+  }
+};
+
+onMounted(async () => {
+  // Проверяем доступ к странице вывода через 2FA
+  await checkTwoFactorAccess();
+});
 </script>
 
 <template>
-  <transition name="fade-down" appear>
-    <header class="header">
-      <img
-        class="arrow"
-        src="../assets/arrow-left.svg"
-        alt=""
-        @click="walletStore.goBack()"
-      />
-      <h1>{{ t("withdraw_page") }}</h1>
-      <div class="emp"></div>
-    </header>
-  </transition>
-  <transition name="fade-scale" appear>
-    <main class="container">
-    <div class="form-container">
-      <div class="group">
-        <input type="number" :placeholder="t('select_amount')" id="amount" v-model="amount" :disabled="isWithdrawing"/>
-        <span class="group-item">USDT</span>
-      </div>
+  <!-- Показываем загрузку пока проверяем статус 2FA -->
+  <div v-if="isLoading" class="loading-screen">
+    <AppLoader />
+  </div>
+
+  <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
+  <Require2FA v-else-if="!isTwoFactorSetupComplete" />
+
+  <!-- Показываем форму вывода, если 2FA успешно подключен -->
+  <div v-else-if="isTwoFactorSetupComplete">
+    <transition name="fade-down" appear>
+      <header class="header">
+        <img
+          class="arrow"
+          src="../assets/arrow-left.svg"
+          alt=""
+          @click="walletStore.goBack()"
+        />
+        <h1>{{ t("withdraw_page") }}</h1>
+        <div class="emp"></div>
+      </header>
+    </transition>
+    <transition name="fade-scale" appear>
+      <main class="container">
+      <div class="form-container">
+        <div class="group">
+          <input 
+            type="number" 
+            :placeholder="t('select_amount')" 
+            id="amount" 
+            v-model="amount" 
+            :disabled="isWithdrawing"
+            @input="preventNegativeAmount"
+          />
+          <span class="group-item">USDT</span>
+        </div>
+        
+        <!-- Отображение доступного баланса -->
+        <div class="balance-info">
+          <span>{{ t('available_balance') }}</span>
+          <span class="balance-value">{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</span>
+        </div>
       
       <div class="network-selector">
         <h3>Выберите сеть</h3>
@@ -106,6 +186,21 @@ const handleWithdraw = async () => {
         />
         <p class="memo-note">{{ t('memo_warning') }}</p>
       </div>
+      
+      <!-- Поле ввода кода 2FA -->
+      <div class="code-input-section">
+        <h4>{{ t('enter_2fa_code') }}</h4>
+        <input 
+          type="text" 
+          :placeholder="t('enter_6_digit_code')" 
+          v-model="twoFactorCode"
+          :disabled="isWithdrawing"
+          maxlength="6"
+          class="code-input"
+          inputmode="numeric"
+          pattern="[0-9]*"
+        />
+      </div>
     </div>
     
     <button 
@@ -118,7 +213,8 @@ const handleWithdraw = async () => {
       <span v-else>{{ t("withdraw_funds") }}</span>
     </button>
     </main>
-  </transition>
+    </transition>
+  </div>
 </template>
 
 <style scoped>
@@ -319,5 +415,61 @@ select:disabled {
 .network-item.disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.balance-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.balance-value {
+  font-weight: 500;
+  color: #141414;
+}
+
+.code-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.code-input-section h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #141414;
+  margin: 0;
+}
+
+.code-input {
+  width: 100%;
+  border: 2px solid #141414 !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  font-size: 20px !important;
+  text-align: center;
+  letter-spacing: 6px;
+  font-weight: 500;
+  background: #fff !important;
+  outline: none;
+  caret-color: #000 !important;
+}
+
+.code-input::placeholder {
+  letter-spacing: normal !important;
+  font-size: 14px !important;
+  color: #a5a5a5 !important;
 }
 </style>
