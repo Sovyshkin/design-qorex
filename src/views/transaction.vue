@@ -24,23 +24,37 @@ const copy = (text) => {
 };
 
 const formatDateTime = (dateInput) => {
+  if (!dateInput) {
+    return "Некорректная дата";
+  }
+
   let date;
   
   // Проверяем если формат "DD.MM.YYYY-HH:MM:SS"
   if (typeof dateInput === 'string' && dateInput.includes('-') && dateInput.includes('.')) {
-    // Разбираем формат "30.10.2025-14:04:34"
-    const [datePart, timePart] = dateInput.split('-');
-    const [day, month, year] = datePart.split('.');
-    const [hours, minutes, seconds] = timePart.split(':');
-    
-    // Создаем дату в формате ISO: YYYY-MM-DDTHH:MM:SS
-    const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds ? seconds.padStart(2, '0') : '00'}`;
-    date = new Date(isoString);
+    try {
+      // Разбираем формат "30.10.2025-14:04:34"
+      const [datePart, timePart] = dateInput.split('-');
+      const [day, month, year] = datePart.split('.');
+      const [hours, minutes, seconds] = timePart.split(':');
+      
+      // Создаем дату в формате ISO: YYYY-MM-DDTHH:MM:SS
+      const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds ? seconds.padStart(2, '0') : '00'}`;
+      date = new Date(isoString);
+    } catch (error) {
+      console.error('Error parsing date:', dateInput, error);
+      date = new Date(dateInput);
+    }
+  } else if (typeof dateInput === 'string' && /^\d+$/.test(dateInput)) {
+    // Если это timestamp в виде строки
+    date = new Date(parseInt(dateInput));
   } else {
+    // Пробуем создать дату напрямую
     date = new Date(dateInput);
   }
   
   if (isNaN(date.getTime())) {
+    console.error('Invalid date:', dateInput);
     return "Некорректная дата";
   }
   
