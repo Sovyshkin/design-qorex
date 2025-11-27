@@ -699,6 +699,8 @@ const stopCamera = () => {
 
 // Возврат назад
 const goBack = () => {
+  // Восстанавливаем навбар при закрытии сканера
+  document.body.classList.remove('scanner-active');
   stopCamera();
   router.back();
 };
@@ -841,6 +843,9 @@ const confirmPayment = async () => {
 
 // Lifecycle hooks
 onMounted(async () => {
+  // Скрываем навбар при открытии сканера
+  document.body.classList.add('scanner-active');
+  
   // Тестируем QrScanner
   const qrScannerWorks = await testQrScanner();
   
@@ -855,6 +860,8 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  // Восстанавливаем навбар при закрытии сканера
+  document.body.classList.remove('scanner-active');
   stopCamera();
 });
 </script>
@@ -1992,6 +1999,25 @@ color: white;
     min-height: 52px;
     border-radius: 18px;
   }
+}
+
+/* Глобальные стили для скрытия навбара когда активен сканер */
+:global(body.scanner-active) {
+  overflow: hidden;
+}
+
+/* Скрываем навбар по всем возможным селекторам */
+:global(body.scanner-active .navbar),
+:global(body.scanner-active .navbar-fixed),
+:global(body.scanner-active nav.navbar),
+:global(body.scanner-active .nav-bar),
+:global(body.scanner-active nav),
+:global(body.scanner-active .bottom-nav) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(100%) !important;
 }
 </style>
 
