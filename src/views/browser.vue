@@ -18,7 +18,7 @@ const { t } = useI18n();
     justify-content: center;
     gap: 20px;
     font-size: 20px;
-    font-weight: 600s;
+    font-weight: 600;
     padding: 10px 10px 90px 10px;
     overflow-y: auto;
 }
