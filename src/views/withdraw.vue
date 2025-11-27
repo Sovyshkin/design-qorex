@@ -4,6 +4,7 @@ import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted } from "vue";
 import AppLoader from '@/components/AppLoader.vue';
 import Require2FA from '@/components/Require2FA.vue';
+import WithdrawSuccess from '@/components/WithdrawSuccess.vue';
 import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
@@ -18,6 +19,12 @@ const twoFactorCode = ref("");
 const twoFactorKey = ref("");
 const isTwoFactorSetupComplete = ref(false);
 const isLoading = ref(true);
+const showSuccessModal = ref(false);
+const withdrawData = ref({
+  amount: '',
+  network: '',
+  walletAddress: ''
+});
 
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
@@ -62,6 +69,25 @@ const handleWithdraw = async () => {
     );
     
     console.log('Withdraw result:', result);
+    
+    // Если вывод успешен, показываем модальное окно с подтверждением
+    if (result) {
+      // Сохраняем данные для модального окна
+      const networkName = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
+      withdrawData.value = {
+        amount: amount.value,
+        network: networkName,
+        walletAddress: walletAddress.value
+      };
+      
+      showSuccessModal.value = true;
+      
+      // Очищаем форму
+      amount.value = '';
+      walletAddress.value = '';
+      memo.value = '';
+      twoFactorCode.value = '';
+    }
   } catch (error) {
     console.error('Withdraw error in component:', error);
   } finally {
@@ -103,6 +129,10 @@ const preventNegativeAmount = (event) => {
   } else if (value > walletStore.balance) {
     amount.value = walletStore.balance.toString();
   }
+};
+
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
 };
 
 onMounted(async () => {
@@ -227,6 +257,17 @@ onMounted(async () => {
     </main>
     </transition>
   </div>
+  
+  <!-- Модальное окно с подтверждением успешного вывода -->
+  <Transition name="modal" appear>
+    <WithdrawSuccess
+      v-if="showSuccessModal"
+      :amount="withdrawData.amount"
+      :network="withdrawData.network"
+      :wallet-address="withdrawData.walletAddress"
+      @close="closeSuccessModal"
+    />
+  </Transition>
 </template>
 
 <style scoped>
@@ -483,5 +524,16 @@ select:disabled {
   letter-spacing: normal !important;
   font-size: 14px !important;
   color: #a5a5a5 !important;
+}
+
+/* Анимации для модального окна */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 </style>

@@ -161,7 +161,10 @@ const messages = {
     receiving: "Получение",
     transfer_transaction: "Перевод",
     user_not_found: "Пользователь с таким номером UID не найден",
-    wallet_copied: "Адрес кошелька скопирован"
+    wallet_copied: "Адрес кошелька скопирован",
+    withdraw_request_sent: "Заявка на вывод отправлена",
+    withdraw_processing_message: "Ваша заявка принята в обработку. Средства будут переведены в течение 24 часов.",
+    view_history: "Посмотреть историю"
   },
   EN: {
     referal: "Referral program",
@@ -325,7 +328,10 @@ const messages = {
     receiving: "Receiving",
     transfer_transaction: "Transfer",
     user_not_found: "User with this UID number not found",
-    wallet_copied: "Wallet address copied"
+    wallet_copied: "Wallet address copied",
+    withdraw_request_sent: "Withdrawal request sent",
+    withdraw_processing_message: "Your request has been accepted for processing. Funds will be transferred within 24 hours.",
+    view_history: "View history"
   },
 };
 
