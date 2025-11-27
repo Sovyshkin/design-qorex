@@ -259,8 +259,13 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const getUserInfo = () => {
+    console.log('getUserInfo called');
+    console.log('Telegram object:', window.Telegram);
+    console.log('WebApp object:', window.Telegram?.WebApp);
+    
     if (window.Telegram && window.Telegram.WebApp) {
       const initData = window.Telegram.WebApp.initData;
+      console.log('initData:', initData);
 
       if (initData) {
         const decodedInitData = decodeURIComponent(initData);
@@ -355,12 +360,25 @@ export const useWalletStore = defineStore("wallet", () => {
         }
 
         if (userString) {
-          // userTg.value = JSON.parse(userString);
+          console.log('userString:', userString);
+          userTg.value = JSON.parse(userString);
+          console.log('Parsed user data:', userTg.value);
           localStorage.setItem("user", JSON.stringify(userTg.value));
           if (start_param == "error_trasaction") {
             router.push({ name: "transaction_failed" });
           }
+        } else {
+          console.log('No userString found in initData');
         }
+      } else {
+        console.log('No initData found');
+      }
+    } else {
+      console.log('Telegram WebApp not available, using fallback data');
+      // Fallback данные для разработки/тестирования вне Telegram
+      if (!userTg.value.id) {
+        // Используем тестовые данные, которые уже есть в коде
+        console.log('Using fallback user data:', userTg.value);
       }
     }
   };
