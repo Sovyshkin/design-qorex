@@ -3,6 +3,7 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted, watch } from "vue";
 import Require2FA from '@/components/Require2FA.vue';
+import AppLoader from '@/components/AppLoader.vue';
 import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
@@ -14,6 +15,7 @@ const myWallet = ref("");
 const twoFactorCode = ref("");
 const twoFactorKey = ref("");
 const isTwoFactorSetupComplete = ref(false); // Новое состояние для подтверждения успешного подключения 2FA
+const isLoading = ref(true); // Состояние загрузки для показа анимации
 const walletCopied = ref(false);
 
 const isFormValid = computed(() => {
@@ -115,6 +117,9 @@ const checkTwoFactorAccess = async () => {
     console.error('Error checking 2FA access:', error);
     // Если ошибка в fa_take, значит 2FA не настроен, показываем Require2FA
     isTwoFactorSetupComplete.value = false;
+  } finally {
+    // Всегда завершаем загрузку
+    isLoading.value = false;
   }
 };
 
@@ -134,8 +139,13 @@ onMounted(async () => {
 </script>
 
 <template>
+  <!-- Показываем загрузку пока проверяем статус 2FA -->
+  <div v-if="isLoading" class="loading-screen">
+    <AppLoader />
+  </div>
+
   <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
-  <Require2FA v-if="!isTwoFactorSetupComplete" />
+  <Require2FA v-else-if="!isTwoFactorSetupComplete" />
 
   <!-- Показываем форму перевода, если 2FA успешно подключен -->
   <div v-else-if="isTwoFactorSetupComplete">
@@ -811,5 +821,14 @@ select::placeholder {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* Экран загрузки */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 </style>
