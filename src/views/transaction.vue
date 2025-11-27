@@ -31,6 +31,7 @@ const formatDateTime = (dateInput) => {
   let date;
   
   // Проверяем если формат "DD.MM.YYYY-HH:MM:SS"
+  // Важно: используем конструктор Date с отдельными параметрами для корректной работы с часовым поясом
   if (typeof dateInput === 'string' && dateInput.includes('-') && dateInput.includes('.')) {
     try {
       // Разбираем формат "30.10.2025-14:04:34"
@@ -38,9 +39,17 @@ const formatDateTime = (dateInput) => {
       const [day, month, year] = datePart.split('.');
       const [hours, minutes, seconds] = timePart.split(':');
       
-      // Создаем дату в формате ISO: YYYY-MM-DDTHH:MM:SS
-      const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds ? seconds.padStart(2, '0') : '00'}`;
-      date = new Date(isoString);
+      // Создаем дату напрямую в локальном часовом поясе
+      // Используем конструктор Date(year, month, day, hours, minutes, seconds)
+      // month-1 потому что месяцы в JavaScript начинаются с 0
+      date = new Date(
+        parseInt(year), 
+        parseInt(month) - 1, 
+        parseInt(day), 
+        parseInt(hours), 
+        parseInt(minutes), 
+        seconds ? parseInt(seconds) : 0
+      );
     } catch (error) {
       console.error('Error parsing date:', dateInput, error);
       date = new Date(dateInput);
@@ -58,6 +67,7 @@ const formatDateTime = (dateInput) => {
     return "Некорректная дата";
   }
   
+  // Форматируем дату в локальном часовом поясе пользователя
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();

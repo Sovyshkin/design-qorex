@@ -6,14 +6,18 @@ import { useRouter } from "vue-router";
 import Cookies from "js-cookie";
 import axios from "axios";
 
-// Вспомогательная функция для форматирования даты
+// Вспомогательная функция для форматирования даты в локальном часовом поясе
 const formatDateForTransaction = (date = new Date()) => {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  // Убеждаемся, что работаем с объектом Date в локальном часовом поясе
+  const localDate = new Date(date.getTime());
+  
+  const day = String(localDate.getDate()).padStart(2, '0');
+  const month = String(localDate.getMonth() + 1).padStart(2, '0');
+  const year = localDate.getFullYear();
+  const hours = String(localDate.getHours()).padStart(2, '0');
+  const minutes = String(localDate.getMinutes()).padStart(2, '0');
+  const seconds = String(localDate.getSeconds()).padStart(2, '0');
+  
   return `${day}.${month}.${year}-${hours}:${minutes}:${seconds}`;
 };
 

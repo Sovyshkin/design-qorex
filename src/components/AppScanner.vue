@@ -122,6 +122,55 @@
           </div>
         </div>
       </div>
+
+      <!-- Модальное окно подтверждения платежа -->
+      <div v-if="showPaymentModal" class="payment-modal-overlay" @click="closePaymentModal">
+        <div class="payment-modal" @click.stop>
+          <div class="payment-header">
+            <div class="payment-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="qr-payment-icon">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2" fill="currentColor" opacity="0.3"/>
+              </svg>
+            </div>
+            <h3>Подтверждение платежа</h3>
+            <p>Проверьте данные платежа перед подтверждением</p>
+          </div>
+          
+          <div class="payment-details">
+            <div class="amount-display">
+              <div class="amount-label">Сумма к оплате</div>
+              <div class="amount-value">
+                <span class="amount-number">{{ paymentAmount }}</span>
+                <span class="amount-currency">₽</span>
+              </div>
+            </div>
+            
+            <div class="payment-info">
+              <div class="info-item">
+                <div class="info-label">Способ оплаты</div>
+                <div class="info-value">QR-код</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="payment-buttons">
+            <button class="payment-cancel-btn" @click="closePaymentModal" :disabled="isProcessingPayment">
+              Отмена
+            </button>
+            <button 
+              class="payment-confirm-btn" 
+              @click="confirmPayment"
+              :disabled="isProcessingPayment"
+              :class="{ processing: isProcessingPayment }"
+            >
+              <div v-if="isProcessingPayment" class="processing-spinner"></div>
+              <span v-if="!isProcessingPayment">Подтвердить оплату</span>
+              <span v-else>Обработка...</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -157,6 +206,12 @@ const showAmountModal = ref(false);
 const amountInput = ref('');
 const pendingQrData = ref('');
 const amountError = ref('');
+
+// Состояние модального окна подтверждения платежа
+const showPaymentModal = ref(false);
+const paymentAmount = ref('');
+const paymentUrl = ref('');
+const isProcessingPayment = ref(false);
 
 // Функция для отображения сообщений
 const showMessageWithType = (text, type = 'info', duration = 3000) => {
@@ -324,6 +379,68 @@ const hasAmountInUrl = (url) => {
   }
 };
 
+// Парсинг суммы из QR-кода
+const parseAmountFromUrl = (url) => {
+  try {
+    const urlObj = new URL(url);
+    const params = urlObj.searchParams;
+    
+    // Проверяем amount (точная сумма в рублях)
+    if (params.has('amount')) {
+      const amount = parseFloat(params.get('amount'));
+      if (!isNaN(amount) && amount > 0) {
+        return amount.toFixed(2);
+      }
+    }
+    
+    // Проверяем sum (сумма в копейках)
+    if (params.has('sum')) {
+      const sum = parseInt(params.get('sum'));
+      if (!isNaN(sum) && sum > 0) {
+        // Конвертируем копейки в рубли (делим на 100)
+        return (sum / 100).toFixed(2);
+      }
+    }
+    
+    // Проверяем value
+    if (params.has('value')) {
+      const value = parseFloat(params.get('value'));
+      if (!isNaN(value) && value > 0) {
+        return value.toFixed(2);
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    // Если не удается парсить как URL, проверяем строку напрямую
+    const amountMatch = url.match(/amount=([0-9]+\.?[0-9]*)/i);
+    if (amountMatch) {
+      const amount = parseFloat(amountMatch[1]);
+      if (!isNaN(amount) && amount > 0) {
+        return amount.toFixed(2);
+      }
+    }
+    
+    const sumMatch = url.match(/sum=([0-9]+)/i);
+    if (sumMatch) {
+      const sum = parseInt(sumMatch[1]);
+      if (!isNaN(sum) && sum > 0) {
+        return (sum / 100).toFixed(2);
+      }
+    }
+    
+    const valueMatch = url.match(/value=([0-9]+\.?[0-9]*)/i);
+    if (valueMatch) {
+      const value = parseFloat(valueMatch[1]);
+      if (!isNaN(value) && value > 0) {
+        return value.toFixed(2);
+      }
+    }
+    
+    return null;
+  }
+};
+
 // Добавление суммы в URL
 const addAmountToUrl = (url, amount) => {
   try {
@@ -364,10 +481,24 @@ const handleQRDetected = async (qrData) => {
       return;
     }
     
-    showMessageWithType('QR-код найден! Обрабатываем...', 'success', 2000);
-    
-    // Отправляем в store
-    await walletStore.qrTake(qrData);
+    // Парсим сумму из QR-кода
+    const amount = parseAmountFromUrl(qrData);
+    if (amount) {
+      // Показываем модальное окно подтверждения платежа
+      paymentAmount.value = amount;
+      paymentUrl.value = qrData;
+      showPaymentModal.value = true;
+      isProcessingQR.value = false; // Сбрасываем флаг для возможности дальнейшей обработки
+    } else {
+      showMessageWithType('Не удалось определить сумму платежа', 'error', 3000);
+      // Перезапускаем сканирование через 3 секунды
+      setTimeout(() => {
+        if (qrScanner.value && cameraReady.value) {
+          qrScanner.value.start();
+          startContinuousScanning();
+        }
+      }, 3000);
+    }
     
   } catch (error) {
     showMessageWithType('Ошибка обработки QR-кода', 'error');
@@ -473,7 +604,7 @@ const captureAndScanManual = async () => {
     
     if (qrData && qrData.data) {
       if (isValidPaymentUrl(qrData.data)) {
-        showMessageWithType('QR-код распознан!', 'success', 2000);
+        showMessageWithType('QR-код распознан!', 'success', 1000);
         setTimeout(() => {
           handleQRDetected(qrData.data);
         }, 500);
@@ -536,7 +667,7 @@ const handleFileUpload = async (event) => {
     
     if (qrData) {
       if (isValidPaymentUrl(qrData)) {
-        showMessageWithType('QR-код распознан из изображения!', 'success', 2000);
+        showMessageWithType('QR-код распознан из изображения!', 'success', 1000);
         setTimeout(() => {
           handleQRDetected(qrData);
         }, 500);
@@ -636,18 +767,17 @@ const confirmAmount = async () => {
     const normalizedAmount = amountInput.value.replace(',', '.');
     const amount = parseFloat(normalizedAmount).toFixed(2);
     
-    // Добавляем сумму к URL
-    const urlWithAmount = addAmountToUrl(pendingQrData.value, amount);
+    // Показываем модальное окно подтверждения с введенной суммой
+    paymentAmount.value = amount;
+    paymentUrl.value = addAmountToUrl(pendingQrData.value, amount);
     
-    // Закрываем модальное окно
+    // Закрываем модальное окно ввода суммы
     showAmountModal.value = false;
     
-    showMessageWithType('Обрабатываем платеж...', 'success', 2000);
+    // Показываем модальное окно подтверждения
+    showPaymentModal.value = true;
     
-    // Отправляем в store
-    await walletStore.qrTake(urlWithAmount);
-    
-    // Очищаем состояние
+    // Очищаем состояние ввода суммы
     amountInput.value = '';
     pendingQrData.value = '';
     
@@ -659,6 +789,52 @@ const confirmAmount = async () => {
       closeAmountModal();
     }, 3000);
   } finally {
+    isProcessingQR.value = false;
+  }
+};
+
+// Функции для модального окна подтверждения платежа
+const closePaymentModal = () => {
+  showPaymentModal.value = false;
+  paymentAmount.value = '';
+  paymentUrl.value = '';
+  isProcessingPayment.value = false;
+  isProcessingQR.value = false;
+  
+  // Перезапускаем сканирование
+  if (qrScanner.value && cameraReady.value) {
+    qrScanner.value.start();
+    startContinuousScanning();
+  }
+};
+
+const confirmPayment = async () => {
+  if (isProcessingPayment.value) return;
+  
+  try {
+    isProcessingPayment.value = true;
+    
+    showMessageWithType('Обрабатываем платеж...', 'info', 0);
+    
+    // Отправляем в store
+    await walletStore.qrTake(paymentUrl.value);
+    
+    // Закрываем модальное окно
+    showPaymentModal.value = false;
+    
+    // Очищаем состояние
+    paymentAmount.value = '';
+    paymentUrl.value = '';
+    
+  } catch (error) {
+    showMessageWithType('Ошибка обработки платежа', 'error', 3000);
+    
+    // Перезапускаем сканирование через 3 секунды
+    setTimeout(() => {
+      closePaymentModal();
+    }, 3000);
+  } finally {
+    isProcessingPayment.value = false;
     isProcessingQR.value = false;
   }
 };
@@ -1355,6 +1531,466 @@ color: white;
   .confirm-btn {
     padding: 14px 20px;
     font-size: 15px;
+  }
+}
+
+/* Модальное окно подтверждения платежа */
+.payment-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+  animation: paymentOverlayAppear 0.4s ease-out;
+}
+
+@keyframes paymentOverlayAppear {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(16px);
+  }
+}
+
+.payment-modal {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 32px;
+  padding: 40px 32px;
+  width: 90%;
+  max-width: 480px;
+  margin: 0 20px;
+  box-shadow: 
+    0 40px 80px -20px rgba(0, 0, 0, 0.25),
+    0 25px 50px -12px rgba(0, 0, 0, 0.15),
+    0 12px 24px -8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: paymentModalAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(24px);
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+  border-radius: 32px;
+}
+
+@keyframes paymentModalAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-60px);
+    filter: blur(8px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.03) translateY(-30px);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.payment-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.payment-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #141414;
+  box-shadow: 
+    0 16px 32px -8px rgba(222, 236, 81, 0.3),
+    0 8px 16px -4px rgba(222, 236, 81, 0.2);
+  animation: paymentIconAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+@keyframes paymentIconAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.qr-payment-icon {
+  animation: qrIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes qrIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.payment-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  animation: paymentTextAppear 0.5s ease-out 0.3s both;
+}
+
+.payment-header p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+  line-height: 1.4;
+  font-weight: 400;
+  animation: paymentTextAppear 0.5s ease-out 0.4s both;
+}
+
+@keyframes paymentTextAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-details {
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.amount-display {
+  background: linear-gradient(135deg, rgba(222, 236, 81, 0.1) 0%, rgba(214, 227, 74, 0.05) 100%);
+  border: 2px solid rgba(222, 236, 81, 0.2);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  animation: amountAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.amount-display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(222, 236, 81, 0.05) 0%, transparent 50%, rgba(222, 236, 81, 0.05) 100%);
+  animation: amountShimmer 3s ease-in-out infinite;
+}
+
+@keyframes amountShimmer {
+  0%, 100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes amountAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  50% {
+    transform: scale(1.05) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.amount-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.amount-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.amount-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  animation: amountNumberAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both;
+}
+
+@keyframes amountNumberAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  60% {
+    transform: scale(1.1) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.amount-currency {
+  font-size: 32px;
+  font-weight: 700;
+  color: #deec51;
+  text-shadow: 0 2px 4px rgba(222, 236, 81, 0.3);
+}
+
+.payment-info {
+  animation: paymentInfoAppear 0.5s ease-out 0.7s both;
+}
+
+@keyframes paymentInfoAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.info-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.payment-buttons {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+  animation: buttonsAppear 0.5s ease-out 0.8s both;
+}
+
+@keyframes buttonsAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-cancel-btn,
+.payment-confirm-btn {
+  flex: 1;
+  padding: 18px 24px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.payment-cancel-btn {
+  background: rgba(248, 250, 252, 0.8);
+  color: #64748b;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.payment-cancel-btn:hover:not(:disabled) {
+  background: rgba(236, 241, 247, 0.9);
+  color: #475569;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-confirm-btn {
+  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  color: #141414;
+  box-shadow: 
+    0 8px 24px -4px rgba(222, 236, 81, 0.4),
+    0 4px 12px -2px rgba(222, 236, 81, 0.3);
+  position: relative;
+}
+
+.payment-confirm-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.payment-confirm-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.payment-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d6e34a 0%, #deec51 100%);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 16px 40px -8px rgba(222, 236, 81, 0.5),
+    0 8px 20px -4px rgba(222, 236, 81, 0.4);
+}
+
+.payment-confirm-btn.processing {
+  background: linear-gradient(135deg, rgba(222, 236, 81, 0.7) 0%, rgba(214, 227, 74, 0.7) 100%);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.payment-confirm-btn:disabled {
+  background: rgba(156, 163, 175, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.processing-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(20, 20, 20, 0.2);
+  border-top: 2px solid #141414;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.payment-cancel-btn:active,
+.payment-confirm-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Адаптивность для модального окна подтверждения */
+@media (max-width: 480px) {
+  .payment-modal {
+    padding: 32px 24px;
+    margin: 0 16px;
+    border-radius: 28px;
+  }
+  
+  .payment-header h3 {
+    font-size: 24px;
+  }
+  
+  .payment-header p {
+    font-size: 15px;
+  }
+  
+  .payment-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+  }
+  
+  .amount-display {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+  
+  .amount-number {
+    font-size: 42px;
+  }
+  
+  .amount-currency {
+    font-size: 28px;
+  }
+  
+  .payment-buttons {
+    gap: 12px;
+  }
+  
+  .payment-cancel-btn,
+  .payment-confirm-btn {
+    padding: 16px 20px;
+    font-size: 15px;
+    min-height: 52px;
+    border-radius: 18px;
   }
 }
 </style>
