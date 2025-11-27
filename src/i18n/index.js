@@ -160,7 +160,8 @@ const messages = {
     transfer_modal_button: "Понятно",
     receiving: "Получение",
     transfer_transaction: "Перевод",
-    user_not_found: "Пользователь с таким номером UID не найден"
+    user_not_found: "Пользователь с таким номером UID не найден",
+    wallet_copied: "Адрес кошелька скопирован"
   },
   EN: {
     referal: "Referral program",
@@ -323,7 +324,8 @@ const messages = {
     transfer_modal_button: "Understood",
     receiving: "Receiving",
     transfer_transaction: "Transfer",
-    user_not_found: "User with this UID number not found"
+    user_not_found: "User with this UID number not found",
+    wallet_copied: "Wallet address copied"
   },
 };
 

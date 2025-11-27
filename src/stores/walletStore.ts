@@ -837,29 +837,54 @@ export const useWalletStore = defineStore("wallet", () => {
       );
 
       if (response.status === 200) {
-        // Получаем детали транзакции из ответа
-        let { id, datatime } = response.data.more_detail || {};
-        let { type_trans, bool_suecess } = response.data;
-        let amount_usdt = response.data.more_detail?.amount || amount;
+        console.log('Transfer response:', response.data);
+        
+        // Проверяем разные варианты успешного ответа
+        if (response.data.message === "Balance updated successfully") {
+          // Успешный перевод, обновляем данные и переходим на страницу транзакции
+          await getPrice();
+          await getUser(); // Обновляем баланс
 
-        await getPrice();
-        await getUser(); // Обновляем баланс
+          let amount_rub = parseFloat(amount) * usdt_price.value;
+          
+          // Перенаправляем на страницу транзакции с данными перевода
+          router.push({
+            name: "transaction",
+            query: {
+              id: Date.now().toString(), // Временный ID если нет в ответе
+              amount_rub: amount_rub.toString(),
+              amount_usdt: amount,
+              datatime: new Date().toLocaleString(),
+              type_trans: "transfer",
+              bool_suecess: "1",
+            },
+          });
+          return true;
+        } else if (response.data.more_detail) {
+          // Стандартный ответ с деталями транзакции
+          let { id, datatime } = response.data.more_detail || {};
+          let { type_trans, bool_suecess } = response.data;
+          let amount_usdt = response.data.more_detail?.amount || amount;
 
-        let amount_rub = parseFloat(amount_usdt) * usdt_price.value;
+          await getPrice();
+          await getUser(); // Обновляем баланс
 
-        // Перенаправляем на страницу транзакции
-        router.push({
-          name: "transaction",
-          query: {
-            id,
-            amount_rub,
-            amount_usdt,
-            datatime,
-            type_trans: type_trans || "transfer",
-            bool_suecess,
-          },
-        });
-        return true;
+          let amount_rub = parseFloat(amount_usdt) * usdt_price.value;
+
+          // Перенаправляем на страницу транзакции
+          router.push({
+            name: "transaction",
+            query: {
+              id,
+              amount_rub,
+              amount_usdt,
+              datatime,
+              type_trans: type_trans || "transfer",
+              bool_suecess,
+            },
+          });
+          return true;
+        }
       }
       return false;
     } catch (err) {
