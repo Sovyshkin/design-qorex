@@ -18,6 +18,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const email = ref("");
   const code = ref("");
   const errMessage = ref("");
+  const transactionErrorMessage = ref(""); // Отдельная переменная для ошибок транзакций
 
   const message_status = ref("");
   // const userTg = ref({})
@@ -837,15 +838,19 @@ export const useWalletStore = defineStore("wallet", () => {
       return false;
     } catch (err) {
       if (err.response?.status === 404) {
+        transactionErrorMessage.value = t("invalid_2fa_code");
         showMessage(t("invalid_2fa_code"), "error");
       } else if (
         err.response?.data?.detail === "Пользователь не найден" ||
         err.response?.data?.detail === "User not found"
       ) {
+        transactionErrorMessage.value = t("user_not_found");
         showMessage(t("user_not_found"), "error");
       } else if (err.response?.data?.detail) {
-        showMessage(t("transfer_failed"), "error");
+        transactionErrorMessage.value = err.response.data.detail;
+        showMessage(err.response.data.detail, "error");
       } else {
+        transactionErrorMessage.value = t("transfer_failed");
         showMessage(t("transfer_failed"), "error");
       }
       router.push({ name: "transaction_failed" });
@@ -918,6 +923,7 @@ export const useWalletStore = defineStore("wallet", () => {
     createUser,
     roundToHundredths,
     errMessage,
+    transactionErrorMessage,
     referalId,
     showMessage,
     userWallet,
