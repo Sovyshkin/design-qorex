@@ -864,15 +864,16 @@ export const useWalletStore = defineStore("wallet", () => {
     } catch (err) {
       console.error('Transfer error:', err.response?.status, err.response?.data);
       
-      if (err.response?.status === 404) {
-        transactionErrorMessage.value = t("invalid_2fa_code");
-        showMessage(t("invalid_2fa_code"), "error");
-      } else if (
+      // Сначала проверяем содержимое detail, а потом статус
+      if (
         err.response?.data?.detail === "Пользователь не найден" ||
         err.response?.data?.detail === "User not found"
       ) {
         transactionErrorMessage.value = t("user_not_found");
         showMessage(t("user_not_found"), "error");
+      } else if (err.response?.status === 404) {
+        transactionErrorMessage.value = t("invalid_2fa_code");
+        showMessage(t("invalid_2fa_code"), "error");
       } else if (err.response?.data?.detail) {
         transactionErrorMessage.value = err.response.data.detail;
         showMessage(err.response.data.detail, "error");
