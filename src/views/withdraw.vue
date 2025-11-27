@@ -2,6 +2,7 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed } from "vue";
+import AppLoader from '@/components/AppLoader.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -9,6 +10,7 @@ const amount = ref("");
 const walletAddress = ref("");
 const memo = ref("");
 const selectedNetwork = ref("USDT_TRC20");
+const isWithdrawing = ref(false); // Состояние загрузки для кнопки вывода
 
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
@@ -17,21 +19,26 @@ const networks = [
 ];
 
 const isFormValid = computed(() => {
-  return amount.value && walletAddress.value && selectedNetwork.value;
+  return amount.value && walletAddress.value && selectedNetwork.value && !isWithdrawing.value;
 });
 
 const handleWithdraw = async () => {
-  if (!isFormValid.value) return;
+  if (!isFormValid.value || isWithdrawing.value) return;
   
   // Конвертируем USDT_TRC20 -> TRC20 для API
   const networkId = selectedNetwork.value.replace('USDT_', '');
   
-  await walletStore.withdrawFunds(
-    amount.value,
-    networkId,
-    walletAddress.value,
-    memo.value
-  );
+  isWithdrawing.value = true;
+  try {
+    await walletStore.withdrawFunds(
+      amount.value,
+      networkId,
+      walletAddress.value,
+      memo.value
+    );
+  } finally {
+    isWithdrawing.value = false;
+  }
 };
 </script>
 
@@ -52,7 +59,7 @@ const handleWithdraw = async () => {
     <main class="container">
     <div class="form-container">
       <div class="group">
-        <input type="number" :placeholder="t('select_amount')" id="amount" v-model="amount"/>
+        <input type="number" :placeholder="t('select_amount')" id="amount" v-model="amount" :disabled="isWithdrawing"/>
         <span class="group-item">USDT</span>
       </div>
       
@@ -63,8 +70,9 @@ const handleWithdraw = async () => {
             v-for="network in networks" 
             :key="network.id" 
             class="network-item" 
-            :class="{ active: selectedNetwork === network.id }"
-            @click="selectedNetwork = network.id"
+            :class="{ active: selectedNetwork === network.id, disabled: isWithdrawing }"
+            :style="{ pointerEvents: isWithdrawing ? 'none' : 'auto' }"
+            @click="!isWithdrawing && (selectedNetwork = network.id)"
           >
             <div class="network-icon">
               <img :src="`/assets/${network.icon}.png`" alt="">
@@ -84,6 +92,7 @@ const handleWithdraw = async () => {
         :placeholder="t('enter_wallet_address')" 
         id="wallet" 
         v-model="walletAddress"
+        :disabled="isWithdrawing"
         required
       />
 
@@ -93,6 +102,7 @@ const handleWithdraw = async () => {
           :placeholder="t('memo_optional')" 
           id="memo" 
           v-model="memo"
+          :disabled="isWithdrawing"
         />
         <p class="memo-note">{{ t('memo_warning') }}</p>
       </div>
@@ -100,11 +110,12 @@ const handleWithdraw = async () => {
     
     <button 
       class="btn" 
-      :class="{ disabled: !isFormValid }"
-      :disabled="!isFormValid"
+      :class="{ disabled: !isFormValid || isWithdrawing }"
+      :disabled="!isFormValid || isWithdrawing"
       @click="handleWithdraw()"
     >
-      {{ t("withdraw_funds") }}
+      <AppLoader v-if="isWithdrawing" class="btn-loader" />
+      <span v-else>{{ t("withdraw_funds") }}</span>
     </button>
     </main>
   </transition>
@@ -160,6 +171,11 @@ h1 {
 .btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-loader {
+  width: 20px !important;
+  height: 20px !important;
 }
 
 input,
@@ -289,5 +305,19 @@ select::placeholder {
   transform: rotate(-45deg);
   top: 8px;
   left: 6px;
+}
+
+/* Стили для заблокированных элементов */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f8f9fa !important;
+}
+
+.network-item.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>

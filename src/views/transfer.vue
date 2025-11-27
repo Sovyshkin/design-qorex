@@ -16,6 +16,7 @@ const twoFactorCode = ref("");
 const twoFactorKey = ref("");
 const isTwoFactorSetupComplete = ref(false); // Новое состояние для подтверждения успешного подключения 2FA
 const isLoading = ref(true); // Состояние загрузки для показа анимации
+const isTransferring = ref(false); // Состояние загрузки для кнопки перевода
 const walletCopied = ref(false);
 
 const isFormValid = computed(() => {
@@ -25,7 +26,8 @@ const isFormValid = computed(() => {
          recipientWallet.value &&
          amountNum >= 1 &&
          amountNum <= walletStore.balance &&
-         code.length === 6
+         code.length === 6 &&
+         !isTransferring.value
 
   console.log('Form validation:', {
     amount: amount.value,
@@ -35,6 +37,7 @@ const isFormValid = computed(() => {
     twoFactorCode: code,
     twoFactorCodeLength: code.length,
     has2FA: walletStore.has2FA,
+    isTransferring: isTransferring.value,
     valid
   });
 
@@ -42,7 +45,7 @@ const isFormValid = computed(() => {
 });
 
 const showModal = ref(false);const handleTransfer = async () => {
-  if (!isFormValid.value) return;
+  if (!isFormValid.value || isTransferring.value) return;
   
   // Проверка, что не переводим самому себе
   if (recipientWallet.value === myWallet.value) {
@@ -50,7 +53,12 @@ const showModal = ref(false);const handleTransfer = async () => {
     return;
   }
   
-  await walletStore.transferFunds(recipientWallet.value, amount.value, twoFactorCode.value.trim());
+  isTransferring.value = true;
+  try {
+    await walletStore.transferFunds(recipientWallet.value, amount.value, twoFactorCode.value.trim());
+  } finally {
+    isTransferring.value = false;
+  }
 };
 
 const copyKey = () => {
@@ -184,6 +192,7 @@ onMounted(async () => {
           type="text" 
           :placeholder="t('recipient_wallet_number')" 
           v-model="recipientWallet"
+          :disabled="isTransferring"
           required
         />
 
@@ -194,6 +203,7 @@ onMounted(async () => {
             v-model="amount"
             min="0"
             :max="walletStore.balance"
+            :disabled="isTransferring"
             :class="{ 'error': parseFloat(amount) > walletStore.balance }"
             @input="preventNegativeAmount"
           />
@@ -219,6 +229,7 @@ onMounted(async () => {
             type="text" 
             v-model="twoFactorCode"
             :placeholder="t('enter_6_digit_code')"
+            :disabled="isTransferring"
             maxlength="6"
             pattern="[0-9]*"
             inputmode="numeric"
@@ -229,11 +240,12 @@ onMounted(async () => {
 
       <button 
         class="btn" 
-        :class="{ disabled: !isFormValid }"
-        :disabled="!isFormValid"
+        :class="{ disabled: !isFormValid || isTransferring }"
+        :disabled="!isFormValid || isTransferring"
         @click="handleTransfer()"
       >
-        {{ t("transfer_funds") }}
+        <AppLoader v-if="isTransferring" class="btn-loader" />
+        <span v-else>{{ t("transfer_funds") }}</span>
       </button>
     </main>
 
@@ -383,6 +395,11 @@ h1 {
 .btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-loader {
+  width: 20px !important;
+  height: 20px !important;
 }
 
 input.error {
@@ -830,5 +847,14 @@ select::placeholder {
   justify-content: center;
   min-height: 100vh;
   background-color: #f5f5f5;
+}
+
+/* Стили для заблокированных полей */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f8f9fa !important;
 }
 </style>

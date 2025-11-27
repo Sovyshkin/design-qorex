@@ -817,21 +817,22 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
-      const params = new URLSearchParams();
-      params.append("tg_id", String(userTg.value.id));
-      params.append("key", String(twoFactorCode));
-      params.append("amount", String(amount));
-      params.append("wallet", String(recipientWallet));
-
-      console.log('Transfer request params:', {
+      const requestParams = {
         tg_id: String(userTg.value.id),
         key: String(twoFactorCode),
         amount: String(amount),
         wallet: String(recipientWallet)
-      });
+      };
+
+      console.log('Transfer request params:', requestParams);
+
+      // Строим query строку вручную, чтобы избежать кодирования = в wallet
+      const queryString = `tg_id=${requestParams.tg_id}&key=${requestParams.key}&amount=${requestParams.amount}&wallet=${requestParams.wallet}`;
+      
+      console.log('Query string:', queryString);
 
       let response = await axios.post(
-        `/transfer_cash_wallet?${params.toString()}`,
+        `/transfer_cash_wallet?${queryString}`,
         {}
       );
 
