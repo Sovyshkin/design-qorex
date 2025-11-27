@@ -1,47 +1,49 @@
 <template>
   <div class="withdraw-success-overlay" @click="closeModal">
     <div class="withdraw-success-modal" @click.stop>
-      <div class="success-animation">
-        <!-- Анимированная галочка -->
-        <div class="checkmark-container">
-          <svg class="checkmark" viewBox="0 0 52 52">
-            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-            <path class="checkmark-check" fill="none" d="m14.1 27.2l7.1 7.2 16.7-16.8"/>
-          </svg>
-        </div>
-        
-        <!-- Анимированные частицы -->
-        <div class="particles">
-          <div class="particle" v-for="n in 8" :key="n" :style="getParticleStyle(n)"></div>
-        </div>
-      </div>
-
-      <div class="success-content">
-        <h2 class="success-title">{{ t('withdraw_request_sent') }}</h2>
-        <p class="success-description">{{ t('withdraw_processing_message') }}</p>
-        
-        <div class="transaction-info">
-          <div class="info-item">
-            <span class="info-label">{{ t('withdraw_amount') }}</span>
-            <span class="info-value">{{ amount }} USDT</span>
+      <div class="modal-content">
+        <div class="success-animation">
+          <!-- Анимированная галочка -->
+          <div class="checkmark-container">
+            <svg class="checkmark" viewBox="0 0 52 52">
+              <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="checkmark-check" fill="none" d="m14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
           </div>
-          <div class="info-item">
-            <span class="info-label">{{ t('select_network') }}</span>
-            <span class="info-value">{{ network }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">{{ t('wallet_address') }}</span>
-            <span class="info-value">{{ truncateAddress(walletAddress) }}</span>
+          
+          <!-- Анимированные частицы -->
+          <div class="particles">
+            <div class="particle" v-for="n in 8" :key="n" :style="getParticleStyle(n)"></div>
           </div>
         </div>
 
-        <div class="action-buttons">
-          <button class="btn-secondary" @click="goToHistory">
-            {{ t('view_history') }}
-          </button>
-          <button class="btn-primary" @click="closeModal">
-            {{ t('continue') }}
-          </button>
+        <div class="success-content">
+          <h2 class="success-title">{{ t('withdraw_request_sent') }}</h2>
+          <p class="success-description">{{ t('withdraw_processing_message') }}</p>
+          
+          <div class="transaction-info">
+            <div class="info-item">
+              <span class="info-label">{{ t('withdraw_amount') }}</span>
+              <span class="info-value">{{ amount }} USDT</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">{{ t('select_network') }}</span>
+              <span class="info-value">{{ network }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">{{ t('wallet_address') }}</span>
+              <span class="info-value">{{ truncateAddress(walletAddress) }}</span>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-secondary" @click="goToHistory">
+              {{ t('view_history') }}
+            </button>
+            <button class="btn-primary" @click="closeModal">
+              {{ t('continue') }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -146,16 +148,18 @@ onUnmounted(() => {
 .withdraw-success-modal {
   background: white;
   border-radius: 24px;
-  padding: 40px 30px 30px;
-  max-width: 90vw;
-  width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 0;
+  max-width: 95vw;
+  width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 
     0 32px 64px -12px rgba(0, 0, 0, 0.25),
     0 20px 25px -5px rgba(0, 0, 0, 0.1);
   animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
+  overflow: hidden;
 }
 
 @keyframes modalSlideUp {
@@ -247,6 +251,13 @@ onUnmounted(() => {
     transform: translate(var(--x), var(--y)) scale(0);
     opacity: 0;
   }
+}
+
+.modal-content {
+  padding: 40px 30px 30px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .success-content {
@@ -367,5 +378,56 @@ onUnmounted(() => {
 .btn-primary:active,
 .btn-secondary:active {
   transform: translateY(0);
+}
+
+/* Стилизация скроллбара */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+  margin: 8px 0;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #deec51;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #d5d946;
+}
+
+/* Для Firefox */
+.modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: #deec51 #f1f1f1;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 520px) {
+  .withdraw-success-modal {
+    width: 95vw;
+    max-height: 90vh;
+  }
+  
+  .modal-content {
+    padding: 30px 20px 20px;
+  }
+  
+  .success-title {
+    font-size: 20px;
+  }
+  
+  .success-description {
+    font-size: 14px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
 }
 </style>
