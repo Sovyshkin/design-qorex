@@ -397,6 +397,7 @@ select {
   background: none;
   outline: none;
   font-size: 14px;
+  caret-color: #000;
 }
 
 input::placeholder,
@@ -459,6 +460,7 @@ select::placeholder {
   font-weight: 500;
   background: #fff !important;
   outline: none;
+  caret-color: #000 !important;
 }
 
 .code-input::placeholder {

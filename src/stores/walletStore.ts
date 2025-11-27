@@ -805,6 +805,13 @@ export const useWalletStore = defineStore("wallet", () => {
       params.append("amount", String(amount));
       params.append("wallet", String(recipientWallet));
 
+      console.log('Transfer request params:', {
+        tg_id: String(userTg.value.id),
+        key: String(twoFactorCode),
+        amount: String(amount),
+        wallet: String(recipientWallet)
+      });
+
       let response = await axios.post(
         `/transfer_cash_wallet?${params.toString()}`,
         {}
@@ -837,6 +844,8 @@ export const useWalletStore = defineStore("wallet", () => {
       }
       return false;
     } catch (err) {
+      console.error('Transfer error:', err.response?.status, err.response?.data);
+      
       if (err.response?.status === 404) {
         transactionErrorMessage.value = t("invalid_2fa_code");
         showMessage(t("invalid_2fa_code"), "error");
