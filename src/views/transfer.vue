@@ -290,7 +290,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  padding: 0 20px 120px 20px;
+  padding: 20px 20px 120px 20px;
   overflow-y: auto;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   min-height: calc(100vh - 80px);

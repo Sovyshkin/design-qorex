@@ -66,16 +66,16 @@ export const useWalletStore = defineStore("wallet", () => {
   const message_status = ref("");
   // const userTg = ref({})
   const userTg = ref({
-    // first_name: "Вадим",
-    // last_name: "Заньков",
-    // username: "zankov_22",
-    // id: "978664527",
-    first_name: "",
-    last_name: "",
-    username: "",
-    id: "",
+    first_name: "Вадим",
+    last_name: "Заньков",
+    username: "zankov_22",
+    id: "978664527",
+    // first_name: "",
+    // last_name: "",
+    // username: "",
+    // id: "",
   });
-  const user = ref({});
+  const user = ref<any>({});
   const amount = ref("");
   const pay_link = ref("");
   const codePasswordActive = ref(false);
@@ -90,7 +90,7 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const history = ref([]);
 
-  const transaction = ref({});
+  const transaction = ref<any>({});
 
   const setHideBalanceActive = async (val: boolean) => {
     // Сначала обновляем локальное состояние
@@ -403,9 +403,7 @@ export const useWalletStore = defineStore("wallet", () => {
         }
 
         if (userString) {
-          console.log('userString:', userString);
-          userTg.value = JSON.parse(userString);
-          console.log('Parsed user data:', userTg.value);
+          // userTg.value = JSON.parse(userString);
           localStorage.setItem("user", JSON.stringify(userTg.value));
           if (start_param == "error_trasaction") {
             router.push({ name: "transaction_failed" });
@@ -464,10 +462,7 @@ export const useWalletStore = defineStore("wallet", () => {
           referalId.value = "";
         }
         
-        // Попытаемся загрузить данные пользователя после создания
-        setTimeout(() => {
-          getUser();
-        }, 1000);
+        // Пользователь создан, данные загрузятся при следующем обращении
       }
     } catch (err) {
       console.error('Error creating user:', err);
@@ -484,8 +479,17 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  // Флаг для предотвращения повторных запросов
+  const isLoadingUser = ref(false);
+  
   const getUser = async () => {
+    // Предотвращаем повторные запросы
+    if (isLoadingUser.value) {
+      return;
+    }
+    
     try {
+      isLoadingUser.value = true;
       isLoading.value = true;
       let response = await axios.get(`/user/${userTg.value.id}`);
 
@@ -504,15 +508,12 @@ export const useWalletStore = defineStore("wallet", () => {
 
       history.value = response.data.list_transctions_replenished;
 
-      if (history.value && history.value.length > 0) {
-      }
-
-      if (usdt_price.value) {
-        balance_rub.value = balance.value * usdt_price.value;
-      } else {
+      // Загружаем цену только если её нет
+      if (!usdt_price.value) {
         await getPrice();
-        balance_rub.value = balance.value * usdt_price.value;
       }
+      balance_rub.value = balance.value * usdt_price.value;
+      
     } catch (err) {
       console.error('Error getting user:', err);
       if ((err.response?.status == 404 || err.response?.status == 500) && !isCreatingUser.value) {
@@ -524,11 +525,21 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } finally {
       isLoading.value = false;
+      isLoadingUser.value = false;
     }
   };
 
+  // Флаг для предотвращения повторных запросов цены
+  const isLoadingPrice = ref(false);
+  
   const getPrice = async () => {
+    // Предотвращаем повторные запросы
+    if (isLoadingPrice.value) {
+      return;
+    }
+    
     try {
+      isLoadingPrice.value = true;
       let response = await axios.get("/last_price");
 
       usdt_price.value = response.data.last_price;
@@ -548,6 +559,8 @@ export const useWalletStore = defineStore("wallet", () => {
         }
         showMessage(t('price_error') || 'Используется последний известный курс', 'warning');
       }
+    } finally {
+      isLoadingPrice.value = false;
     }
   };
 
@@ -703,7 +716,10 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const goTransaction = async (item) => {
     try {
-      await getPrice();
+      // Загружаем цену только если её нет
+      if (!usdt_price.value) {
+        await getPrice();
+      }
       transaction.value = { ...item };
       transaction.value.amountRub = getRub(item.amount);
 
@@ -757,7 +773,12 @@ export const useWalletStore = defineStore("wallet", () => {
         let { id, datatime } = response.data.more_detail;
         let { type_trans, bool_suecess } = response.data;
         let amount_usdt = response.data.more_detail.amount;
-        await getPrice();
+        
+        // Загружаем цену только если её нет
+        if (!usdt_price.value) {
+          await getPrice();
+        }
+        
         let amount_rub = amount_usdt * usdt_price.value;
         router.push({
           name: "transaction",
@@ -833,20 +854,17 @@ export const useWalletStore = defineStore("wallet", () => {
         
         // Проверяем разные варианты успешного ответа
         if (response.data.message === "Balance updated successfully") {
-          // Успешный вывод, обновляем данные
-          await getPrice();
-          await getUser(); // Обновляем баланс
+          // Успешный вывод, обновляем баланс (асинхронно)
+          setTimeout(() => getUser(), 500);
           return true;
         } else if (response.data.more_detail) {
           // Стандартный ответ с деталями транзакции
-          await getPrice();
-          await getUser(); // Обновляем баланс
+          setTimeout(() => getUser(), 500);
           return true;
         } else {
           // Если структура ответа не распознана, но статус 200
           console.warn('Unexpected response structure:', response.data);
-          await getPrice();
-          await getUser();
+          setTimeout(() => getUser(), 500);
           return true;
         }
       }
@@ -1067,9 +1085,8 @@ export const useWalletStore = defineStore("wallet", () => {
         
         // Проверяем разные варианты успешного ответа
         if (response.data.message === "Balance updated successfully") {
-          // Успешный перевод, обновляем данные и переходим на страницу транзакции
-          await getPrice();
-          await getUser(); // Обновляем баланс
+          // Успешный перевод, обновляем баланс асинхронно
+          setTimeout(() => getUser(), 500);
 
           let amount_rub = parseFloat(amount) * usdt_price.value;
           
@@ -1092,8 +1109,8 @@ export const useWalletStore = defineStore("wallet", () => {
           let { type_trans, bool_suecess } = response.data;
           let amount_usdt = response.data.more_detail?.amount || amount;
 
-          await getPrice();
-          await getUser(); // Обновляем баланс
+          // Обновляем баланс асинхронно
+          setTimeout(() => getUser(), 500);
 
           let amount_rub = parseFloat(amount_usdt) * usdt_price.value;
 
@@ -1233,5 +1250,7 @@ export const useWalletStore = defineStore("wallet", () => {
     has2FA,
     isPinRequired,
     initializeStore,
+    isLoadingUser,
+    isLoadingPrice,
   };
 });
