@@ -183,8 +183,8 @@ const messages = {
     invalid_code: "Неверный код",
     code_verification_failed: "Не удалось проверить код",
     referrals_load_failed: "Не удалось загрузить список рефералов",
-    2fa_setup_failed: "Не удалось настроить 2FA",
-    2fa_verification_failed: "Не удалось проверить код 2FA",
+    "2fa_setup_failed": "Не удалось настроить 2FA",
+    "2fa_verification_failed": "Не удалось проверить код 2FA",
     wallet_not_found: "Кошелек не найден",
     wallet_load_failed: "Не удалось загрузить кошелек"
   },
@@ -372,8 +372,8 @@ const messages = {
     invalid_code: "Invalid code",
     code_verification_failed: "Failed to verify code",
     referrals_load_failed: "Failed to load referral list",
-    2fa_setup_failed: "Failed to set up 2FA",
-    2fa_verification_failed: "Failed to verify 2FA code",
+    "2fa_setup_failed": "Failed to set up 2FA",
+    "2fa_verification_failed": "Failed to verify 2FA code",
     wallet_not_found: "Wallet not found",
     wallet_load_failed: "Failed to load wallet"
   },
