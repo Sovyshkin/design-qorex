@@ -643,7 +643,7 @@ select:disabled {
   width: 100%;
   border: 3px solid #1e293b !important;
   border-radius: 20px !important;
-  padding: 24px !important;
+  padding: 16px !important;
   font-size: 24px !important;
   text-align: center;
   letter-spacing: 8px;
