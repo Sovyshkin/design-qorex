@@ -30,6 +30,34 @@ export const useWalletStore = defineStore("wallet", () => {
   const router = useRouter();
   const isLoading = ref(false);
   const loaderScan = ref(false);
+
+  // Настройка интерсепторов axios
+  axios.interceptors.request.use(
+    (config) => {
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
+  axios.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      // Логируем все ошибки для отладки
+      console.error('API Error:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      return Promise.reject(error);
+    }
+  );
   const email = ref("");
   const code = ref("");
   const errMessage = ref("");
@@ -427,15 +455,30 @@ export const useWalletStore = defineStore("wallet", () => {
 
       let response = await axios.post(`/new_user`, userData);
 
-      // Помечаем что пользователь создан
-      localStorage.setItem(`user_created_${userTg.value.id}`, "true");
-
-      // Очищаем реферальный ID после использования
-      if (referalId.value) {
-        referalId.value = "";
+      if (response.status === 200 || response.status === 201) {
+        // Помечаем что пользователь создан
+        localStorage.setItem(`user_created_${userTg.value.id}`, "true");
+        
+        // Очищаем реферальный ID после использования
+        if (referalId.value) {
+          referalId.value = "";
+        }
+        
+        // Попытаемся загрузить данные пользователя после создания
+        setTimeout(() => {
+          getUser();
+        }, 1000);
       }
     } catch (err) {
-      // Silently handle errors
+      console.error('Error creating user:', err);
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status === 409) {
+        // Пользователь уже существует
+        localStorage.setItem(`user_created_${userTg.value.id}`, "true");
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, 'error');
+      }
     } finally {
       isCreatingUser.value = false;
     }
@@ -443,6 +486,7 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const getUser = async () => {
     try {
+      isLoading.value = true;
       let response = await axios.get(`/user/${userTg.value.id}`);
 
       user.value = response.data;
@@ -470,9 +514,16 @@ export const useWalletStore = defineStore("wallet", () => {
         balance_rub.value = balance.value * usdt_price.value;
       }
     } catch (err) {
-      if ((err.status == 404 || err.status == 500) && !isCreatingUser.value) {
+      console.error('Error getting user:', err);
+      if ((err.response?.status == 404 || err.response?.status == 500) && !isCreatingUser.value) {
         await createUser();
+      } else if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else {
+        showMessage(t('error_occurred') || 'Произошла ошибка', 'error');
       }
+    } finally {
+      isLoading.value = false;
     }
   };
 
@@ -481,7 +532,23 @@ export const useWalletStore = defineStore("wallet", () => {
       let response = await axios.get("/last_price");
 
       usdt_price.value = response.data.last_price;
-    } catch (err) {}
+      // Сохраняем полученную цену
+      localStorage.setItem('last_usdt_price', String(usdt_price.value));
+    } catch (err) {
+      console.error('Error getting price:', err);
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Не удалось получить курс валют', 'error');
+      } else {
+        // Используем последнюю сохраненную цену или дефолтную
+        const savedPrice = localStorage.getItem('last_usdt_price');
+        if (savedPrice) {
+          usdt_price.value = parseFloat(savedPrice);
+        } else {
+          usdt_price.value = 95; // Дефолтная цена
+        }
+        showMessage(t('price_error') || 'Используется последний известный курс', 'warning');
+      }
+    }
   };
 
   const createInvoice = async (cryptocurrency = "USDT_TRC20") => {
@@ -498,8 +565,20 @@ export const useWalletStore = defineStore("wallet", () => {
         working_invoice = response.data.result.uuid;
         await creatingInvoceDb();
         window.location.href = pay_link.value;
+      } else {
+        showMessage(t('invoice_creation_failed') || 'Не удалось создать счет для оплаты', 'error');
       }
     } catch (err) {
+      console.error('Error creating invoice:', err);
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status === 400) {
+        showMessage(t('invalid_amount') || 'Некорректная сумма', 'error');
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, 'error');
+      } else {
+        showMessage(t('invoice_creation_failed') || 'Не удалось создать счет для оплаты', 'error');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -507,16 +586,20 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const creatingInvoceDb = async () => {
     try {
-      isLoading.value = true;
       let response = await axios.post("/creating_invoce_db", {
         datatime: new Date(),
         amount: String(amount.value),
         id_tg_user: user.value.tg_id,
         working_invoce: working_invoice,
       });
+      
+      if (response.status !== 200) {
+        console.warn('Invoice DB creation returned non-200 status:', response.status);
+      }
     } catch (err) {
-    } finally {
-      isLoading.value = false;
+      console.error('Error creating invoice in DB:', err);
+      // Не показываем ошибку пользователю, так как это внутренняя операция
+      // но логируем для отладки
     }
   };
 
@@ -533,7 +616,21 @@ export const useWalletStore = defineStore("wallet", () => {
       let response = await axios.patch(`/update_email/${user.value.tg_id}`, {
         email: email.value,
       });
+      
+      if (response.status === 200) {
+        showMessage(t('email_updated') || 'Email успешно обновлен', 'success');
+      }
     } catch (err) {
+      console.error('Error updating email:', err);
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status === 400) {
+        showMessage(t('invalid_email') || 'Некорректный email адрес', 'error');
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, 'error');
+      } else {
+        showMessage(t('email_update_failed') || 'Не удалось обновить email', 'error');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -545,9 +642,22 @@ export const useWalletStore = defineStore("wallet", () => {
       let response = await axios.patch(`/send_code?email=${email.value}`);
 
       if (response.status == 200) {
+        showMessage(t('code_sent') || 'Код отправлен на email', 'success');
         router.push({ name: "enter_code" });
       }
     } catch (err) {
+      console.error('Error sending code:', err);
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status === 400) {
+        showMessage(t('invalid_email') || 'Некорректный email адрес', 'error');
+      } else if (err.response?.status === 429) {
+        showMessage(t('too_many_requests') || 'Слишком много запросов, попробуйте позже', 'error');
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, 'error');
+      } else {
+        showMessage(t('code_send_failed') || 'Не удалось отправить код', 'error');
+      }
     } finally {
       isLoading.value = false;
     }
@@ -563,13 +673,26 @@ export const useWalletStore = defineStore("wallet", () => {
 
       if (response.status == 200) {
         message_status.value = "success";
+        showMessage(t('email_verified') || 'Email успешно подтвержден', 'success');
         setTimeout(() => {
           message_status.value = "";
           router.push({ name: "profile" });
         }, 2500);
       }
     } catch (err) {
+      console.error('Error checking code:', err);
       message_status.value = "error";
+      
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status === 400) {
+        showMessage(t('invalid_code') || 'Неверный код', 'error');
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, 'error');
+      } else {
+        showMessage(t('code_verification_failed') || 'Не удалось проверить код', 'error');
+      }
+      
       setTimeout(() => {
         message_status.value = "";
       }, 2500);
@@ -585,13 +708,26 @@ export const useWalletStore = defineStore("wallet", () => {
       transaction.value.amountRub = getRub(item.amount);
 
       router.push({ name: "transaction" });
-    } catch (err) {}
+    } catch (err) {
+      console.error('Error going to transaction:', err);
+      showMessage(t('transaction_load_failed') || 'Не удалось загрузить данные транзакции', 'error');
+    }
   };
 
   const getRub = (amount) => {
     try {
-      return `${Math.round(amount * usdt_price.value * 100) / 100}`;
-    } catch (err) {}
+      if (!amount || !usdt_price.value) {
+        return '0.00';
+      }
+      const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+      if (isNaN(numAmount)) {
+        return '0.00';
+      }
+      return `${Math.round(numAmount * usdt_price.value * 100) / 100}`;
+    } catch (err) {
+      console.error('Error calculating rub amount:', err);
+      return '0.00';
+    }
   };
 
   const qrTake = async (link: string) => {
@@ -636,11 +772,23 @@ export const useWalletStore = defineStore("wallet", () => {
         });
       }
     } catch (err) {
-      if (err.response.data.detail == "Недостаточно средств") {
+      console.error('Error processing QR code:', err);
+      
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        errMessage.value = t('network_error') || 'Проблема с подключением к серверу';
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.data?.detail == "Недостаточно средств") {
         errMessage.value = t("insufficient_funds");
+      } else if (err.response?.status === 400) {
+        errMessage.value = t('invalid_qr_code') || 'Некорректный QR-код';
+      } else if (err.response?.status === 404) {
+        errMessage.value = t('payment_not_found') || 'Платеж не найден';
+      } else if (err.response?.data?.detail) {
+        errMessage.value = err.response.data.detail;
       } else {
-        errMessage.value = t("failed_text");
+        errMessage.value = t('qr_processing_failed') || 'Не удалось обработать QR-код';
       }
+      
       router.push({ name: "transaction_failed" });
     } finally {
       loaderScan.value = false;
@@ -706,14 +854,22 @@ export const useWalletStore = defineStore("wallet", () => {
     } catch (err) {
       console.error('Withdraw error:', err.response?.status, err.response?.data);
       
-      if (err.response?.data?.detail == "Недостаточно средств") {
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        errMessage.value = t('network_error') || 'Проблема с подключением к серверу';
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.data?.detail == "Недостаточно средств") {
         errMessage.value = t("insufficient_funds");
       } else if (err.response?.data?.detail === "Неверный код" || err.response?.data?.detail === "Invalid code") {
         errMessage.value = t("invalid_2fa_code");
+      } else if (err.response?.status === 400) {
+        errMessage.value = t('invalid_amount') || 'Некорректные данные';
+      } else if (err.response?.data?.detail) {
+        errMessage.value = err.response.data.detail;
       } else {
         errMessage.value = t("failed_text");
       }
       router.push({ name: "transaction_failed" });
+      return false;
     } finally {
       loaderScan.value = false;
     }
@@ -726,7 +882,17 @@ export const useWalletStore = defineStore("wallet", () => {
       if (response.status === 200) {
         return response.data; // Возвращаем массив напрямую
       }
+      return [];
     } catch (err) {
+      console.error('Error getting referrals:', err);
+      
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status !== 404) {
+        // Не показываем ошибку для 404, просто возвращаем пустой массив
+        showMessage(t('referrals_load_failed') || 'Не удалось загрузить список рефералов', 'error');
+      }
+      
       return []; // Возвращаем пустой массив при ошибке
     }
   };
@@ -746,7 +912,16 @@ export const useWalletStore = defineStore("wallet", () => {
       }
       return { success: false };
     } catch (err) {
-      showMessage(t("error_occurred"), "error");
+      console.error('Error enabling 2FA:', err);
+      
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', "error");
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, "error");
+      } else {
+        showMessage(t('2fa_setup_failed') || 'Не удалось настроить 2FA', "error");
+      }
+      
       return { success: false };
     } finally {
       loaderScan.value = false;
@@ -770,10 +945,16 @@ export const useWalletStore = defineStore("wallet", () => {
       }
       return false;
     } catch (err) {
-      if (err.response?.status === 404) {
-        showMessage(t("invalid_2fa_code"), "error");
+      console.error('Error verifying 2FA code:', err);
+      
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', "error");
+      } else if (err.response?.status === 400 || err.response?.status === 404) {
+        showMessage(t("invalid_2fa_code") || 'Неверный код двухфакторной аутентификации', "error");
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, "error");
       } else {
-        showMessage(t("error_occurred"), "error");
+        showMessage(t('2fa_verification_failed') || 'Не удалось проверить код 2FA', "error");
       }
       return false;
     } finally {
@@ -793,22 +974,37 @@ export const useWalletStore = defineStore("wallet", () => {
         has2FA.value = false;
       }
     } catch (err) {
+      console.error('Error checking 2FA status:', err);
       has2FA.value = false;
+      
+      // Не показываем сообщение об ошибке для этого метода,
+      // так как он используется для проверки статуса
     }
   };
 
   const getUserWallet = async () => {
     try {
       const tgId = String(userTg.value.id);
-        let response = await axios.post(`/take_user_w?tg_id=${tgId}`, {});
+      let response = await axios.post(`/take_user_w?tg_id=${tgId}`, {});
 
-        if (response.status === 200 && response.data.wallet) {
-          userWallet.value = response.data.wallet;
-          return response.data.wallet;
-        }
+      if (response.status === 200 && response.data.wallet) {
+        userWallet.value = response.data.wallet;
+        return response.data.wallet;
+      }
       return null;
     } catch (err) {
-      showMessage(t("error_occurred"), "error");
+      console.error('Error getting user wallet:', err);
+      
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', "error");
+      } else if (err.response?.status === 404) {
+        showMessage(t('wallet_not_found') || 'Кошелек не найден', "error");
+      } else if (err.response?.data?.detail) {
+        showMessage(err.response.data.detail, "error");
+      } else {
+        showMessage(t('wallet_load_failed') || 'Не удалось загрузить кошелек', "error");
+      }
+      
       return null;
     }
   };
@@ -920,16 +1116,28 @@ export const useWalletStore = defineStore("wallet", () => {
     } catch (err) {
       console.error('Transfer error:', err.response?.status, err.response?.data);
       
-      // Сначала проверяем содержимое detail, а потом статус
-      if (
+      // Сначала проверяем сетевые ошибки
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        transactionErrorMessage.value = t('network_error') || 'Проблема с подключением к серверу';
+        showMessage(t('network_error') || 'Проблема с подключением к серверу', "error");
+      } else if (
         err.response?.data?.detail === "Пользователь не найден" ||
         err.response?.data?.detail === "User not found"
       ) {
         transactionErrorMessage.value = t("user_not_found");
         showMessage(t("user_not_found"), "error");
+      } else if (err.response?.data?.detail === "Недостаточно средств") {
+        transactionErrorMessage.value = t("insufficient_funds");
+        showMessage(t("insufficient_funds"), "error");
+      } else if (err.response?.data?.detail === "Неверный код" || err.response?.data?.detail === "Invalid code") {
+        transactionErrorMessage.value = t("invalid_2fa_code");
+        showMessage(t("invalid_2fa_code"), "error");
       } else if (err.response?.status === 404) {
         transactionErrorMessage.value = t("invalid_2fa_code");
         showMessage(t("invalid_2fa_code"), "error");
+      } else if (err.response?.status === 400) {
+        transactionErrorMessage.value = t('invalid_amount') || 'Некорректная сумма';
+        showMessage(t('invalid_amount') || 'Некорректная сумма', "error");
       } else if (err.response?.data?.detail) {
         transactionErrorMessage.value = err.response.data.detail;
         showMessage(err.response.data.detail, "error");
@@ -953,6 +1161,17 @@ export const useWalletStore = defineStore("wallet", () => {
     const truncatedValue = Math.floor(numValue * 100) / 100;
     return truncatedValue.toFixed(2);
   };
+
+  // Инициализация - загружаем сохраненную цену
+  const initializeStore = () => {
+    const savedPrice = localStorage.getItem('last_usdt_price');
+    if (savedPrice) {
+      usdt_price.value = parseFloat(savedPrice);
+    }
+  };
+
+  // Вызываем инициализацию
+  initializeStore();
 
   return {
     qrTake,
@@ -1013,5 +1232,6 @@ export const useWalletStore = defineStore("wallet", () => {
     userWallet,
     has2FA,
     isPinRequired,
+    initializeStore,
   };
 });
