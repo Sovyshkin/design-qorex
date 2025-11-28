@@ -85,11 +85,15 @@ const goRoute = (route) => {
 
 onMounted(async () => {
   try {
-    await walletStore.getUser();
-    // Принудительно проверяем статус 2FA
-    await walletStore.check2FAStatus();
+    // НЕ вызываем getUser() здесь - это может вызвать рекурсию!
+    // Данные пользователя должны быть уже загружены в main.vue
+    
+    // Проверяем статус 2FA только если есть данные пользователя
+    if (walletStore.user?.tg_id && !walletStore.isGettingUser) {
+      await walletStore.check2FAStatus();
+    }
   } catch (err) {
-
+    console.error('Error in profile onMounted:', err);
   }
 });
 </script>

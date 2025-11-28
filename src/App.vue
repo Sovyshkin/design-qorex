@@ -49,9 +49,19 @@ const checkAccessByWhitelist = (userId) => {
   return allowedIdsArray.includes(String(userId));
 };
 
+// Флаг для предотвращения повторной инициализации
+const isAppInitialized = ref(false);
+
 // Функция для инициализации приложения
 const initializeApp = async () => {
+  // Предотвращаем повторную инициализацию
+  if (isAppInitialized.value) {
+    console.log('App already initialized, skipping...');
+    return;
+  }
+
   try {
+    isAppInitialized.value = true;
     await walletStore.getUserInfo();
 
     if (window.Telegram && window.Telegram.WebApp) {
@@ -62,7 +72,10 @@ const initializeApp = async () => {
           return;
         }
 
-        await walletStore.getUser();
+        // Проверяем, есть ли уже данные пользователя
+        if (!walletStore.user || !walletStore.user.id) {
+          await walletStore.getUser();
+        }
         localStorage.removeItem('pinVerified');
 
         // Проверяем PIN только при запуске приложения
@@ -77,6 +90,7 @@ const initializeApp = async () => {
     }
   } catch (err) {
     console.error('Ошибка инициализации приложения:', err);
+    isAppInitialized.value = false; // Сбрасываем флаг при ошибке
   }
 }
 

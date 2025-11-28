@@ -12,25 +12,33 @@ const goRoute = (name) => {
   router.push({ name })
 }
 
+// Флаг для предотвращения повторных инициализаций при навигации
+const isInitialized = ref(false);
+
 onMounted(async () => {
+  // Если уже инициализировали, не делаем это снова
+  if (isInitialized.value) return;
+  
   try {
     // ЖЕСТКАЯ защита от рекурсии - проверяем все возможные состояния
     const hasUserData = walletStore.user?.tg_id || walletStore.balance !== undefined;
     const hasPrice = walletStore.usdt_price > 0;
     
     // Загружаем данные только если их реально нет и запросы не выполняются
-    if (!walletStore.isLoadingUser && !hasUserData && walletStore.userTg?.id) {
+    if (!walletStore.isLoadingUser && !walletStore.isGettingUser && !hasUserData && walletStore.userTg?.id) {
       await walletStore.getUser();
     }
     
-    if (!walletStore.isLoadingPrice && !hasPrice) {
+    if (!walletStore.isLoadingPrice && !walletStore.isGettingPrice && !hasPrice) {
       await walletStore.getPrice();
     }
+    
+    isInitialized.value = true;
   } catch (err) {
     console.error('Error in main.vue onMounted:', err);
     // НЕ перезапускаем запросы при ошибке!
   }
-})
+});
 </script>
 <template>
   <transition name="main-page-appear" appear>
