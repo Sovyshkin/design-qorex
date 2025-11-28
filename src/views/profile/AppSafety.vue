@@ -33,8 +33,19 @@ const toggleCodePassword = async (val) => {
   }
 };
 
-const toggleHideBalance = (val) => {
-  walletStore.setHideBalanceActive(val);
+const isTogglingBalance = ref(false);
+
+const toggleHideBalance = async (val) => {
+  if (isTogglingBalance.value) return;
+  
+  isTogglingBalance.value = true;
+  try {
+    await walletStore.setHideBalanceActive(val);
+  } finally {
+    setTimeout(() => {
+      isTogglingBalance.value = false;
+    }, 1000);
+  }
 };
 
 const toggleTwoFactor = (val) => {

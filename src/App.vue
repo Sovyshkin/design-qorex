@@ -255,6 +255,25 @@ button::-moz-focus-inner {
   border: 0;
 }
 
+/* Глобальные стили для disabled кнопок - защита от спама */
+button:disabled, 
+input[type="submit"]:disabled,
+.btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  background-color: #cccccc !important;
+}
+
+button:disabled:hover,
+input[type="submit"]:disabled:hover,
+.btn:disabled:hover {
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  border-color: #cccccc !important;
+  transform: none !important;
+}
+
 .wrap-load {
   width: 100%;
   display: flex;

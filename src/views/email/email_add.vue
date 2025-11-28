@@ -1,9 +1,24 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
+import { ref } from 'vue';
 
 const { t } = useI18n();
-const walletStore = useWalletStore()
+const walletStore = useWalletStore();
+const isSending = ref(false);
+
+const sendCode = async () => {
+  if (isSending.value || !walletStore.email?.trim()) return;
+  
+  isSending.value = true;
+  try {
+    await walletStore.sendCode();
+  } finally {
+    setTimeout(() => {
+      isSending.value = false;
+    }, 3000); // 3 секунды защиты
+  }
+};
 </script>
 <template>
   <header class="header">
@@ -21,7 +36,10 @@ const walletStore = useWalletStore()
         <p>{{ t('email_text') }}</p>
         <input type="email" :placeholder="t('email_enter')" id="email" v-model="walletStore.email"/>
     </div>
-    <button class="btn" @click="walletStore.sendCode()">{{ t("email_send") }}</button>
+    <button class="btn" @click="sendCode()" :disabled="isSending || walletStore.isLoading">
+      <span v-if="isSending">Отправляем...</span>
+      <span v-else>{{ t("email_send") }}</span>
+    </button>
   </main>
 </template>
 <style scoped>

@@ -1,9 +1,24 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
+import { ref } from 'vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
+const isChecking = ref(false);
+
+const checkCode = async () => {
+  if (isChecking.value || !walletStore.code?.trim()) return;
+  
+  isChecking.value = true;
+  try {
+    await walletStore.checkCode();
+  } finally {
+    setTimeout(() => {
+      isChecking.value = false;
+    }, 2000); // 2 секунды защиты
+  }
+};
 </script>
 <template>
   <header class="header">
@@ -23,8 +38,9 @@ const walletStore = useWalletStore();
       id="code"
       v-model="walletStore.code"
     />
-    <button class="btn" @click="walletStore.checkCode()">
-      {{ t("confirm") }}
+    <button class="btn" @click="checkCode()" :disabled="isChecking || walletStore.isLoading">
+      <span v-if="isChecking">Проверяем...</span>
+      <span v-else>{{ t("confirm") }}</span>
     </button>
   </main>
 </template>

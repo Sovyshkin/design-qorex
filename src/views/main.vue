@@ -14,15 +14,21 @@ const goRoute = (name) => {
 
 onMounted(async () => {
   try {
-    // Проверяем, не выполняются ли уже запросы
-    if (!walletStore.isLoadingUser && !walletStore.user.tg_id) {
-      await walletStore.getUser()
+    // ЖЕСТКАЯ защита от рекурсии - проверяем все возможные состояния
+    const hasUserData = walletStore.user?.tg_id || walletStore.balance !== undefined;
+    const hasPrice = walletStore.usdt_price > 0;
+    
+    // Загружаем данные только если их реально нет и запросы не выполняются
+    if (!walletStore.isLoadingUser && !hasUserData && walletStore.userTg?.id) {
+      await walletStore.getUser();
     }
-    if (!walletStore.isLoadingPrice && !walletStore.usdt_price) {
-      await walletStore.getPrice()
+    
+    if (!walletStore.isLoadingPrice && !hasPrice) {
+      await walletStore.getPrice();
     }
   } catch (err) {
-    console.error('Error in main.vue onMounted:', err)
+    console.error('Error in main.vue onMounted:', err);
+    // НЕ перезапускаем запросы при ошибке!
   }
 })
 </script>
@@ -43,7 +49,7 @@ onMounted(async () => {
         <main class="container">
           <transition name="balance-appear" appear>
             <div class="wrap-balance">
-              <div class="balance" @click="walletStore.setHideBalanceActive(!walletStore.hideBalanceActive)">
+              <div class="balance" @click="!walletStore.isLoading && walletStore.setHideBalanceActive(!walletStore.hideBalanceActive)">
                 <div class="wrap-text">
                   <span>{{ t("total_balance") }}</span>
                   <img

@@ -16,25 +16,37 @@ const errorMessage = ref("");
 // Определяем режим работы на основе маршрута и параметров
 const isCreateMode = route.name === 'createPin' || route.query.createMode || false
 
-const handleNumberClick = (num) => {
+const isProcessing = ref(false);
+
+const handleNumberClick = async (num) => {
+  if (isProcessing.value) return;
+  
   if (pin.value.length < 4) {
     pin.value += num.toString();
     errorMessage.value = ""; // Сбрасываем ошибку при новом вводе
   }
 
   if (pin.value.length === 4) {
-    if (isCreateMode) {
-      walletStore.setPinCode(pin.value);
-    } else {
-      if (walletStore.verifyPin(pin.value)) {
-        console.log('PIN верный, перенаправляем');
-        // Возвращаемся назад или на главную страницу
-        const returnTo = route.query.returnTo || '/';
-        router.push(returnTo);
+    isProcessing.value = true;
+    
+    try {
+      if (isCreateMode) {
+        await walletStore.setPinCode(pin.value);
       } else {
-        errorMessage.value = t('wrong_pin');
-        pin.value = "";
+        if (walletStore.verifyPin(pin.value)) {
+          console.log('PIN верный, перенаправляем');
+          // Возвращаемся назад или на главную страницу
+          const returnTo = route.query.returnTo || '/';
+          router.push(returnTo);
+        } else {
+          errorMessage.value = t('wrong_pin');
+          pin.value = "";
+        }
       }
+    } finally {
+      setTimeout(() => {
+        isProcessing.value = false;
+      }, 1000);
     }
   }
 };
