@@ -76,21 +76,27 @@ const initializeApp = async () => {
         if (!walletStore.user || !walletStore.user.id) {
           await walletStore.getUser();
         }
-        localStorage.removeItem('pinVerified');
 
         // Проверяем PIN только при запуске приложения
         if (walletStore.hasPinCode() && walletStore.isPinRequired()) {
+          // Удаляем статус верификации только если требуется PIN
+          localStorage.removeItem('pinVerified');
           const currentRoute = router.currentRoute.value;
           router.push({
             name: 'enterPin',
             query: { returnTo: currentRoute.fullPath }
           });
+          return; // Не сбрасываем isLoading если перенаправляем на PIN
         }
       }
     }
+    
+    // Завершаем загрузку если не требуется PIN
+    walletStore.isLoading = false;
   } catch (err) {
     console.error('Ошибка инициализации приложения:', err);
     isAppInitialized.value = false; // Сбрасываем флаг при ошибке
+    walletStore.isLoading = false; // Завершаем загрузку при ошибке
   }
 }
 

@@ -34,9 +34,22 @@ const handleNumberClick = async (num) => {
         await walletStore.setPinCode(pin.value);
       } else {
         if (walletStore.verifyPin(pin.value)) {
-          console.log('PIN верный, перенаправляем');
+          console.log('PIN верный, устанавливаем статус и перенаправляем');
+          // Устанавливаем статус верификации PIN в localStorage
+          localStorage.setItem('pinVerified', Date.now().toString());
+          
+          // Сбрасываем isLoading для корректного отображения
+          walletStore.isLoading = false;
+          
           // Возвращаемся назад или на главную страницу
           const returnTo = route.query.returnTo || '/';
+          console.log('Перенаправляем на:', returnTo);
+          console.log('Состояние walletStore:', {
+            isLoading: walletStore.isLoading,
+            user: walletStore.user ? 'loaded' : 'not loaded',
+            balance: walletStore.balance
+          });
+          
           router.push(returnTo);
         } else {
           errorMessage.value = t('wrong_pin');

@@ -194,6 +194,9 @@ export const useWalletStore = defineStore("wallet", () => {
     if (isValid) {
       pinVerified.value = true;
       pinVerificationTime.value = Date.now();
+      // Сбрасываем состояние загрузки после успешной верификации
+      isLoading.value = false;
+      console.log('PIN верифицирован, сбрасываем isLoading');
     }
 
     return isValid;

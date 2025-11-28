@@ -2,7 +2,7 @@
 import { useWalletStore } from "@/stores/walletStore";
 const walletStore = useWalletStore();
 import { useI18n } from "vue-i18n";
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const { t } = useI18n();
