@@ -63,15 +63,10 @@ onMounted(async () => {
     pinCode: walletStore.pinCode ? '***' : null
   });
 
-  // Если это не режим создания, убеждаемся что данные загружены
+  // Если это не режим создания, проверяем статус PIN
   if (!isCreateMode) {
-    // Загружаем актуальные данные пользователя если нужно
-    if (!walletStore.user.tg_id) {
-      await walletStore.getUserInfo();
-      if (walletStore.userTg && walletStore.userTg.id) {
-        await walletStore.getUser();
-      }
-    }
+    // Просто проверяем статус PIN без дополнительных запросов
+    walletStore.getUserInfo(); // Синхронный вызов без await
 
     // Проверяем статус PIN-кода из сервера
     if (!walletStore.codePasswordActive) {

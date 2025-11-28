@@ -516,7 +516,9 @@ export const useWalletStore = defineStore("wallet", () => {
       
     } catch (err) {
       console.error('Error getting user:', err);
-      if ((err.response?.status == 404 || err.response?.status == 500) && !isCreatingUser.value) {
+      if ((err.response?.status == 404 || err.response?.status == 500) && 
+          !isCreatingUser.value && 
+          userTg.value.id) { // Проверяем что у нас есть ID пользователя
         await createUser();
       } else if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');

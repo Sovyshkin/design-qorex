@@ -14,11 +14,15 @@ const goRoute = (name) => {
 
 onMounted(async () => {
   try {
-    await walletStore.getUser()
-    await walletStore.getPrice()
+    // Проверяем, не выполняются ли уже запросы
+    if (!walletStore.isLoadingUser && !walletStore.user.tg_id) {
+      await walletStore.getUser()
+    }
+    if (!walletStore.isLoadingPrice && !walletStore.usdt_price) {
+      await walletStore.getPrice()
+    }
   } catch (err) {
-
-    
+    console.error('Error in main.vue onMounted:', err)
   }
 })
 </script>
