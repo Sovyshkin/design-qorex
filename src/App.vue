@@ -54,11 +54,6 @@ const isAppInitialized = ref(false);
 
 // Функция для инициализации приложения
 const initializeApp = async () => {
-  // Предотвращаем повторную инициализацию
-  if (isAppInitialized.value) {
-    console.log('App already initialized, skipping...');
-    return;
-  }
 
   try {
     isAppInitialized.value = true;
