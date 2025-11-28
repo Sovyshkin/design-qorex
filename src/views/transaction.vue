@@ -99,8 +99,9 @@ const getTransactionStatus = (boolSuccess) => {
 
 // Проверяем, можно ли показать кнопку просмотра счета
 const canViewInvoice = (transactionType, transactionId) => {
-  // Показываем только для пополнений (receiving/input) и если ID не содержит символ _
-  return (transactionType === 'receiving' || transactionType === 'input') && 
+  // Показываем только для пополнений с страницы deposit (только input) и если ID не содержит символ _
+  // receiving - это переводы между пользователями, input - пополнение с deposit
+  return transactionType === 'input' && 
          transactionId && 
          !transactionId.toString().includes('_');
 };

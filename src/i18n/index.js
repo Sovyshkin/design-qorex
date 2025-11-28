@@ -187,7 +187,7 @@ const messages = {
     "2fa_verification_failed": "Не удалось проверить код 2FA",
     wallet_not_found: "Кошелек не найден",
     wallet_load_failed: "Не удалось загрузить кошелек",
-    view_invoice: "Просмотреть счет в кассе"
+    view_invoice: "Посмотреть счет"
   },
   EN: {
     referal: "Referral program",
@@ -377,7 +377,7 @@ const messages = {
     "2fa_verification_failed": "Failed to verify 2FA code",
     wallet_not_found: "Wallet not found",
     wallet_load_failed: "Failed to load wallet",
-    view_invoice: "View invoice in cashier"
+    view_invoice: "View invoice"
   },
 };
 
