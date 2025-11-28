@@ -66,14 +66,14 @@ export const useWalletStore = defineStore("wallet", () => {
   const message_status = ref("");
   // const userTg = ref({})
   const userTg = ref({
-    first_name: "Вадим",
-    last_name: "Заньков",
-    username: "zankov_22",
-    id: "978664527",
-    // first_name: "",
-    // last_name: "",
-    // username: "",
-    // id: "",
+    // first_name: "Вадим",
+    // last_name: "Заньков",
+    // username: "zankov_22",
+    // id: "978664527",
+    first_name: "",
+    last_name: "",
+    username: "",
+    id: "",
   });
   const user = ref<any>({});
   const amount = ref("");
@@ -403,7 +403,7 @@ export const useWalletStore = defineStore("wallet", () => {
         }
 
         if (userString) {
-          // userTg.value = JSON.parse(userString);
+          userTg.value = JSON.parse(userString);
           localStorage.setItem("user", JSON.stringify(userTg.value));
           if (start_param == "error_trasaction") {
             router.push({ name: "transaction_failed" });
