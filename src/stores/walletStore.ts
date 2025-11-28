@@ -483,26 +483,17 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
-  // Глобальные флаги для ПОЛНОГО предотвращения рекурсии
-  const isLoadingUser = ref(false);
-  const isGettingUser = ref(false);
-  
   const getUser = async () => {
-    // КРИТИЧНО: Жесткая защита от любых повторных вызовов
-    if (isLoadingUser.value || isGettingUser.value) {
-      console.warn('getUser already in progress, skipping...');
-      return;
-    }
-    
-    // Немедленно блокируем повторные вызовы
-    isGettingUser.value = true;
     try {
-      isLoadingUser.value = true;
       isLoading.value = true;
+      console.log('Getting user data for ID:', userTg.value.id);
       
       // Проверяем валидность ID пользователя
       if (!userTg.value?.id) {
-        throw new Error('No user ID available');
+        console.error('No user ID available');
+        // Пытаемся создать пользователя если ID отсутствует
+        await createUser();
+        return;
       }
       
       let response = await axios.get(`/user/${userTg.value.id}`);
@@ -522,46 +513,43 @@ export const useWalletStore = defineStore("wallet", () => {
 
       history.value = response.data.list_transctions_replenished;
 
-      // НИКОГДА не вызываем getPrice из getUser - это приведет к рекурсии!
+      // Обновляем рублевый баланс
       balance_rub.value = balance.value * (usdt_price.value || 95);
+      
+      console.log('User data loaded successfully:', { balance: balance.value, userId: user.value.tg_id });
       
     } catch (err) {
       console.error('Error getting user:', err);
       
-      // КРИТИЧНО: НИКАКИХ рекурсивных вызовов!
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (err.response?.status === 404) {
+        // Пользователь не найден, создаем его
+        console.log('User not found, creating new user');
+        await createUser();
+      } else if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
-      } else if (err.message !== 'No user ID available') {
-        showMessage(t('error_occurred') || 'Произошла ошибка', 'error');
+      } else {
+        showMessage(t('error_occurred') || 'Произошла ошибка при загрузке данных', 'error');
       }
-      
     } finally {
       isLoading.value = false;
-      isLoadingUser.value = false;
-      isGettingUser.value = false;
     }
   };
 
-  // Глобальные флаги для полного предотвращения рекурсии
-  const isLoadingPrice = ref(false);
-  const isGettingPrice = ref(false);
-  
   const getPrice = async () => {
-    // КРИТИЧНО: Жесткая защита от любых повторных вызовов
-    if (isLoadingPrice.value || isGettingPrice.value) {
-      console.warn('getPrice already in progress, skipping...');
-      return;
-    }
-    
-    // Немедленно блокируем повторные вызовы
-    isGettingPrice.value = true;
     try {
-      isLoadingPrice.value = true;
+      console.log('Getting price data...');
       let response = await axios.get("/last_price");
 
       usdt_price.value = response.data.last_price;
       // Сохраняем полученную цену
       localStorage.setItem('last_usdt_price', String(usdt_price.value));
+      
+      console.log('Price loaded successfully:', usdt_price.value);
+      
+      // Обновляем рублевый баланс если есть баланс
+      if (balance.value !== undefined) {
+        balance_rub.value = balance.value * usdt_price.value;
+      }
       
     } catch (err) {
       console.error('Error getting price:', err);
@@ -570,8 +558,10 @@ export const useWalletStore = defineStore("wallet", () => {
       const savedPrice = localStorage.getItem('last_usdt_price');
       if (savedPrice) {
         usdt_price.value = parseFloat(savedPrice);
+        console.log('Using saved price:', usdt_price.value);
       } else {
         usdt_price.value = 95; // Дефолтная цена
+        console.log('Using default price:', usdt_price.value);
       }
       
       if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
@@ -579,10 +569,6 @@ export const useWalletStore = defineStore("wallet", () => {
       } else {
         showMessage(t('price_error') || 'Используется последний известный курс', 'warning');
       }
-      
-    } finally {
-      isLoadingPrice.value = false;
-      isGettingPrice.value = false;
     }
   };
 
@@ -1209,6 +1195,8 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+
+
   // Вызываем инициализацию
   initializeStore();
 
@@ -1272,9 +1260,5 @@ export const useWalletStore = defineStore("wallet", () => {
     has2FA,
     isPinRequired,
     initializeStore,
-    isLoadingUser,
-    isLoadingPrice,
-    isGettingUser,
-    isGettingPrice,
   };
 });

@@ -1,36 +1,36 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import NavBar from './components/NavBar.vue';
-import AppLoader from './components/AppLoader.vue';
-import AppMessage from './components/AppMessage.vue'
-import { useWalletStore } from '@/stores/walletStore.ts'
+import { ref, onMounted, computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import NavBar from "./components/NavBar.vue";
+import AppLoader from "./components/AppLoader.vue";
+import AppMessage from "./components/AppMessage.vue";
+import { useWalletStore } from "@/stores/walletStore.ts";
 
 const router = useRouter();
-const walletStore = useWalletStore()
+const walletStore = useWalletStore();
 const accessDenied = ref(false);
 
 // Список публичных маршрутов, которые не требуют аутентификации
-const publicRoutes = ['enterPin', 'createPin'];
+const publicRoutes = ["enterPin", "createPin"];
 
 // Упрощенный router guard - только для базовой навигации
 router.beforeEach(async (to, from, next) => {
   try {
     // Разрешаем навигацию к PIN маршрутам
-    if (to.name === 'enterPin' || to.name === 'createPin') {
+    if (to.name === "enterPin" || to.name === "createPin") {
       walletStore.isLoading = false;
       return next();
     }
 
     // Если пользователь пытается попасть на createPin, но PIN уже есть
-    if (to.name === 'createPin' && walletStore.hasPinCode()) {
+    if (to.name === "createPin" && walletStore.hasPinCode()) {
       walletStore.isLoading = false;
-      return next({ name: 'main' });
+      return next({ name: "main" });
     }
 
     next();
   } catch (error) {
-    console.error('Router guard error:', error);
+    console.error("Router guard error:", error);
     next();
   } finally {
     walletStore.isLoading = false;
@@ -40,12 +40,12 @@ router.beforeEach(async (to, from, next) => {
 // Функция проверки доступа по белому списку
 const checkAccessByWhitelist = (userId) => {
   const allowedIds = import.meta.env.VITE_ALLOWED_TELEGRAM_IDS;
-  
-  if (!allowedIds || allowedIds.trim() === '') {
+
+  if (!allowedIds || allowedIds.trim() === "") {
     return true;
   }
-  
-  const allowedIdsArray = allowedIds.split(',').map(id => id.trim());
+
+  const allowedIdsArray = allowedIds.split(",").map((id) => id.trim());
   return allowedIdsArray.includes(String(userId));
 };
 
@@ -54,9 +54,7 @@ const isAppInitialized = ref(false);
 
 // Функция для инициализации приложения
 const initializeApp = async () => {
-
   try {
-    isAppInitialized.value = true;
     await walletStore.getUserInfo();
 
     if (window.Telegram && window.Telegram.WebApp) {
@@ -66,34 +64,30 @@ const initializeApp = async () => {
           walletStore.isLoading = false;
           return;
         }
-
-        // Проверяем, есть ли уже данные пользователя
-        if (!walletStore.user || !walletStore.user.id) {
-          await walletStore.getUser();
-        }
+        await walletStore.getUser();
+        await walletStore.getPrice();
 
         // Проверяем PIN только при запуске приложения
         if (walletStore.hasPinCode() && walletStore.isPinRequired()) {
           // Удаляем статус верификации только если требуется PIN
-          localStorage.removeItem('pinVerified');
+          localStorage.removeItem("pinVerified");
           const currentRoute = router.currentRoute.value;
           router.push({
-            name: 'enterPin',
-            query: { returnTo: currentRoute.fullPath }
+            name: "enterPin",
+            query: { returnTo: currentRoute.fullPath },
           });
           return; // Не сбрасываем isLoading если перенаправляем на PIN
         }
       }
     }
-    
+
     // Завершаем загрузку если не требуется PIN
     walletStore.isLoading = false;
   } catch (err) {
-    console.error('Ошибка инициализации приложения:', err);
-    isAppInitialized.value = false; // Сбрасываем флаг при ошибке
+    console.error("Ошибка инициализации приложения:", err);
     walletStore.isLoading = false; // Завершаем загрузку при ошибке
   }
-}
+};
 
 onMounted(() => {
   initializeApp();
@@ -108,23 +102,25 @@ const showContent = computed(() => {
 
 <template>
   <main class="wrapper">
-    <AppMessage/>
-    
+    <AppMessage />
+
     <!-- Экран блокировки доступа -->
     <div class="access-denied" v-if="accessDenied">
       <div class="access-denied-content">
         <div class="lock-icon">🔒</div>
         <h1>Доступ ограничен</h1>
         <p>Приложение находится в режиме тестирования.</p>
-        <p class="sub-text">Доступ разрешен только авторизованным пользователям.</p>
+        <p class="sub-text">
+          Доступ разрешен только авторизованным пользователям.
+        </p>
       </div>
     </div>
-    
+
     <template v-else>
       <!-- Отображаем страницы PIN-кода без навбара -->
       <div v-if="!showContent" class="pin-page">
         <div class="wrap-load" v-if="walletStore.isLoading">
-          <AppLoader/>
+          <AppLoader />
         </div>
         <router-view v-else v-slot="{ Component }">
           <transition name="fade" mode="out-in">
@@ -132,13 +128,13 @@ const showContent = computed(() => {
           </transition>
         </router-view>
       </div>
-      
+
       <!-- Отображаем основной контент с навбаром -->
       <div v-else>
         <transition name="app-appear" appear>
           <div class="content-wrapper">
             <div class="wrap-load" v-if="walletStore.isLoading">
-              <AppLoader/>
+              <AppLoader />
             </div>
             <router-view v-else v-slot="{ Component }">
               <component :is="Component" />
@@ -154,7 +150,7 @@ const showContent = computed(() => {
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap");
 
 #app {
   font-family: "Geologica", sans-serif;
@@ -172,7 +168,7 @@ const showContent = computed(() => {
   font-size: 16px;
   line-height: 20px;
   letter-spacing: 0;
-  color: #1C1C1C;
+  color: #1c1c1c;
 }
 
 *,
@@ -181,7 +177,8 @@ const showContent = computed(() => {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -271,7 +268,7 @@ button::-moz-focus-inner {
 }
 
 /* Глобальные стили для disabled кнопок - защита от спама */
-button:disabled, 
+button:disabled,
 input[type="submit"]:disabled,
 .btn:disabled {
   opacity: 0.5 !important;
@@ -369,7 +366,8 @@ h1 {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

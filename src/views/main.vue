@@ -20,16 +20,29 @@ onMounted(async () => {
   if (isInitialized.value) return;
   
   try {
-    // ЖЕСТКАЯ защита от рекурсии - проверяем все возможные состояния
+    console.log('Main.vue onMounted - checking data state:', {
+      hasUser: !!walletStore.user?.tg_id,
+      hasBalance: walletStore.balance !== undefined,
+      hasPrice: walletStore.usdt_price > 0,
+      isLoadingUser: walletStore.isLoadingUser,
+      isGettingUser: walletStore.isGettingUser,
+      isLoadingPrice: walletStore.isLoadingPrice,
+      isGettingPrice: walletStore.isGettingPrice
+    });
+
+    // Проверяем наличие данных
     const hasUserData = walletStore.user?.tg_id || walletStore.balance !== undefined;
     const hasPrice = walletStore.usdt_price > 0;
     
-    // Загружаем данные только если их реально нет и запросы не выполняются
-    if (!walletStore.isLoadingUser && !walletStore.isGettingUser && !hasUserData && walletStore.userTg?.id) {
+    // Загружаем данные пользователя если их нет
+    if (!hasUserData && walletStore.userTg?.id) {
+      console.log('Loading user data...');
       await walletStore.getUser();
     }
     
-    if (!walletStore.isLoadingPrice && !walletStore.isGettingPrice && !hasPrice) {
+    // Загружаем цену если ее нет
+    if (!hasPrice) {
+      console.log('Loading price data...');
       await walletStore.getPrice();
     }
     

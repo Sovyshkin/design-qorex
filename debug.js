@@ -1,0 +1,1 @@
+console.log('walletStore flags:', { isLoadingUser: walletStore.isLoadingUser, isGettingUser: walletStore.isGettingUser, isLoadingPrice: walletStore.isLoadingPrice, isGettingPrice: walletStore.isGettingPrice });
