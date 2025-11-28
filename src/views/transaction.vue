@@ -97,6 +97,20 @@ const getTransactionStatus = (boolSuccess) => {
   }
 };
 
+// Проверяем, можно ли показать кнопку просмотра счета
+const canViewInvoice = (transactionType, transactionId) => {
+  // Показываем только для пополнений (receiving/input) и если ID не содержит символ _
+  return (transactionType === 'receiving' || transactionType === 'input') && 
+         transactionId && 
+         !transactionId.toString().includes('_');
+};
+
+// Открываем счет в кассе
+const viewInvoice = (transactionId) => {
+  const url = `https://pay.cryptocloud.plus/${transactionId}`;
+  window.open(url, '_blank');
+};
+
 onMounted(() => {
   let { id, amount_usdt, amount_rub, datatime, type_trans, bool_suecess } = route.query
   if (id && amount_usdt && amount_rub && datatime && type_trans && bool_suecess) {
@@ -192,21 +206,37 @@ onMounted(() => {
 
         <div class="detail-item" v-if="walletStore.transaction.type_trans == 'input'">
           <span class="detail-label">{{ t("transaction_id") }}:</span>
-          <span
-            @click="copy(walletStore.transaction.working_invoce)"
-            class="detail-value"
-            >{{ walletStore.transaction.working_invoce }} <img
-            src="@/assets/copy.svg" alt="copy"</span
-          >
+          <div class="detail-value-container">
+            <span
+              @click="copy(walletStore.transaction.working_invoce)"
+              class="detail-value clickable"
+              >{{ walletStore.transaction.working_invoce }} <img
+              src="@/assets/copy.svg" alt="copy"></span>
+            <button 
+              v-if="canViewInvoice(walletStore.transaction.type_trans, walletStore.transaction.working_invoce)"
+              @click="viewInvoice(walletStore.transaction.working_invoce)"
+              class="view-invoice-btn"
+            >
+              {{ t('view_invoice') }}
+            </button>
+          </div>
         </div>
         <div class="detail-item" v-else>
           <span class="detail-label">{{ t("transaction_id") }}:</span>
-          <span
-            @click="copy(walletStore.transaction.id)"
-            class="detail-value"
-            >{{ walletStore.transaction.id }} <img
-            src="@/assets/copy.svg" alt="copy"</span
-          >
+          <div class="detail-value-container">
+            <span
+              @click="copy(walletStore.transaction.id)"
+              class="detail-value clickable"
+              >{{ walletStore.transaction.id }} <img
+              src="@/assets/copy.svg" alt="copy"></span>
+            <button 
+              v-if="canViewInvoice(walletStore.transaction.type_trans, walletStore.transaction.id)"
+              @click="viewInvoice(walletStore.transaction.id)"
+              class="view-invoice-btn"
+            >
+              {{ t('view_invoice') }}
+            </button>
+          </div>
         </div>
 
         <div class="detail-item">
@@ -347,18 +377,57 @@ h1 {
 .detail-item {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
 }
 
 .detail-label {
   opacity: 0.4;
   font-size: 12px;
   font-weight: 300;
+  min-width: 80px;
+}
+
+.detail-value-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 1;
 }
 
 .detail-value {
   font-size: 12px;
   font-weight: 400;
   text-align: right;
+}
+
+.detail-value.clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-invoice-btn {
+  background: linear-gradient(135deg, #deec51 0%, #c4d639 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #141414;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.view-invoice-btn:hover {
+  background: linear-gradient(135deg, #c4d639 0%, #b0c230 100%);
+  transform: translateY(-1px);
+}
+
+.view-invoice-btn:active {
+  transform: translateY(0);
 }
 
 .wrap-img {
