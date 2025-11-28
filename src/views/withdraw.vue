@@ -641,28 +641,30 @@ select:disabled {
 
 .code-input {
   width: 100%;
-  border: 3px solid #1e293b !important;
-  border-radius: 20px !important;
-  padding: 16px !important;
-  font-size: 24px !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  font-size: 16px !important;
   text-align: center;
-  letter-spacing: 8px;
-  font-weight: 700;
+  letter-spacing: 4px;
+  font-weight: 500;
+  color: #1e293b;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
   outline: none;
   caret-color: #deec51 !important;
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
   box-shadow: 
-    0 8px 24px rgba(30, 41, 59, 0.1),
-    inset 0 2px 0 rgba(255, 255, 255, 0.8) !important;
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .code-input:focus {
   border-color: #deec51 !important;
+  background: #ffffff !important;
   box-shadow: 
-    0 0 0 4px rgba(222, 236, 81, 0.2),
-    0 12px 32px rgba(30, 41, 59, 0.15),
-    inset 0 2px 0 rgba(255, 255, 255, 0.9) !important;
+    0 0 0 4px rgba(222, 236, 81, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   transform: translateY(-2px) !important;
 }
 
