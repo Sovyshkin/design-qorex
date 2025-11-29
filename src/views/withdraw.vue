@@ -306,7 +306,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  padding: 0 20px 120px 20px;
+  padding: 0 0 120px 0;
   overflow-y: auto;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   min-height: calc(100vh - 80px);
@@ -316,17 +316,19 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 32px;
+  padding: 32px 20px;
   background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
   border: 2px solid transparent;
   background-clip: padding-box;
-  border-radius: 24px;
+  border-radius: 0;
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.1),
     0 8px 24px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  margin: 0;
 }
 
 .form-container::before {
@@ -337,11 +339,11 @@ h1 {
   right: 0;
   height: 4px;
   background: linear-gradient(90deg, #deec51, #d6e34a, #c9d93d);
-  border-radius: 24px 24px 0 0;
 }
 
 .btn {
-  width: 100%;
+  width: calc(100% - 40px);
+  margin: 0 20px;
   display: flex;
   align-items: center;
   justify-content: center;

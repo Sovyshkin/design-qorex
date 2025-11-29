@@ -242,9 +242,11 @@ h1 {
 .container {
   display: flex;
   flex-direction: column;
-  padding: 0 20px 120px 20px;
+  gap: 20px;
+  padding: 0 0 150px 0;
   overflow-y: auto;
-  min-height: calc(100vh - 80px); /* Учитываем высоту header */
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: calc(100vh - 80px);
 }
 
 /* Исправление для маленьких экранов iPhone 5/SE */
@@ -272,35 +274,94 @@ h1 {
 .form-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 24px;
+  padding: 32px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  border: none;
+  border-radius: 0;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+  width: 100vw;
+  margin: 0;
+  margin-left: calc(-50vw + 50%);
+}
+
+.form-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #deec51, #d6e34a, #c9d93d);
 }
 
 .btn {
-  width: 100%;
+  width: calc(100% - 40px);
+  margin: 0 20px 20px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 8px;
-  font-weight: 300;
-  font-size: 14px;
-  color: #141414;
-  background-color: #deec51;
-  transition: all 0.3s ease;
-  cursor: pointer;
+  gap: 12px;
+  padding: 20px 24px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 17px;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
   border: none;
-  outline: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 
+    0 12px 32px rgba(222, 236, 81, 0.3),
+    0 6px 16px rgba(222, 236, 81, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(222, 236, 81, 0.4),
+    0 10px 20px rgba(222, 236, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(-1px) scale(0.99);
 }
 
 .btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  opacity: 0.7;
+  transform: none;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  color: #64748b;
+  box-shadow: none;
 }
 
 .btn.loading {
-  background-color: #d4d926;
+  background: linear-gradient(135deg, #d4d926 0%, #c9d93d 100%);
 }
 
 .btn-content {
@@ -311,9 +372,9 @@ h1 {
 }
 
 .loader {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #141414;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #1a1a1a;
   border-top: 2px solid transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -328,17 +389,31 @@ input,
 textarea,
 select {
   width: 100%;
-  border: 1px solid black;
-  border-radius: 10px;
-  padding: 16px;
-  background: none;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   outline: none;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+  caret-color: #deec51;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-input:focus {
+input:focus,
+textarea:focus,
+select:focus {
   border-color: #deec51;
+  background: #ffffff;
+  box-shadow: 
+    0 0 0 4px rgba(222, 236, 81, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
 }
 
 input::placeholder,
@@ -436,32 +511,66 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 }
 
 .network-selector h3 {
-  margin-bottom: 10px;
-  font-size: 16px;
-  font-weight: 400;
-  color: #141414;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
 }
 
 .networks-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
 .network-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background-color: #fff;
-  border-radius: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.network-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(222, 236, 81, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.network-item:hover::before {
+  left: 100%;
+}
+
+.network-item:hover {
+  border-color: #deec51;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.1),
+    0 6px 16px rgba(222, 236, 81, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .network-item.active {
-  background-color: #f5f5f5;
-  border: 1px solid #deec51;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #deec51;
+  box-shadow: 
+    0 8px 24px rgba(222, 236, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .network-icon {
@@ -503,6 +612,18 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   position: relative;
 }
 
+.check-icon:after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 6px;
+  border-left: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  transform: rotate(-45deg);
+  top: 8px;
+  left: 6px;
+}
+
 /* Дополнительные исправления для очень маленьких экранов */
 @media (max-height: 600px) {
   .header {
@@ -526,7 +647,22 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 /* Специфично для iPhone SE и подобных устройств */
 @media (max-width: 375px) and (max-height: 667px) {
   .container {
-    padding: 0 15px 60px 15px; /* Еще больше уменьшаем padding */
+    padding: 0 0 180px 0; /* Увеличиваем нижний отступ для маленьких экранов */
+  }
+  
+  .btn {
+    margin-bottom: 30px; /* Дополнительный отступ для кнопки */
+  }
+}
+
+/* Дополнительные стили для корректного отображения на всю ширину */
+@media (max-width: 768px) {
+  .container {
+    padding-bottom: 160px; /* Увеличиваем нижний отступ */
+  }
+  
+  .form-container {
+    padding: 24px 16px; /* Уменьшаем внутренние отступы на мобильных */
   }
 }
 </style>
