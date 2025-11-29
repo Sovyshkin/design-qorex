@@ -17,6 +17,37 @@ const networks = [
 const isCreatingInvoice = ref(false);
 const isDisabled = ref(false);
 
+// Функция для обработки ошибок API
+const handleApiError = (error) => {
+  console.error('API Error:', error);
+  
+  // Если это ошибка валидации от FastAPI
+  if (error.response?.data?.detail && Array.isArray(error.response.data.detail)) {
+    const validationErrors = error.response.data.detail;
+    
+    for (const err of validationErrors) {
+      if (err.type === 'int_parsing' && err.loc?.includes('amount')) {
+        walletStore.showMessage('Сумма должна быть целым числом. Дробные суммы не поддерживаются.', 'error');
+        return;
+      }
+      if (err.type === 'value_error' && err.loc?.includes('amount')) {
+        walletStore.showMessage('Некорректная сумма. Проверьте введенное значение.', 'error');
+        return;
+      }
+    }
+    
+    // Общая ошибка валидации
+    walletStore.showMessage('Ошибка в данных. Проверьте введенную информацию.', 'error');
+  } else if (error.response?.data?.detail && typeof error.response.data.detail === 'string') {
+    // Если detail - строка
+    walletStore.showMessage(error.response.data.detail, 'error');
+  } else if (error.message) {
+    walletStore.showMessage(error.message, 'error');
+  } else {
+    walletStore.showMessage('Произошла ошибка при создании платежа', 'error');
+  }
+};
+
 // Функция для нормализации числа (заменяет запятую на точку и очищает от лишних символов)
 const normalizeNumber = (value) => {
   if (!value) return "";
@@ -39,12 +70,19 @@ const normalizeNumber = (value) => {
 // Обработчик ввода суммы
 const handleAmountInput = (event) => {
   const value = event.target.value;
-  const normalized = normalizeNumber(value);
+  // Для целых чисел убираем дробную часть при нормализации
+  let normalized = normalizeNumber(value);
+  
+  // Если есть дробная часть, убираем её
+  if (normalized.includes('.')) {
+    const parts = normalized.split('.');
+    normalized = parts[0]; // Берем только целую часть
+  }
   
   localAmount.value = normalized;
   
-  // Обновляем значение в store только если это валидное число
-  const numValue = parseFloat(normalized);
+  // Обновляем значение в store только если это валидное целое число
+  const numValue = parseInt(normalized);
   if (!isNaN(numValue) && numValue > 0) {
     walletStore.amount = normalized;
   } else if (normalized === "") {
@@ -52,19 +90,33 @@ const handleAmountInput = (event) => {
   }
 };
 
+// Функция для быстрого выбора суммы
+const selectQuickAmount = (amount) => {
+  localAmount.value = amount.toString();
+  walletStore.amount = amount.toString();
+};
+
 const createInvoice = async () => {
   if (isDisabled.value) return;
 
   // Валидация суммы
-  const numAmount = parseFloat(normalizeNumber(localAmount.value));
-  if (isNaN(numAmount) || numAmount <= 0) {
-    walletStore.showMessage(t('invalid_amount') || 'Введите корректную сумму', 'error');
+  const cleanAmount = localAmount.value.replace(/[^\d]/g, ''); // Только цифры
+  const numAmount = parseInt(cleanAmount);
+  
+  if (!cleanAmount || isNaN(numAmount) || numAmount <= 0) {
+    walletStore.showMessage('Введите корректную сумму в USDT', 'error');
     return;
   }
 
   // Минимальная сумма
   if (numAmount < 1) {
-    walletStore.showMessage(t('minimum_amount') || 'Минимальная сумма 1 USDT', 'error');
+    walletStore.showMessage('Минимальная сумма для пополнения: 1 USDT', 'error');
+    return;
+  }
+
+  // Максимальная сумма для безопасности
+  if (numAmount > 10000) {
+    walletStore.showMessage('Максимальная сумма для пополнения: 10,000 USDT', 'error');
     return;
   }
 
@@ -72,16 +124,16 @@ const createInvoice = async () => {
   isCreatingInvoice.value = true;
 
   try {
-    // Устанавливаем нормализованную сумму
-    walletStore.amount = normalizeNumber(localAmount.value);
+    // Устанавливаем целое число как строку
+    walletStore.amount = Math.floor(numAmount).toString();
     await walletStore.createInvoice(selectedNetwork.value);
   } catch (error) {
-    console.error('Error creating invoice:', error);
+    handleApiError(error);
   } finally {
     isCreatingInvoice.value = false;
     setTimeout(() => {
       isDisabled.value = false;
-    }, 1000); // Уменьшаем таймаут до 1 секунды
+    }, 1000);
   }
 };
 </script>
@@ -104,13 +156,33 @@ const createInvoice = async () => {
       <div class="group">
         <input 
           type="text" 
-          :placeholder="t('select_amount')" 
+          placeholder="Введите сумму (только целые числа)" 
           id="amount" 
           v-model="localAmount"
           @input="handleAmountInput"
-          inputmode="decimal"
+          inputmode="numeric"
         />
         <span class="group-item">USDT</span>
+      </div>
+      
+      <div class="hint">
+        <span>💡 Поддерживаются только целые суммы: 1, 5, 10, 50, 100 USDT</span>
+      </div>
+      
+      <div class="quick-amounts">
+        <div class="quick-amounts-title">Быстрый выбор:</div>
+        <div class="amounts-grid">
+          <button 
+            v-for="amount in [5, 10, 25, 50, 100]" 
+            :key="amount"
+            class="amount-btn"
+            :class="{ active: localAmount === amount.toString() }"
+            @click="selectQuickAmount(amount)"
+            type="button"
+          >
+            {{ amount }} USDT
+          </button>
+        </div>
       </div>
       
       <div class="network-selector">
@@ -303,6 +375,61 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   right: 4%;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.hint {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  border-left: 3px solid #deec51;
+}
+
+.hint span {
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.quick-amounts {
+  margin-top: 20px;
+}
+
+.quick-amounts-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: #141414;
+  margin-bottom: 12px;
+}
+
+.amounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.amount-btn {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #141414;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.amount-btn:hover {
+  border-color: #deec51;
+  background-color: #f9f9f9;
+}
+
+.amount-btn.active {
+  background-color: #deec51;
+  border-color: #deec51;
+  color: #141414;
+  font-weight: 500;
 }
 
 .network-selector {
