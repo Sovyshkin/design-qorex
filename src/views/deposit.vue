@@ -6,6 +6,7 @@ import { ref } from "vue";
 const { t } = useI18n();
 const walletStore = useWalletStore();
 const selectedNetwork = ref("USDT_TRC20");
+const localAmount = ref("");
 
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
@@ -16,13 +17,63 @@ const networks = [
 const isCreatingInvoice = ref(false);
 const isDisabled = ref(false);
 
+// Функция для нормализации числа (заменяет запятую на точку и очищает от лишних символов)
+const normalizeNumber = (value) => {
+  if (!value) return "";
+  
+  // Заменяем запятую на точку
+  let normalized = value.toString().replace(/,/g, '.');
+  
+  // Убираем все символы кроме цифр, точки и знака минус
+  normalized = normalized.replace(/[^\d.-]/g, '');
+  
+  // Оставляем только одну точку
+  const parts = normalized.split('.');
+  if (parts.length > 2) {
+    normalized = parts[0] + '.' + parts.slice(1).join('');
+  }
+  
+  return normalized;
+};
+
+// Обработчик ввода суммы
+const handleAmountInput = (event) => {
+  const value = event.target.value;
+  const normalized = normalizeNumber(value);
+  
+  localAmount.value = normalized;
+  
+  // Обновляем значение в store только если это валидное число
+  const numValue = parseFloat(normalized);
+  if (!isNaN(numValue) && numValue > 0) {
+    walletStore.amount = normalized;
+  } else if (normalized === "") {
+    walletStore.amount = "";
+  }
+};
+
 const createInvoice = async () => {
   if (isDisabled.value) return;
+
+  // Валидация суммы
+  const numAmount = parseFloat(normalizeNumber(localAmount.value));
+  if (isNaN(numAmount) || numAmount <= 0) {
+    walletStore.showMessage(t('invalid_amount') || 'Введите корректную сумму', 'error');
+    return;
+  }
+
+  // Минимальная сумма
+  if (numAmount < 1) {
+    walletStore.showMessage(t('minimum_amount') || 'Минимальная сумма 1 USDT', 'error');
+    return;
+  }
 
   isDisabled.value = true;
   isCreatingInvoice.value = true;
 
   try {
+    // Устанавливаем нормализованную сумму
+    walletStore.amount = normalizeNumber(localAmount.value);
     await walletStore.createInvoice(selectedNetwork.value);
   } catch (error) {
     console.error('Error creating invoice:', error);
@@ -30,7 +81,7 @@ const createInvoice = async () => {
     isCreatingInvoice.value = false;
     setTimeout(() => {
       isDisabled.value = false;
-    }, 60000);
+    }, 1000); // Уменьшаем таймаут до 1 секунды
   }
 };
 </script>
@@ -51,7 +102,14 @@ const createInvoice = async () => {
     <main class="container">
     <div class="form-container">
       <div class="group">
-        <input type="number" :placeholder="t('select_amount')" id="amount" v-model="walletStore.amount"/>
+        <input 
+          type="text" 
+          :placeholder="t('select_amount')" 
+          id="amount" 
+          v-model="localAmount"
+          @input="handleAmountInput"
+          inputmode="decimal"
+        />
         <span class="group-item">USDT</span>
       </div>
       
@@ -206,6 +264,12 @@ select {
   padding: 16px;
   background: none;
   outline: none;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus {
+  border-color: #deec51;
 }
 
 input::placeholder,
@@ -215,6 +279,19 @@ select::placeholder {
   font-weight: 400;
   font-size: 14px;
   line-height: 19.12px;
+}
+
+/* Стили для мобильной клавиатуры с десятичными числами */
+input[inputmode="decimal"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+}
+
+input[inputmode="decimal"]::-webkit-outer-spin-button,
+input[inputmode="decimal"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .group {
