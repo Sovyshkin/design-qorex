@@ -239,6 +239,7 @@ select {
   font-size: inherit;
   color: inherit;
   background-color: transparent;
+  caret-color: #000000;
 }
 
 input::-ms-clear {

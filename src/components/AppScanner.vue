@@ -1389,6 +1389,7 @@ color: white;
   outline: none;
   backdrop-filter: blur(10px);
   box-sizing: border-box;
+  caret-color: #000000;
 }
 
 .amount-input:focus {

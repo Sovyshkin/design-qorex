@@ -90,6 +90,7 @@ select {
   padding: 16px;
   background: none;
   outline: none;
+  caret-color: #000000;
 }
 
 input::placeholder,

@@ -741,6 +741,7 @@ onMounted(async () => {
   outline: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  caret-color: #000000;
 }
 
 .code-input:focus {
