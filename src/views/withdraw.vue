@@ -123,11 +123,25 @@ const checkTwoFactorAccess = async () => {
 };
 
 const preventNegativeAmount = (event) => {
-  const value = parseFloat(event.target.value);
-  if (value < 0) {
+  let value = event.target.value;
+  const numValue = parseFloat(value);
+  
+  if (numValue < 0) {
     amount.value = '';
-  } else if (value > walletStore.balance) {
-    amount.value = walletStore.balance.toString();
+    return;
+  }
+  
+  if (numValue > walletStore.balance) {
+    amount.value = walletStore.balance.toFixed(2);
+    return;
+  }
+  
+  // Ограничиваем до 2 знаков после запятой
+  if (value.includes('.')) {
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 2) {
+      amount.value = parseFloat(value).toFixed(2);
+    }
   }
 };
 

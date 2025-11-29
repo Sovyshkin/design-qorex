@@ -153,35 +153,32 @@ const createInvoice = async () => {
   <transition name="fade-scale" appear>
     <main class="container">
     <div class="form-container">
-      <div class="group">
-        <input 
-          type="text" 
-          placeholder="Введите сумму (только целые числа)" 
-          id="amount" 
-          v-model="localAmount"
-          @input="handleAmountInput"
-          inputmode="numeric"
-        />
-        <span class="group-item">USDT</span>
-      </div>
-      
-      <div class="hint">
-        <span>💡 Поддерживаются только целые суммы: 1, 5, 10, 50, 100 USDT</span>
-      </div>
-      
-      <div class="quick-amounts">
-        <div class="quick-amounts-title">Быстрый выбор:</div>
-        <div class="amounts-grid">
-          <button 
-            v-for="amount in [5, 10, 25, 50, 100]" 
-            :key="amount"
-            class="amount-btn"
-            :class="{ active: localAmount === amount.toString() }"
-            @click="selectQuickAmount(amount)"
-            type="button"
-          >
-            {{ amount }} USDT
-          </button>
+      <div class="input-section">
+        <div class="group">
+          <input 
+            type="text" 
+            placeholder="Введите сумму" 
+            id="amount" 
+            v-model="localAmount"
+            @input="handleAmountInput"
+            inputmode="numeric"
+          />
+          <span class="group-item">USDT</span>
+        </div>
+        
+        <div class="quick-amounts">
+          <div class="amounts-grid">
+            <button 
+              v-for="amount in [5, 10, 25, 50, 100]" 
+              :key="amount"
+              class="amount-btn"
+              :class="{ active: localAmount === amount.toString() }"
+              @click="selectQuickAmount(amount)"
+              type="button"
+            >
+              {{ amount }}
+            </button>
+          </div>
         </div>
       </div>
       
@@ -366,6 +363,12 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
+.input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .group {
   position: relative;
 }
@@ -392,37 +395,33 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 }
 
 .quick-amounts {
-  margin-top: 20px;
-}
-
-.quick-amounts-title {
-  font-size: 14px;
-  font-weight: 400;
-  color: #141414;
-  margin-bottom: 12px;
+  margin-top: 12px;
 }
 
 .amounts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .amount-btn {
-  background-color: #fff;
+  background-color: #f8f9fa;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: #141414;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #666;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
+  min-width: 40px;
+  flex: 1;
 }
 
 .amount-btn:hover {
   border-color: #deec51;
-  background-color: #f9f9f9;
+  background-color: #f2f8d1;
+  color: #141414;
 }
 
 .amount-btn.active {
