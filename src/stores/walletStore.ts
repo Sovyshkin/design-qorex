@@ -47,12 +47,16 @@ export const useWalletStore = defineStore("wallet", () => {
     },
     (error) => {
       // Логируем все ошибки для отладки
-      console.error('API Error:', {
+      console.error('API Error Details:', {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
+        statusText: error.response?.statusText,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        code: error.code,
+        name: error.name,
+        stack: error.stack
       });
       
       return Promise.reject(error);
@@ -487,6 +491,8 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       isLoading.value = true;
       console.log('Getting user data for ID:', userTg.value.id);
+      console.log('Network status:', navigator.onLine ? 'online' : 'offline');
+      console.log('Base URL:', axios.defaults.baseURL);
       
       // Проверяем валидность ID пользователя
       if (!userTg.value?.id) {
@@ -496,6 +502,7 @@ export const useWalletStore = defineStore("wallet", () => {
         return;
       }
       
+      console.log('Making request to:', `${axios.defaults.baseURL}/user/${userTg.value.id}`);
       let response = await axios.get(`/user/${userTg.value.id}`);
 
       user.value = response.data;
@@ -520,14 +527,33 @@ export const useWalletStore = defineStore("wallet", () => {
       
     } catch (err) {
       console.error('Error getting user:', err);
+      console.log('Error details for debugging:', {
+        code: err.code,
+        message: err.message,
+        name: err.name,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        responseData: err.response?.data,
+        isNetworkError: err.code === 'NETWORK_ERROR',
+        isMessageNetworkError: err.message === 'Network Error'
+      });
       
       if (err.response?.status === 404) {
         // Пользователь не найден, создаем его
         console.log('User not found, creating new user');
         await createUser();
       } else if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        console.log('Showing network error message');
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      } else if (err.response?.status >= 500) {
+        console.log('Server error detected:', err.response.status);
+        showMessage(t('server_error') || 'Ошибка сервера. Попробуйте позже', 'error');
+      } else if (err.response?.status >= 400) {
+        console.log('Client error detected:', err.response.status, err.response.data);
+        const errorMsg = err.response.data?.detail || err.response.data?.message || 'Ошибка запроса';
+        showMessage(errorMsg, 'error');
       } else {
+        console.log('Showing generic error message');
         showMessage(t('error_occurred') || 'Произошла ошибка при загрузке данных', 'error');
       }
     } finally {
@@ -1196,6 +1222,23 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
 
+
+  const testConnection = async () => {
+    try {
+      console.log('Testing connection to server...');
+      const response = await axios.get('/health', { timeout: 5000 });
+      console.log('Connection test successful:', response.status);
+      return true;
+    } catch (err) {
+      console.error('Connection test failed:', {
+        code: err.code,
+        message: err.message,
+        status: err.response?.status,
+        baseURL: axios.defaults.baseURL
+      });
+      return false;
+    }
+  };
 
   // Вызываем инициализацию
   initializeStore();
