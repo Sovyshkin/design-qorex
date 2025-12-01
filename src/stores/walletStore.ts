@@ -488,6 +488,12 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const getUser = async () => {
+    // Защита от одновременных вызовов
+    if (isLoading.value) {
+      console.log('getUser already running, skipping...');
+      return;
+    }
+    
     try {
       isLoading.value = true;
       console.log('Getting user data for ID:', userTg.value.id);
@@ -497,8 +503,6 @@ export const useWalletStore = defineStore("wallet", () => {
       // Проверяем валидность ID пользователя
       if (!userTg.value?.id) {
         console.error('No user ID available');
-        // Пытаемся создать пользователя если ID отсутствует
-        await createUser();
         return;
       }
       
@@ -539,9 +543,9 @@ export const useWalletStore = defineStore("wallet", () => {
       });
       
       if (err.response?.status === 404) {
-        // Пользователь не найден, создаем его
-        console.log('User not found, creating new user');
-        await createUser();
+        // Пользователь не найден - показываем сообщение
+        console.log('User not found (404)');
+        showMessage(t('user_not_found') || 'Пользователь не найден', 'error');
       } else if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
         console.log('Showing network error message');
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
@@ -1014,9 +1018,23 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  const is2FAChecking = ref(false);
+
   const check2FAStatus = async () => {
+    if (is2FAChecking.value) {
+      console.log('2FA check already running, skipping...');
+      return;
+    }
+
     try {
+      is2FAChecking.value = true;
       const tgId = String(userTg.value.id);
+      
+      if (!tgId || tgId === 'undefined') {
+        console.log('No valid user ID for 2FA check');
+        return;
+      }
+
       // Пробуем получить статус 2FA через существующий endpoint
       let response = await axios.post(`/fa_take?tg_id=${tgId}`);
 
@@ -1031,6 +1049,8 @@ export const useWalletStore = defineStore("wallet", () => {
       
       // Не показываем сообщение об ошибке для этого метода,
       // так как он используется для проверки статуса
+    } finally {
+      is2FAChecking.value = false;
     }
   };
 

@@ -69,9 +69,14 @@ const goBack = () => {
 // Загружаем актуальные данные пользователя при монтировании компонента
 onMounted(async () => {
   try {
-    await walletStore.getUser();
-    // Также проверяем статус 2FA
-    await walletStore.check2FAStatus();
+    // Проверяем есть ли уже данные пользователя
+    if (!walletStore.user?.tg_id) {
+      await walletStore.getUser();
+    }
+    // Также проверяем статус 2FA только если есть пользователь
+    if (walletStore.user?.tg_id) {
+      await walletStore.check2FAStatus();
+    }
   } catch (error) {
     console.error('Ошибка загрузки данных пользователя:', error);
   }

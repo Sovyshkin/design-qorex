@@ -237,6 +237,11 @@ onMounted(async () => {
                     alt="transaction-type"
                   />
                   <img
+                    v-else-if="item.type_trans === 'back'"
+                    src="/assets/refund.svg"
+                    alt="transaction-type"
+                  />
+                  <img
                     v-else-if="item.type_trans"
                     :src="`../assets/type-${item.type_trans}.svg`"
                     alt="transaction-type"
@@ -260,7 +265,7 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="history-count">
-                <span class="count-usdt" v-if="!walletStore.hideBalanceActive">
+                <span class="count-rub" v-if="!walletStore.hideBalanceActive">
                   {{
                     item.type_trans === "buy"
                       ? "-"
@@ -268,9 +273,11 @@ onMounted(async () => {
                       ? "-"
                       : item.type_trans === "transfer"
                       ? "-"
+                      : item.type_trans === "back"
+                      ? "+"
                       : "+"
                   }}
-                  {{ walletStore.roundToHundredths(item.amount) }} USDT
+                  {{ walletStore.roundToHundredths(walletStore.getRub(item.amount)) }} ₽
                 </span>
                 <span class="count-usdt" v-else>********</span>
                 <span class="count-rub" v-if="!walletStore.hideBalanceActive">
@@ -281,6 +288,8 @@ onMounted(async () => {
                       ? "-"
                       : item.type_trans === "transfer"
                       ? "-"
+                      : item.type_trans === "back"
+                      ? "+"
                       : "+"
                   }}
                   {{ walletStore.roundToHundredths(walletStore.getRub(item.amount)) }} ₽
