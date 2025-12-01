@@ -56,8 +56,22 @@ export const useWalletStore = defineStore("wallet", () => {
         message: error.message,
         code: error.code,
         name: error.name,
+        hasResponse: !!error.response,
+        isNetworkError: !error.response && error.request,
         stack: error.stack
       });
+      
+      // Добавляем флаг для определения типа ошибки
+      if (error.response) {
+        // Ошибка с ответом от сервера - это не сетевая ошибка
+        error.isServerError = true;
+      } else if (error.request) {
+        // Запрос был отправлен, но ответа не получено - сетевая ошибка
+        error.isNetworkError = true;
+      } else {
+        // Ошибка при настройке запроса
+        error.isConfigError = true;
+      }
       
       return Promise.reject(error);
     }
@@ -250,6 +264,11 @@ export const useWalletStore = defineStore("wallet", () => {
       localStorage.removeItem("hasPinCode");
       localStorage.removeItem("pinVerified");
     }
+  };
+
+  const isNetworkError = (error: any) => {
+    // Настоящая сетевая ошибка - когда запрос был отправлен, но ответа не получено
+    return error.isNetworkError || (!error.response && error.request) || error.code === 'NETWORK_ERROR';
   };
 
   const showMessage = (
@@ -474,7 +493,7 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error creating user:', err);
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (err.isNetworkError || (!err.response && err.request)) {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status === 409) {
         // Пользователь уже существует
@@ -546,8 +565,9 @@ export const useWalletStore = defineStore("wallet", () => {
         // Пользователь не найден - показываем сообщение
         console.log('User not found (404)');
         showMessage(t('user_not_found') || 'Пользователь не найден', 'error');
-      } else if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
-        console.log('Showing network error message');
+      } else if (isNetworkError(err)) {
+        // Настоящая сетевая ошибка - нет ответа от сервера
+        console.log('Showing network error message - no response received');
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status >= 500) {
         console.log('Server error detected:', err.response.status);
@@ -594,7 +614,7 @@ export const useWalletStore = defineStore("wallet", () => {
         console.log('Using default price:', usdt_price.value);
       }
       
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (err.isNetworkError || (!err.response && err.request)) {
         showMessage(t('network_error') || 'Не удалось получить курс валют', 'error');
       } else {
         showMessage(t('price_error') || 'Используется последний известный курс', 'warning');
@@ -621,7 +641,7 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (isNetworkError(err)) {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status === 400) {
         showMessage(t('invalid_amount') || 'Некорректная сумма', 'error');
@@ -673,7 +693,7 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error updating email:', err);
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (isNetworkError(err)) {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status === 400) {
         showMessage(t('invalid_email') || 'Некорректный email адрес', 'error');
@@ -698,7 +718,7 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error sending code:', err);
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (isNetworkError(err)) {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status === 400) {
         showMessage(t('invalid_email') || 'Некорректный email адрес', 'error');
@@ -734,7 +754,7 @@ export const useWalletStore = defineStore("wallet", () => {
       console.error('Error checking code:', err);
       message_status.value = "error";
       
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (isNetworkError(err)) {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status === 400) {
         showMessage(t('invalid_code') || 'Неверный код', 'error');
@@ -833,7 +853,7 @@ export const useWalletStore = defineStore("wallet", () => {
     } catch (err) {
       console.error('Error processing QR code:', err);
       
-      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+      if (isNetworkError(err)) {
         errMessage.value = t('network_error') || 'Проблема с подключением к серверу';
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.data?.detail == "Недостаточно средств") {
