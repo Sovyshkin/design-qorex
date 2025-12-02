@@ -74,6 +74,8 @@ const sendCode = async () => {
 
 h1 {
   color: #141414;
+  line-height: 1.4;
+  padding: 2px 0;
 }
 
 .container {
@@ -206,10 +208,8 @@ select::placeholder {
   font-weight: 700;
   color: #1e293b;
   margin: 0 0 12px 0;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  line-height: 1.4;
+  padding: 2px 0;
 }
 
 .form-description {
