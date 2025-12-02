@@ -96,25 +96,15 @@ h1 {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
   overflow-y: auto;
   padding: 0 0 150px 0;
 }
 
 .form-container {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 32px 32px 0 0;
-  box-shadow: 
-    0 -8px 32px rgba(0, 0, 0, 0.12),
-    0 -4px 16px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  width: 100%;
   min-height: calc(100vh - 120px);
   padding: 32px 20px 60px 20px;
-  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
