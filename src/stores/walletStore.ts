@@ -612,10 +612,12 @@ export const useWalletStore = defineStore("wallet", () => {
         isMessageNetworkError: err.message === 'Network Error'
       });
       
-      if (err.response?.status === 404) {
-        // Пользователь не найден - показываем сообщение
-        console.log('User not found (404)');
-        createUser()
+      if (err.response?.status == 404) {
+        // Пользователь не найден - создаем нового пользователя
+        console.log('User not found (404), creating new user...');
+        await createUser();
+        // После создания пользователя пробуем снова получить данные
+        setTimeout(() => getUser(), 1000);
       } else if (isNetworkError(err)) {
         // Настоящая сетевая ошибка - нет ответа от сервера
         console.log('Showing network error message - no response received');
