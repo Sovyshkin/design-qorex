@@ -265,10 +265,10 @@ onMounted(async () => {
                 </div>
               </div>
               <div class="history-count">
-                <span class="count-rub" v-if="!walletStore.hideBalanceActive">
+                <span class="count-usdt" v-if="!walletStore.hideBalanceActive">
                   {{
                     item.type_trans === "buy"
-                      ? "-"
+                      ? "+"
                       : item.type_trans === "output"
                       ? "-"
                       : item.type_trans === "transfer"
@@ -277,7 +277,7 @@ onMounted(async () => {
                       ? "+"
                       : "+"
                   }}
-                  {{ walletStore.roundToHundredths(walletStore.getRub(item.amount)) }} ₽
+                  {{ walletStore.roundToHundredths(item.amount) }} USDT
                 </span>
                 <span class="count-usdt" v-else>********</span>
                 <span class="count-rub" v-if="!walletStore.hideBalanceActive">
