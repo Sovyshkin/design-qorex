@@ -442,9 +442,37 @@ export const useWalletStore = defineStore("wallet", () => {
           }
         } else {
           console.log('No userString found in initData');
+          
+          // Попробуем получить данные пользователя напрямую из Telegram WebApp
+          if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            console.log('Fallback: using initDataUnsafe.user');
+            const telegramUser = window.Telegram.WebApp.initDataUnsafe.user;
+            userTg.value = {
+              first_name: telegramUser.first_name || "",
+              last_name: telegramUser.last_name || "",
+              username: telegramUser.username || "",
+              id: String(telegramUser.id) || "",
+            };
+            localStorage.setItem("user", JSON.stringify(userTg.value));
+            console.log('Set user data from initDataUnsafe:', userTg.value);
+          }
         }
       } else {
         console.log('No initData found');
+        
+        // Попробуем получить данные из initDataUnsafe как fallback
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+          console.log('Fallback: using initDataUnsafe.user (no initData)');
+          const telegramUser = window.Telegram.WebApp.initDataUnsafe.user;
+          userTg.value = {
+            first_name: telegramUser.first_name || "",
+            last_name: telegramUser.last_name || "",
+            username: telegramUser.username || "",
+            id: String(telegramUser.id) || "",
+          };
+          localStorage.setItem("user", JSON.stringify(userTg.value));
+          console.log('Set user data from initDataUnsafe (no initData):', userTg.value);
+        }
       }
     } else {
       console.log('Telegram WebApp not available, using fallback data');
@@ -459,6 +487,13 @@ export const useWalletStore = defineStore("wallet", () => {
   const createUser = async () => {
     if (isCreatingUser.value) {
       return; // Если уже создаем пользователя, не делаем повторный запрос
+    }
+
+    // Проверяем наличие ID пользователя
+    if (!userTg.value.id) {
+      console.error('Cannot create user: no tg_id available');
+      console.log('userTg.value:', userTg.value);
+      return;
     }
 
     // Проверяем, не создавался ли уже пользователь ранее
@@ -527,10 +562,17 @@ export const useWalletStore = defineStore("wallet", () => {
       console.log('Getting user data for ID:', userTg.value.id);
       console.log('Network status:', navigator.onLine ? 'online' : 'offline');
       console.log('Base URL:', axios.defaults.baseURL);
+      console.log('Full userTg object:', userTg.value);
       
       // Проверяем валидность ID пользователя
       if (!userTg.value?.id) {
         console.error('No user ID available');
+        console.error('userTg.value:', userTg.value);
+        console.error('Telegram WebApp state:', {
+          available: !!window.Telegram?.WebApp,
+          initData: window.Telegram?.WebApp?.initData,
+          initDataUnsafe: window.Telegram?.WebApp?.initDataUnsafe
+        });
         return;
       }
       
@@ -573,7 +615,6 @@ export const useWalletStore = defineStore("wallet", () => {
       if (err.response?.status === 404) {
         // Пользователь не найден - показываем сообщение
         console.log('User not found (404)');
-        showMessage(t('user_not_found') || 'Пользователь не найден', 'error');
       } else if (isNetworkError(err)) {
         // Настоящая сетевая ошибка - нет ответа от сервера
         console.log('Showing network error message - no response received');
@@ -583,8 +624,6 @@ export const useWalletStore = defineStore("wallet", () => {
         showMessage(t('server_error') || 'Ошибка сервера. Попробуйте позже', 'error');
       } else if (err.response?.status >= 400) {
         console.log('Client error detected:', err.response.status, err.response.data);
-        const errorMsg = err.response.data?.detail || err.response.data?.message || 'Ошибка запроса';
-        showMessage(errorMsg, 'error');
       } else {
         console.log('Showing generic error message');
         showMessage(t('error_occurred') || 'Произошла ошибка при загрузке данных', 'error');
