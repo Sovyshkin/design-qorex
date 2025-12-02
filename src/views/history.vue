@@ -268,12 +268,14 @@ onMounted(async () => {
                 <span class="count-usdt" v-if="!walletStore.hideBalanceActive">
                   {{
                     item.type_trans === "buy"
-                      ? "+"
+                      ? "-"
                       : item.type_trans === "output"
                       ? "-"
                       : item.type_trans === "transfer"
                       ? "-"
                       : item.type_trans === "back"
+                      ? "+"
+                      : item.type_trans === "receiving"
                       ? "+"
                       : "+"
                   }}
