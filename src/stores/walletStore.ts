@@ -779,6 +779,10 @@ export const useWalletStore = defineStore("wallet", () => {
       if (response.status == 200) {
         message_status.value = "success";
         showMessage(t('email_verified') || 'Email успешно подтвержден', 'success');
+        
+        // Обновляем данные пользователя чтобы убрать кнопку "Добавить email"
+        await getUser();
+        
         setTimeout(() => {
           message_status.value = "";
           router.push({ name: "profile" });

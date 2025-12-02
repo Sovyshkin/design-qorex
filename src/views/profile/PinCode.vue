@@ -139,6 +139,8 @@ onMounted(async () => {
         :key="num"
         class="pin-button"
         @click="handleNumberClick(num)"
+        @touchstart.prevent="startPress(num)"
+        @touchend.prevent="endPress(); handleNumberClick(num)"
         @mousedown="startPress(num)"
         @mouseup="endPress()"
         @mouseleave="endPress()"
@@ -152,6 +154,8 @@ onMounted(async () => {
       <button
         class="pin-button"
         @click="handleNumberClick(0)"
+        @touchstart.prevent="startPress(0)"
+        @touchend.prevent="endPress(); handleNumberClick(0)"
         @mousedown="startPress(0)"
         @mouseup="endPress()"
         @mouseleave="endPress()"
@@ -163,6 +167,8 @@ onMounted(async () => {
       <button
         class="pin-button delete-button"
         @click="handleDeleteClick"
+        @touchstart.prevent="startPress('delete')"
+        @touchend.prevent="endPress(); handleDeleteClick()"
         @mousedown="startPress('delete')"
         @mouseup="endPress()"
         @mouseleave="endPress()"
@@ -187,6 +193,9 @@ onMounted(async () => {
   align-items: center;
   padding: 20px;
   gap: 30px;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .pin-dots {
@@ -233,6 +242,11 @@ onMounted(async () => {
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pin-button:active,
