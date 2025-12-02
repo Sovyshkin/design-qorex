@@ -485,23 +485,11 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const createUser = async () => {
-    if (isCreatingUser.value) {
-      return; // Если уже создаем пользователя, не делаем повторный запрос
-    }
-
     // Проверяем наличие ID пользователя
     if (!userTg.value.id) {
       console.error('Cannot create user: no tg_id available');
       console.log('userTg.value:', userTg.value);
       return;
-    }
-
-    // Проверяем, не создавался ли уже пользователь ранее
-    const userCreatedFlag = localStorage.getItem(
-      `user_created_${userTg.value.id}`
-    );
-    if (userCreatedFlag) {
-      return; // Пользователь уже был создан
     }
 
     try {
@@ -600,37 +588,8 @@ export const useWalletStore = defineStore("wallet", () => {
       console.log('User data loaded successfully:', { balance: balance.value, userId: user.value.tg_id });
       
     } catch (err) {
-      console.error('Error getting user:', err);
-      console.log('Error details for debugging:', {
-        code: err.code,
-        message: err.message,
-        name: err.name,
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        responseData: err.response?.data,
-        isNetworkError: err.code === 'NETWORK_ERROR',
-        isMessageNetworkError: err.message === 'Network Error'
-      });
-      
-      if (err.response?.status == 404) {
-        // Пользователь не найден - создаем нового пользователя
-        console.log('User not found (404), creating new user...');
         await createUser();
-        // После создания пользователя пробуем снова получить данные
         setTimeout(() => getUser(), 1000);
-      } else if (isNetworkError(err)) {
-        // Настоящая сетевая ошибка - нет ответа от сервера
-        console.log('Showing network error message - no response received');
-        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
-      } else if (err.response?.status >= 500) {
-        console.log('Server error detected:', err.response.status);
-        showMessage(t('server_error') || 'Ошибка сервера. Попробуйте позже', 'error');
-      } else if (err.response?.status >= 400) {
-        console.log('Client error detected:', err.response.status, err.response.data);
-      } else {
-        console.log('Showing generic error message');
-        showMessage(t('error_occurred') || 'Произошла ошибка при загрузке данных', 'error');
-      }
     } finally {
       isLoading.value = false;
     }
