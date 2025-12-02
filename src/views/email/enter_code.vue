@@ -13,7 +13,7 @@ const checkCode = async () => {
     return;
   }
   
-  if (!walletStore.code?.trim()) {
+  if (!walletStore.code || String(walletStore.code).trim() === '') {
     console.log('Код не введен');
     return;
   }

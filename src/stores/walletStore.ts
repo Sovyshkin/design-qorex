@@ -746,7 +746,7 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const checkCode = async () => {
     // Проверяем наличие всех необходимых данных
-    if (!code.value?.trim()) {
+    if (!code.value || String(code.value).trim() === '') {
       showMessage(t('invalid_code') || 'Введите код', 'error');
       return;
     }
