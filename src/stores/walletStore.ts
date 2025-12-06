@@ -646,7 +646,8 @@ export const useWalletStore = defineStore("wallet", () => {
         pay_link.value = response.data.result.link;
         working_invoice = response.data.result.uuid;
         await creatingInvoceDb();
-        window.location.href = pay_link.value;
+        console.log(pay_link.value);
+        window.location.replace(pay_link.value);
       } else {
         showMessage(t('invoice_creation_failed') || 'Не удалось создать счет для оплаты', 'error');
       }
