@@ -19,6 +19,7 @@ const getGardaToken = async () => {
         'Cache-Control': 'no-cache'
       }
     });
+    console.log(response)
     
     if (!response.ok) {
       console.error('Failed to load garda token:', response.status);
