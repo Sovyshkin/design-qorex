@@ -13,7 +13,7 @@ axios.defaults.baseURL = "https://back.gardawallet.com";
 // Функция для получения токена из файла
 const getGardaToken = async () => {
   try {
-    const response = await fetch('../key_garda_f.txt', {
+    const response = await fetch('./key_garda_f.txt', {
       cache: 'no-cache',
       headers: {
         'Cache-Control': 'no-cache'
