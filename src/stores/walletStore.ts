@@ -589,7 +589,6 @@ export const useWalletStore = defineStore("wallet", () => {
       
     } catch (err) {
         await createUser();
-        setTimeout(() => getUser(), 1000);
     } finally {
       isLoading.value = false;
     }
