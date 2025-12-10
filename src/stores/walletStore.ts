@@ -878,6 +878,9 @@ export const useWalletStore = defineStore("wallet", () => {
       const cur = url.searchParams.get("cur") || "";
       const crc = url.searchParams.get("crc") || "";
 
+      // Получаем client_key и добавляем в параметры
+      const clientKey = await getClientKey();
+      
       // Отправляем данные как query параметры
       const params = new URLSearchParams({
         tg_id: String(userTg.value.id),
@@ -888,9 +891,12 @@ export const useWalletStore = defineStore("wallet", () => {
         crc: crc,
       });
 
-      const clientKey = await getClientKey();
-      const requestBody = clientKey ? { client_key: clientKey } : {};
-      let response = await axios.post(`/qr_take?${params.toString()}`, requestBody);
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
+      }
+
+      let response = await axios.post(`/qr_take?${params.toString()}`, {});
 
       if (response.status == 200) {
         let { id, datatime } = response.data.more_detail;
@@ -948,6 +954,9 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
+      // Получаем client_key
+      const clientKey = await getClientKey();
+
       // Отправляем данные как query параметры
       const params = new URLSearchParams({
         tg_id: String(userTg.value.id),
@@ -964,6 +973,11 @@ export const useWalletStore = defineStore("wallet", () => {
       // Добавляем 2FA код если передан
       if (twoFactorCode && twoFactorCode.trim() !== "") {
         params.append("key", twoFactorCode.trim());
+      }
+
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
       }
 
       let response = await axios.post(
@@ -1041,8 +1055,18 @@ export const useWalletStore = defineStore("wallet", () => {
       loaderScan.value = true;
       const tgId = String(userTg.value.id);
       const clientKey = await getClientKey();
-      const requestBody = clientKey ? { client_key: clientKey } : {};
-      let response = await axios.post(`/fa_take?tg_id=${tgId}`, requestBody);
+      
+      // Формируем URL параметры
+      const params = new URLSearchParams({
+        tg_id: tgId
+      });
+      
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
+      }
+      
+      let response = await axios.post(`/fa_take?${params.toString()}`, {});
 
       if (response.status === 200 && response.data.status === "success") {
         return {
@@ -1075,11 +1099,19 @@ export const useWalletStore = defineStore("wallet", () => {
       const tgId = String(userTg.value.id);
       const keyCode = String(code);
       const clientKey = await getClientKey();
-      const requestBody = clientKey ? { client_key: clientKey } : {};
-      let response = await axios.post(
-        `/key_fa_check?tg_id=${tgId}&key=${keyCode}`,
-        requestBody
-      );
+      
+      // Формируем URL параметры
+      const params = new URLSearchParams({
+        tg_id: tgId,
+        key: keyCode
+      });
+      
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
+      }
+      
+      let response = await axios.post(`/key_fa_check?${params.toString()}`, {});
 
       if (response.status === 200 && response.data.status === "success") {
         has2FA.value = true; // Обновляем статус 2FA
@@ -1206,6 +1238,9 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
+      // Получаем client_key
+      const clientKey = await getClientKey();
+
       const requestParams = {
         tg_id: String(userTg.value.id),
         key: String(twoFactorCode),
@@ -1216,7 +1251,12 @@ export const useWalletStore = defineStore("wallet", () => {
       console.log('Transfer request params:', requestParams);
 
       // Строим query строку вручную, чтобы избежать кодирования = в wallet
-      const queryString = `tg_id=${requestParams.tg_id}&key=${requestParams.key}&amount=${requestParams.amount}&wallet=${requestParams.wallet}`;
+      let queryString = `tg_id=${requestParams.tg_id}&key=${requestParams.key}&amount=${requestParams.amount}&wallet=${requestParams.wallet}`;
+      
+      // Добавляем client_key если он есть
+      if (clientKey) {
+        queryString += `&client_key=${encodeURIComponent(clientKey)}`;
+      }
       
       console.log('Query string:', queryString);
 
