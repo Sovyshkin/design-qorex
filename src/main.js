@@ -15,7 +15,7 @@ const getGardaToken = () => {
   return new Promise((resolve, reject) => {
     try {
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', './key_garda.txt', true); // асинхронный запрос
+      xhr.open('GET', './key_garda_f.txt', true); // асинхронный запрос
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
