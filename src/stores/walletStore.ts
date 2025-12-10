@@ -1156,8 +1156,18 @@ export const useWalletStore = defineStore("wallet", () => {
 
       // Пробуем получить статус 2FA через существующий endpoint
       const clientKey = await getClientKey();
-      const requestBody = clientKey ? { client_key: clientKey } : {};
-      let response = await axios.post(`/fa_take?tg_id=${tgId}`, requestBody);
+      
+      // Формируем URL параметры
+      const params = new URLSearchParams({
+        tg_id: tgId
+      });
+      
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
+      }
+      
+      let response = await axios.post(`/fa_take?${params.toString()}`, {});
 
       if (response.data.detail == "Уже подключено") {
         has2FA.value = true;
@@ -1178,7 +1188,19 @@ export const useWalletStore = defineStore("wallet", () => {
   const getUserWallet = async () => {
     try {
       const tgId = String(userTg.value.id);
-      let response = await axios.post(`/take_user_w?tg_id=${tgId}`, {});
+      const clientKey = await getClientKey();
+      
+      // Формируем URL параметры
+      const params = new URLSearchParams({
+        tg_id: tgId
+      });
+      
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
+      }
+      
+      let response = await axios.post(`/take_user_w?${params.toString()}`, {});
 
       if (response.status === 200 && response.data.wallet) {
         userWallet.value = response.data.wallet;
@@ -1208,8 +1230,18 @@ export const useWalletStore = defineStore("wallet", () => {
 
       // Сначала отправляем запрос на fa_take
       const clientKey = await getClientKey();
-      const requestBody = clientKey ? { client_key: clientKey } : {};
-      let faResponse = await axios.post(`/fa_take?tg_id=${tgId}`, requestBody);
+      
+      // Формируем URL параметры
+      const params = new URLSearchParams({
+        tg_id: tgId
+      });
+      
+      // Добавляем client_key в URL параметры если он есть
+      if (clientKey) {
+        params.append('client_key', clientKey);
+      }
+      
+      let faResponse = await axios.post(`/fa_take?${params.toString()}`, {});
 
       // Если detail: 'Уже подключено', то получаем wallet через take_user_w
       if (faResponse.data && faResponse.data.detail === "Уже подключено") {
