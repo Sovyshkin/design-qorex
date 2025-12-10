@@ -21,6 +21,29 @@ const formatDateForTransaction = (date = new Date()) => {
   return `${day}.${month}.${year}-${hours}:${minutes}:${seconds}`;
 };
 
+// Функция для получения client_key из файла
+const getClientKey = async () => {
+  try {
+    const response = await fetch('https://bot.gardawallet.com/key_garda_f.txt', {
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to load client key:', response.status);
+      return null;
+    }
+    
+    const key = await response.text();
+    return key.trim();
+  } catch (error) {
+    console.error('Error loading client key:', error);
+    return null;
+  }
+};
+
 export const useWalletStore = defineStore("wallet", () => {
   const balance = ref(0);
   const balance_rub = ref(0);
@@ -865,7 +888,9 @@ export const useWalletStore = defineStore("wallet", () => {
         crc: crc,
       });
 
-      let response = await axios.post(`/qr_take?${params.toString()}`, {});
+      const clientKey = await getClientKey();
+      const requestBody = clientKey ? { client_key: clientKey } : {};
+      let response = await axios.post(`/qr_take?${params.toString()}`, requestBody);
 
       if (response.status == 200) {
         let { id, datatime } = response.data.more_detail;
@@ -1015,7 +1040,9 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
       const tgId = String(userTg.value.id);
-      let response = await axios.post(`/fa_take?tg_id=${tgId}`);
+      const clientKey = await getClientKey();
+      const requestBody = clientKey ? { client_key: clientKey } : {};
+      let response = await axios.post(`/fa_take?tg_id=${tgId}`, requestBody);
 
       if (response.status === 200 && response.data.status === "success") {
         return {
@@ -1047,9 +1074,11 @@ export const useWalletStore = defineStore("wallet", () => {
       loaderScan.value = true;
       const tgId = String(userTg.value.id);
       const keyCode = String(code);
+      const clientKey = await getClientKey();
+      const requestBody = clientKey ? { client_key: clientKey } : {};
       let response = await axios.post(
         `/key_fa_check?tg_id=${tgId}&key=${keyCode}`,
-        {}
+        requestBody
       );
 
       if (response.status === 200 && response.data.status === "success") {
@@ -1094,7 +1123,9 @@ export const useWalletStore = defineStore("wallet", () => {
       }
 
       // Пробуем получить статус 2FA через существующий endpoint
-      let response = await axios.post(`/fa_take?tg_id=${tgId}`);
+      const clientKey = await getClientKey();
+      const requestBody = clientKey ? { client_key: clientKey } : {};
+      let response = await axios.post(`/fa_take?tg_id=${tgId}`, requestBody);
 
       if (response.data.detail == "Уже подключено") {
         has2FA.value = true;
@@ -1144,7 +1175,9 @@ export const useWalletStore = defineStore("wallet", () => {
       const tgId = String(userTg.value.id);
 
       // Сначала отправляем запрос на fa_take
-      let faResponse = await axios.post(`/fa_take?tg_id=${tgId}`);
+      const clientKey = await getClientKey();
+      const requestBody = clientKey ? { client_key: clientKey } : {};
+      let faResponse = await axios.post(`/fa_take?tg_id=${tgId}`, requestBody);
 
       // Если detail: 'Уже подключено', то получаем wallet через take_user_w
       if (faResponse.data && faResponse.data.detail === "Уже подключено") {
