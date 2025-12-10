@@ -10,47 +10,31 @@ import { VueTelegramPlugin } from "vue-tg";
 axios.defaults.baseURL = "https://back.gardawallet.com";
 // axios.defaults.baseURL = "http://45.12.238.27:3030/";
 
-// Функция для получения токена из файла
-const getGardaToken = async () => {
-  try {
-    const response = await fetch('https://bot.gardawallet.com/key_garda_f.txt', {
-      cache: 'no-cache',
-      headers: {
-        'Cache-Control': 'no-cache'
-      }
-    });
-    console.log(response)
-    
-    if (!response.ok) {
-      console.error('Failed to load garda token:', response.status);
-      return null;
-    }
-    
-    const token = await response.text();
-    return token.trim();
-  } catch (error) {
-    console.error('Error loading garda token:', error);
-    return null;
+// Функция для получения Telegram initData
+const getTelegramInitData = () => {
+  if (window.Telegram?.WebApp?.initData) {
+    return window.Telegram.WebApp.initData;
   }
+  console.warn('No Telegram initData available');
+  return null;
 };
 
-// Interceptor для добавления g_key заголовка к каждому запросу
+// Interceptor для добавления Telegram данных к каждому запросу
 axios.interceptors.request.use(async (config) => {
   console.log('Interceptor called for URL:', config.url);
   
   try {
-    const token = await getGardaToken();
-    console.log(token)
-    if (token) {
+    const initData = getTelegramInitData();
+    if (initData) {
       config.headers = config.headers || {};
-      config.headers['g_key'] = token;
-      config.headers['Origin'] = 'https://bot.gardawallet.com';
-      console.log('Added g_key header:', token.substring(0, 20) + '...');
+      config.headers['X-Init-Data'] = initData;
+      config.headers['X-Timestamp'] = Math.floor(Date.now() / 1000);
+      console.log('Added Telegram auth headers');
     } else {
-      console.warn('No token available for request');
+      console.warn('No Telegram initData available for request');
     }
   } catch (error) {
-    console.error('Error getting token for request:', error);
+    console.error('Error getting Telegram data for request:', error);
   }
   
   console.log('Final headers:', config.headers);

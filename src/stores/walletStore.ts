@@ -21,29 +21,6 @@ const formatDateForTransaction = (date = new Date()) => {
   return `${day}.${month}.${year}-${hours}:${minutes}:${seconds}`;
 };
 
-// Функция для получения client_key из файла
-const getClientKey = async () => {
-  try {
-    const response = await fetch('https://bot.gardawallet.com/key_garda_f.txt', {
-      cache: 'no-cache',
-      headers: {
-        'Cache-Control': 'no-cache'
-      }
-    });
-    
-    if (!response.ok) {
-      console.error('Failed to load client key:', response.status);
-      return null;
-    }
-    
-    const key = await response.text();
-    return key.trim();
-  } catch (error) {
-    console.error('Error loading client key:', error);
-    return null;
-  }
-};
-
 export const useWalletStore = defineStore("wallet", () => {
   const balance = ref(0);
   const balance_rub = ref(0);
@@ -878,9 +855,6 @@ export const useWalletStore = defineStore("wallet", () => {
       const cur = url.searchParams.get("cur") || "";
       const crc = url.searchParams.get("crc") || "";
 
-      // Получаем client_key и добавляем в параметры
-      const clientKey = await getClientKey();
-      
       // Отправляем данные как query параметры
       const params = new URLSearchParams({
         tg_id: String(userTg.value.id),
@@ -890,11 +864,6 @@ export const useWalletStore = defineStore("wallet", () => {
         cur: cur,
         crc: crc,
       });
-
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
-      }
 
       let response = await axios.post(`/qr_take?${params.toString()}`, {});
 
@@ -954,9 +923,6 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
-      // Получаем client_key
-      const clientKey = await getClientKey();
-
       // Отправляем данные как query параметры
       const params = new URLSearchParams({
         tg_id: String(userTg.value.id),
@@ -973,11 +939,6 @@ export const useWalletStore = defineStore("wallet", () => {
       // Добавляем 2FA код если передан
       if (twoFactorCode && twoFactorCode.trim() !== "") {
         params.append("key", twoFactorCode.trim());
-      }
-
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
       }
 
       let response = await axios.post(
@@ -1054,17 +1015,11 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
       const tgId = String(userTg.value.id);
-      const clientKey = await getClientKey();
       
       // Формируем URL параметры
       const params = new URLSearchParams({
         tg_id: tgId
       });
-      
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
-      }
       
       let response = await axios.post(`/fa_take?${params.toString()}`, {});
 
@@ -1098,18 +1053,12 @@ export const useWalletStore = defineStore("wallet", () => {
       loaderScan.value = true;
       const tgId = String(userTg.value.id);
       const keyCode = String(code);
-      const clientKey = await getClientKey();
       
       // Формируем URL параметры
       const params = new URLSearchParams({
         tg_id: tgId,
         key: keyCode
       });
-      
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
-      }
       
       let response = await axios.post(`/key_fa_check?${params.toString()}`, {});
 
@@ -1155,17 +1104,11 @@ export const useWalletStore = defineStore("wallet", () => {
       }
 
       // Пробуем получить статус 2FA через существующий endpoint
-      const clientKey = await getClientKey();
       
       // Формируем URL параметры
       const params = new URLSearchParams({
         tg_id: tgId
       });
-      
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
-      }
       
       let response = await axios.post(`/fa_take?${params.toString()}`, {});
 
@@ -1188,17 +1131,11 @@ export const useWalletStore = defineStore("wallet", () => {
   const getUserWallet = async () => {
     try {
       const tgId = String(userTg.value.id);
-      const clientKey = await getClientKey();
       
       // Формируем URL параметры
       const params = new URLSearchParams({
         tg_id: tgId
       });
-      
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
-      }
       
       let response = await axios.post(`/take_user_w?${params.toString()}`, {});
 
@@ -1229,17 +1166,11 @@ export const useWalletStore = defineStore("wallet", () => {
       const tgId = String(userTg.value.id);
 
       // Сначала отправляем запрос на fa_take
-      const clientKey = await getClientKey();
       
       // Формируем URL параметры
       const params = new URLSearchParams({
         tg_id: tgId
       });
-      
-      // Добавляем client_key в URL параметры если он есть
-      if (clientKey) {
-        params.append('client_key', clientKey);
-      }
       
       let faResponse = await axios.post(`/fa_take?${params.toString()}`, {});
 
@@ -1270,9 +1201,6 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
-      // Получаем client_key
-      const clientKey = await getClientKey();
-
       const requestParams = {
         tg_id: String(userTg.value.id),
         key: String(twoFactorCode),
@@ -1284,11 +1212,6 @@ export const useWalletStore = defineStore("wallet", () => {
 
       // Строим query строку вручную, чтобы избежать кодирования = в wallet
       let queryString = `tg_id=${requestParams.tg_id}&key=${requestParams.key}&amount=${requestParams.amount}&wallet=${requestParams.wallet}`;
-      
-      // Добавляем client_key если он есть
-      if (clientKey) {
-        queryString += `&client_key=${encodeURIComponent(clientKey)}`;
-      }
       
       console.log('Query string:', queryString);
 

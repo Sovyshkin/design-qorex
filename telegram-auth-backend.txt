@@ -1,0 +1,348 @@
+ВАЛИДАЦИЯ TELEGRAM INITDATA НА FASTAPI БЭКЕНДЕ
+=================================================
+
+## 1. УСТАНОВКА ЗАВИСИМОСТЕЙ
+```bash
+pip install fastapi python-multipart
+```
+
+## 2. СОЗДАНИЕ КЛАССА ДЛЯ ВАЛИДАЦИИ
+
+```python
+import hmac
+import hashlib
+import json
+from urllib.parse import unquote, parse_qsl
+from datetime import datetime, timedelta
+from fastapi import HTTPException, Depends, Header
+from typing import Optional, Dict, Any
+
+class TelegramAuth:
+    def __init__(self, bot_token: str):
+        self.bot_token = bot_token
+        # Создаем секретный ключ из токена бота
+        self.secret_key = hmac.new(
+            "WebAppData".encode(), 
+            bot_token.encode(), 
+            hashlib.sha256
+        ).digest()
+    
+    def validate_init_data(self, init_data: str, max_age: int = 86400) -> Dict[str, Any]:
+        """
+        Валидация initData от Telegram
+        
+        Args:
+            init_data: строка initData от клиента
+            max_age: максимальный возраст данных в секундах (24 часа по умолчанию)
+        
+        Returns:
+            dict: распарсенные и проверенные данные пользователя
+        
+        Raises:
+            HTTPException: если данные невалидны
+        """
+        
+        try:
+            # 1. Парсинг query string
+            parsed_data = dict(parse_qsl(init_data))
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid init_data format")
+        
+        # 2. Извлечение hash
+        received_hash = parsed_data.pop('hash', None)
+        if not received_hash:
+            raise HTTPException(status_code=401, detail="Missing hash in init_data")
+        
+        # 3. Проверка auth_date
+        auth_date = parsed_data.get('auth_date')
+        if not auth_date:
+            raise HTTPException(status_code=401, detail="Missing auth_date")
+        
+        try:
+            auth_timestamp = int(auth_date)
+            auth_datetime = datetime.fromtimestamp(auth_timestamp)
+        except (ValueError, OSError):
+            raise HTTPException(status_code=401, detail="Invalid auth_date format")
+        
+        # Проверка возраста данных
+        if datetime.now() - auth_datetime > timedelta(seconds=max_age):
+            raise HTTPException(status_code=401, detail="init_data is too old")
+        
+        # 4. Создание строки для проверки подписи
+        # Сортируем параметры и создаем строку key=value\nkey2=value2
+        check_string = '\n'.join([
+            f"{key}={value}" 
+            for key, value in sorted(parsed_data.items())
+        ])
+        
+        # 5. Вычисление ожидаемого hash
+        expected_hash = hmac.new(
+            self.secret_key,
+            check_string.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        # 6. Сравнение hash-ей (безопасное сравнение)
+        if not hmac.compare_digest(expected_hash, received_hash):
+            raise HTTPException(status_code=401, detail="Invalid hash - data may be tampered")
+        
+        # 7. Парсинг user данных
+        user_data = {}
+        if 'user' in parsed_data:
+            try:
+                user_data = json.loads(unquote(parsed_data['user']))
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=401, detail="Invalid user data format")
+        
+        return {
+            'valid': True,
+            'user': user_data,
+            'query_id': parsed_data.get('query_id'),
+            'auth_date': auth_timestamp,
+            'start_param': parsed_data.get('start_param'),
+            'chat_instance': parsed_data.get('chat_instance')
+        }
+
+# 3. ИНИЦИАЛИЗАЦИЯ ВАЛИДАТОРА
+telegram_auth = TelegramAuth(bot_token="YOUR_BOT_TOKEN_HERE")
+
+## 4. DEPENDENCY ДЛЯ FASTAPI
+
+async def validate_telegram_user(
+    x_init_data: Optional[str] = Header(None, alias="X-Init-Data"),
+    x_timestamp: Optional[str] = Header(None, alias="X-Timestamp")
+) -> Dict[str, Any]:
+    """Dependency для проверки Telegram пользователя"""
+    
+    if not x_init_data:
+        raise HTTPException(status_code=401, detail="Missing Telegram auth data")
+    
+    # Дополнительная проверка timestamp если нужно
+    if x_timestamp:
+        try:
+            request_time = int(x_timestamp)
+            current_time = int(datetime.now().timestamp())
+            # Проверяем что запрос не старше 5 минут
+            if abs(current_time - request_time) > 300:
+                raise HTTPException(status_code=401, detail="Request timestamp is too old")
+        except ValueError:
+            raise HTTPException(status_code=401, detail="Invalid timestamp format")
+    
+    # Валидируем initData
+    try:
+        validated_data = telegram_auth.validate_init_data(x_init_data)
+        return validated_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Validation failed: {str(e)}")
+
+## 5. ИСПОЛЬЗОВАНИЕ В ЭНДПОИНТАХ
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.post("/qr_take")
+async def qr_take(
+    tg_id: str,
+    qr_url: str, 
+    bank: str,
+    sum: str,
+    cur: str,
+    crc: str,
+    telegram_data: Dict = Depends(validate_telegram_user)
+):
+    # Проверяем что tg_id совпадает с данными из Telegram
+    user_id_from_telegram = telegram_data['user']['id']
+    if str(user_id_from_telegram) != tg_id:
+        raise HTTPException(status_code=403, detail="User ID mismatch")
+    
+    # Ваша бизнес-логика здесь
+    return {"status": "success", "message": "QR code processed"}
+
+@app.post("/fa_take")
+async def fa_take(
+    tg_id: str,
+    telegram_data: Dict = Depends(validate_telegram_user)
+):
+    user_id_from_telegram = telegram_data['user']['id']
+    if str(user_id_from_telegram) != tg_id:
+        raise HTTPException(status_code=403, detail="User ID mismatch")
+    
+    # Логика для 2FA
+    return {"status": "success", "qr_image_base64": "...", "key": "..."}
+
+@app.post("/key_fa_check")
+async def key_fa_check(
+    tg_id: str,
+    key: str,
+    telegram_data: Dict = Depends(validate_telegram_user)
+):
+    user_id_from_telegram = telegram_data['user']['id']
+    if str(user_id_from_telegram) != tg_id:
+        raise HTTPException(status_code=403, detail="User ID mismatch")
+    
+    # Проверка 2FA кода
+    return {"status": "success"}
+
+@app.post("/daddy_pleasу_output")
+async def withdraw_funds(
+    tg_id: str,
+    amount: str,
+    network: str,
+    wallet: str,
+    memo: Optional[str] = None,
+    key: Optional[str] = None,  # 2FA код
+    telegram_data: Dict = Depends(validate_telegram_user)
+):
+    user_id_from_telegram = telegram_data['user']['id']
+    if str(user_id_from_telegram) != tg_id:
+        raise HTTPException(status_code=403, detail="User ID mismatch")
+    
+    # Логика вывода средств
+    return {"status": "success", "message": "Withdrawal processed"}
+
+@app.post("/transfer_cash_wallet")
+async def transfer_funds(
+    tg_id: str,
+    key: str,
+    amount: str,
+    wallet: str,
+    telegram_data: Dict = Depends(validate_telegram_user)
+):
+    user_id_from_telegram = telegram_data['user']['id']
+    if str(user_id_from_telegram) != tg_id:
+        raise HTTPException(status_code=403, detail="User ID mismatch")
+    
+    # Логика перевода
+    return {"message": "Balance updated successfully"}
+
+@app.post("/take_user_w")
+async def get_user_wallet(
+    tg_id: str,
+    telegram_data: Dict = Depends(validate_telegram_user)
+):
+    user_id_from_telegram = telegram_data['user']['id']
+    if str(user_id_from_telegram) != tg_id:
+        raise HTTPException(status_code=403, detail="User ID mismatch")
+    
+    # Получение кошелька пользователя
+    return {"wallet": "user_wallet_address"}
+
+## 6. ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА
+
+### Rate Limiting по пользователю
+from collections import defaultdict
+from time import time
+
+class RateLimiter:
+    def __init__(self, max_requests=100, window_seconds=3600):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = defaultdict(list)
+    
+    def is_allowed(self, user_id: int) -> bool:
+        now = time()
+        user_requests = self.requests[user_id]
+        
+        # Очищаем старые запросы
+        user_requests[:] = [req_time for req_time in user_requests 
+                           if now - req_time < self.window_seconds]
+        
+        if len(user_requests) >= self.max_requests:
+            return False
+        
+        user_requests.append(now)
+        return True
+
+rate_limiter = RateLimiter()
+
+async def validate_telegram_user_with_rate_limit(
+    x_init_data: Optional[str] = Header(None, alias="X-Init-Data"),
+    x_timestamp: Optional[str] = Header(None, alias="X-Timestamp")
+) -> Dict[str, Any]:
+    # Сначала валидируем Telegram данные
+    telegram_data = await validate_telegram_user(x_init_data, x_timestamp)
+    
+    # Проверяем rate limit
+    user_id = telegram_data['user']['id']
+    if not rate_limiter.is_allowed(user_id):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+    
+    return telegram_data
+
+## 7. ЛОГИРОВАНИЕ И МОНИТОРИНГ
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Обновленный валидатор с логированием
+async def validate_telegram_user_with_logging(
+    x_init_data: Optional[str] = Header(None, alias="X-Init-Data"),
+    x_timestamp: Optional[str] = Header(None, alias="X-Timestamp")
+) -> Dict[str, Any]:
+    
+    try:
+        telegram_data = await validate_telegram_user(x_init_data, x_timestamp)
+        
+        # Логируем успешную аутентификацию
+        logger.info(f"Successful auth for user {telegram_data['user']['id']}")
+        
+        return telegram_data
+        
+    except HTTPException as e:
+        # Логируем попытки взлома
+        logger.warning(f"Failed auth attempt: {e.detail}, init_data: {x_init_data[:50] if x_init_data else 'None'}...")
+        raise
+
+## 8. ПРИМЕР КОНФИГУРАЦИИ
+
+# Создайте файл config.py
+BOT_TOKEN = "1234567890:ABCDEF..."  # Ваш реальный токен бота
+MAX_REQUEST_AGE = 86400  # 24 часа
+RATE_LIMIT_REQUESTS = 100  # максимум запросов в час
+RATE_LIMIT_WINDOW = 3600  # окно в секундах
+
+## 9. ЗАПУСК ПРИЛОЖЕНИЯ
+
+# main.py
+from fastapi import FastAPI
+from config import BOT_TOKEN
+
+app = FastAPI(title="Garda Wallet API")
+
+# Инициализация с вашим токеном
+telegram_auth = TelegramAuth(bot_token=BOT_TOKEN)
+
+# Подключение всех эндпоинтов...
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+## 10. ТЕСТИРОВАНИЕ
+
+Для тестирования можете создать простой эндпоинт:
+
+@app.get("/test-auth")
+async def test_auth(telegram_data: Dict = Depends(validate_telegram_user)):
+    return {
+        "message": "Authentication successful",
+        "user_info": telegram_data['user'],
+        "auth_date": datetime.fromtimestamp(telegram_data['auth_date']).isoformat()
+    }
+
+=================================================
+ВАЖНЫЕ МОМЕНТЫ:
+
+1. Обязательно замените "YOUR_BOT_TOKEN_HERE" на реальный токен вашего бота
+2. Храните токен бота в переменных окружения, не в коде
+3. Настройте логирование для отслеживания попыток взлома
+4. Используйте HTTPS в продакшене
+5. Проверяйте соответствие tg_id из параметров с ID из Telegram данных
+6. Настройте rate limiting для предотвращения спама
+7. Регулярно мониторьте логи на предмет подозрительной активности
+
+Эта система обеспечивает криптографически стойкую защиту всех API запросов.
