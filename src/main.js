@@ -44,6 +44,7 @@ axios.interceptors.request.use(async (config) => {
     if (token) {
       config.headers = config.headers || {};
       config.headers['g_key'] = token;
+      config.headers['Origin'] = 'https://bot.gardawallet.com';
       console.log('Added g_key header:', token.substring(0, 20) + '...');
     } else {
       console.warn('No token available for request');
