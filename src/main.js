@@ -6,64 +6,23 @@ import { PiniaCookiesPlugin } from './plugins/pinia-cookies';
 import { createPinia } from 'pinia';
 import axios from 'axios'
 import { VueTelegramPlugin } from "vue-tg";
+import gardaKeyRaw from '/key_garda.txt?raw';
 
 axios.defaults.baseURL = "https://back.gardawallet.com";
 // axios.defaults.baseURL = "http://45.12.238.27:3030/";
 
-// Кеш токена для избежания множественных запросов
-let tokenCache = null;
-let tokenCacheTime = 0;
-const TOKEN_CACHE_DURATION = 5000; // 5 секунд
-
-// Функция для получения токена из key_garda.txt
-const getGardaToken = async () => {
-  // Используем кеш для избежания частых запросов
-  const now = Date.now();
-  if (tokenCache && (now - tokenCacheTime) < TOKEN_CACHE_DURATION) {
-    return tokenCache;
-  }
-
-  try {
-    const response = await fetch('/key_garda.txt', {
-      cache: 'no-cache',
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch garda token: ${response.status}`);
-    }
-    
-    const token = await response.text();
-    const trimmedToken = token.trim();
-    
-    // Обновляем кеш
-    tokenCache = trimmedToken;
-    tokenCacheTime = now;
-    
-    return trimmedToken;
-  } catch (error) {
-    console.error('Error fetching garda token:', error);
-    return null;
-  }
-};
+// Получаем ключ из импортированного файла
+const GARDA_TOKEN = gardaKeyRaw.trim();
+console.log('Loaded garda token:', GARDA_TOKEN ? 'Token loaded successfully' : 'Failed to load token');
 
 // Interceptor для добавления g_key заголовка ко всем запросам
-axios.interceptors.request.use(async (config) => {
-  // Проверяем что это не запрос к самому токену файлу
-  if (!config.url.includes('key_garda.txt')) {
-    try {
-      const token = await getGardaToken();
-      if (token) {
-        config.headers = config.headers || {};
-        config.headers['g_key'] = token;
-        console.log('Added g_key header to request:', config.url);
-      }
-    } catch (error) {
-      console.error('Failed to add garda token to request:', error);
-    }
+axios.interceptors.request.use((config) => {
+  if (GARDA_TOKEN) {
+    config.headers = config.headers || {};
+    config.headers['g_key'] = GARDA_TOKEN;
+    console.log('Added g_key header to request:', config.url);
+  } else {
+    console.warn('No garda token available for request:', config.url);
   }
   return config;
 }, (error) => {
