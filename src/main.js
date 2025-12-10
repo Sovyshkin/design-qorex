@@ -10,60 +10,52 @@ import { VueTelegramPlugin } from "vue-tg";
 axios.defaults.baseURL = "https://back.gardawallet.com";
 // axios.defaults.baseURL = "http://45.12.238.27:3030/";
 
-// Кеш токена с коротким временем жизни для избежания множественных запросов
-let tokenCache = null;
-let tokenCacheTime = 0;
-const TOKEN_CACHE_DURATION = 1000; // 1 секунда
+// Переменная для хранения токена
+let GARDA_TOKEN = null;
 
-// Функция для получения нового токена
-const getGardaToken = async () => {
-  // Используем короткий кеш чтобы не делать запрос при каждом одновременном axios запросе
-  const now = Date.now();
-  if (tokenCache && (now - tokenCacheTime) < TOKEN_CACHE_DURATION) {
-    return tokenCache;
-  }
-
+// Функция для загрузки токена ОДИН РАЗ при инициализации
+const loadGardaToken = async () => {
   try {
-    // Используем fetch без axios
-    const response = await window.fetch('./key_garda_f.txt', {
+    const response = await fetch('./key_garda_f.txt', {
       cache: 'no-cache'
     });
     
     if (!response.ok) {
       console.error('Failed to load garda token:', response.status);
-      return null;
+      return;
     }
     
-    const token = await response.text();
-    const trimmedToken = token.trim();
+    GARDA_TOKEN = await response.text().then(text => text.trim());
+    console.log('Garda token loaded successfully');
     
-    // Обновляем кеш
-    tokenCache = trimmedToken;
-    tokenCacheTime = now;
+    // Периодически обновляем токен (каждые 30 секунд)
+    setInterval(async () => {
+      try {
+        const response = await fetch('./key_garda_f.txt', {
+          cache: 'no-cache'
+        });
+        if (response.ok) {
+          GARDA_TOKEN = await response.text().then(text => text.trim());
+          console.log('Garda token refreshed');
+        }
+      } catch (error) {
+        console.error('Error refreshing garda token:', error);
+      }
+    }, 30000); // 30 секунд
     
-    return trimmedToken;
   } catch (error) {
     console.error('Error loading garda token:', error);
-    return null;
   }
 };
 
-// Interceptor для добавления g_key заголовка только к API запросам
-axios.interceptors.request.use(async (config) => {
-  // Проверяем что это запрос к API, а не к локальным файлам
-  if (config.baseURL && config.baseURL.includes('gardawallet.com')) {
-    try {
-      const token = await getGardaToken();
-      if (token) {
-        config.headers = config.headers || {};
-        config.headers['g_key'] = token;
-        console.log('Added g_key header to API request:', config.url);
-      } else {
-        console.warn('No garda token available for request:', config.url);
-      }
-    } catch (error) {
-      console.error('Failed to get garda token for request:', error);
-    }
+// Загружаем токен при старте приложения
+loadGardaToken();
+
+// Простой interceptor для добавления g_key заголовка
+axios.interceptors.request.use((config) => {
+  if (GARDA_TOKEN) {
+    config.headers = config.headers || {};
+    config.headers['g_key'] = GARDA_TOKEN;
   }
   return config;
 }, (error) => {
