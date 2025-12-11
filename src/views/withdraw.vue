@@ -87,6 +87,9 @@ const handleWithdraw = async () => {
       walletAddress.value = '';
       memo.value = '';
       twoFactorCode.value = '';
+      
+      // Дополнительная защита: логируем что модальное окно должно быть открыто
+      console.log('Success modal opened for withdrawal');
     }
   } catch (error) {
     console.error('Withdraw error in component:', error);
@@ -146,7 +149,10 @@ const preventNegativeAmount = (event) => {
 };
 
 const closeSuccessModal = () => {
+  console.log('Closing success modal and updating balance');
   showSuccessModal.value = false;
+  // Обновляем баланс только после закрытия модального окна
+  walletStore.getUser();
 };
 
 onMounted(async () => {

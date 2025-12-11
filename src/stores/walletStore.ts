@@ -951,17 +951,14 @@ export const useWalletStore = defineStore("wallet", () => {
         
         // Проверяем разные варианты успешного ответа
         if (response.data.message === "Balance updated successfully") {
-          // Успешный вывод, обновляем баланс (асинхронно)
-          setTimeout(() => getUser(), 500);
+          // Успешный вывод - НЕ обновляем баланс автоматически
           return true;
         } else if (response.data.more_detail) {
           // Стандартный ответ с деталями транзакции
-          setTimeout(() => getUser(), 500);
           return true;
         } else {
           // Если структура ответа не распознана, но статус 200
           console.warn('Unexpected response structure:', response.data);
-          setTimeout(() => getUser(), 500);
           return true;
         }
       }
