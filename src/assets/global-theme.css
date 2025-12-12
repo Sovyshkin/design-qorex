@@ -988,4 +988,21 @@
     background: rgba(40, 40, 40, 0.9) !important;
     color: #ffffff !important;
   }
+
+  /* Кнопка подтверждения в модальных окнах - текст должен оставаться темным */
+  .payment-confirm-btn,
+  .confirm-btn,
+  .btn-primary {
+    color: #141414 !important;
+  }
+
+  .payment-confirm-btn:hover:not(:disabled),
+  .confirm-btn:hover:not(:disabled),
+  .btn-primary:hover {
+    color: #141414 !important;
+  }
+
+  .payment-confirm-btn.processing {
+    color: #141414 !important;
+  }
 }
