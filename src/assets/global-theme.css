@@ -845,4 +845,18 @@
     border-color: #deec51 !important;
     color: #141414 !important;
   }
+
+  /* Страница транзакции */
+  .transaction-details {
+    background-color: #2a2a2a !important;
+    border: none !important;
+  }
+
+  .detail-label {
+    color: #cccccc !important;
+  }
+
+  .detail-value {
+    color: #ffffff !important;
+  }
 }
