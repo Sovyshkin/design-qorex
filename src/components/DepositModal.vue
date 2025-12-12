@@ -16,12 +16,11 @@
           <p>{{ t('loading_payment_page') }}</p>
         </div>
         
-        <!-- :src="paymentUrl" -->
         <iframe
           v-if="paymentUrl && !loading"
           ref="paymentFrame"
-          class="payment-iframe"
           src="https://pay.cryptocloud.plus/3004J5FJ?lang=ru"
+          class="payment-iframe"
           @load="onIframeLoad"
           title="Payment Page"
         ></iframe>

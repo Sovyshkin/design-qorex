@@ -131,13 +131,20 @@ const createInvoice = async () => {
   try {
     // Устанавливаем целое число как строку
     walletStore.amount = Math.floor(numAmount).toString();
+    console.log('Creating invoice with amount:', walletStore.amount);
+    
     const url = await walletStore.createInvoice(selectedNetwork.value);
+    console.log('Received payment URL:', url);
     
     if (url) {
       paymentUrl.value = url;
       showDepositModal.value = true;
+      console.log('Modal should be shown, showDepositModal:', showDepositModal.value);
+    } else {
+      console.log('No URL received from createInvoice');
     }
   } catch (error) {
+    console.error('Error in createInvoice:', error);
     handleApiError(error);
   } finally {
     isCreatingInvoice.value = false;
@@ -249,9 +256,16 @@ const handlePaymentSuccess = () => {
     </main>
   </transition>
 
+  <!-- Отладочная информация (временно) -->
+  <div v-if="true" style="position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999;">
+    showDepositModal: {{ showDepositModal }}<br>
+    paymentUrl: {{ paymentUrl }}<br>
+    <button @click="showDepositModal = true; paymentUrl = 'https://example.com'" style="background: blue; color: white; padding: 5px;">Test Modal</button>
+  </div>
+
   <!-- Модальное окно с iframe для оплаты -->
   <DepositModal
-    v-if="showDepositModal"
+    v-show="showDepositModal"
     :payment-url="paymentUrl"
     :show="showDepositModal"
     @close="closeDepositModal"
