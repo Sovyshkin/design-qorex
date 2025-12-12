@@ -104,6 +104,11 @@ const router = createRouter({
       component: () => import("../views/transaction_failed.vue"),
       name: "transaction_failed",
     },
+    {
+      path: "/payment",
+      component: () => import("../views/payment.vue"),
+      name: "payment",
+    },
   ],
 });
 

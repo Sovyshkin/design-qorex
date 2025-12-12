@@ -2,16 +2,13 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref } from "vue";
-import DepositModal from '@/components/DepositModal.vue';
+import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
+const router = useRouter();
 const selectedNetwork = ref("USDT_TRC20");
 const localAmount = ref("");
-
-// Состояние модального окна
-const showDepositModal = ref(false);
-const paymentUrl = ref('');
 
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
@@ -137,11 +134,14 @@ const createInvoice = async () => {
     console.log('Received payment URL:', url);
     
     if (url) {
-      paymentUrl.value = url;
-      showDepositModal.value = true;
-      console.log('Modal should be shown, showDepositModal:', showDepositModal.value);
+      // Переходим на страницу оплаты с URL в параметрах
+      router.push({ 
+        name: 'payment', 
+        query: { url: url }
+      });
     } else {
       console.log('No URL received from createInvoice');
+      walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
     }
   } catch (error) {
     console.error('Error in createInvoice:', error);
@@ -154,23 +154,7 @@ const createInvoice = async () => {
   }
 };
 
-// Закрытие модального окна
-const closeDepositModal = () => {
-  showDepositModal.value = false;
-  paymentUrl.value = '';
-};
 
-// Обработчик успешной оплаты
-const handlePaymentSuccess = () => {
-  showDepositModal.value = false;
-  paymentUrl.value = '';
-  walletStore.showMessage(t('payment_successful') || 'Платеж успешно выполнен!', 'success');
-  
-  // Обновляем баланс пользователя
-  setTimeout(() => {
-    walletStore.getUser();
-  }, 2000);
-};
 </script>
 <template>
   <transition name="fade-down" appear>
@@ -256,14 +240,7 @@ const handlePaymentSuccess = () => {
     </main>
   </transition>
 
-  <!-- Модальное окно с iframe для оплаты -->
-  <DepositModal
-    v-show="showDepositModal"
-    :payment-url="paymentUrl"
-    :show="showDepositModal"
-    @close="closeDepositModal"
-    @payment-success="handlePaymentSuccess"
-  />
+
 </template>
 <style scoped>
 .header {
