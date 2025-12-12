@@ -117,7 +117,6 @@
   /* Только отдельные секции имеют фон */
   .input-section,
   .wallet-address {
-    background: #2a2a2a !important;
     border: none !important;
   }
 
@@ -763,5 +762,87 @@
 
   .loading-screen {
     background-color: var(--bg-primary) !important;
+  }
+
+  /* Страница реферальной программы */
+  .referal-page {
+    background: transparent !important;
+  }
+
+  .referal-section {
+    background-color: #2a2a2a !important;
+    border: none !important;
+  }
+
+  .referal-section h3 {
+    color: #cccccc !important;
+  }
+
+  .referal-box-value {
+    background-color: #1a1a1a !important;
+    border: 1px solid #404040 !important;
+  }
+
+  .referal-box-value span {
+    color: #ffffff !important;
+  }
+
+  .referals-list {
+    background-color: #2a2a2a !important;
+    border: none !important;
+  }
+
+  .stats-info h2 {
+    color: #ffffff !important;
+  }
+
+  .stats-count {
+    color: #cccccc !important;
+  }
+
+  .user-name {
+    color: #ffffff !important;
+  }
+
+  .reg-date {
+    color: #cccccc !important;
+  }
+
+  .referal-page .wrap-img {
+    background-color: #404040 !important;
+  }
+
+  .empty-title {
+    color: #ffffff !important;
+  }
+
+  .empty-description {
+    color: #cccccc !important;
+  }
+
+  .loading-state {
+    background-color: #2a2a2a !important;
+  }
+
+  .loading-state p {
+    color: #cccccc !important;
+  }
+
+  /* Кнопки выбора суммы */
+  .amount-btn {
+    background-color: #2a2a2a !important;
+    border-color: #404040 !important;
+    color: #ffffff !important;
+  }
+
+  .amount-btn:hover {
+    background-color: #3a3a3a !important;
+    border-color: #deec51 !important;
+  }
+
+  .amount-btn.active {
+    background-color: #deec51 !important;
+    border-color: #deec51 !important;
+    color: #141414 !important;
   }
 }
