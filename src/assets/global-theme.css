@@ -666,4 +666,103 @@
   h1 {
     color: #ffffff !important;
   }
+
+  /* Страница пин-кода */
+  .pin-code-container {
+    background: transparent !important;
+    color: #ffffff !important;
+  }
+
+  .pin-dot {
+    border-color: #666666 !important;
+    background-color: transparent !important;
+  }
+
+  .pin-dot.active {
+    background-color: #deec51 !important;
+    border-color: #deec51 !important;
+  }
+
+  .pin-button {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .pin-button:active,
+  .pin-button.pressed {
+    background-color: #3a3a3a !important;
+  }
+
+  .delete-button {
+    background-color: #2a2a2a !important;
+  }
+
+  .error-message {
+    color: #ff6b6b !important;
+  }
+
+  /* Страница вывода средств */
+  .container {
+    background: transparent !important;
+  }
+
+  .form-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .form-container::before {
+    display: none !important;
+  }
+
+  .network-selector h3 {
+    color: #ffffff !important;
+  }
+
+  .network-item {
+    background: #2a2a2a !important;
+    border-color: #404040 !important;
+  }
+
+  .network-item:hover {
+    border-color: #deec51 !important;
+    background: #3a3a3a !important;
+  }
+
+  .network-item.active {
+    background: #2a2a2a !important;
+    border-color: #deec51 !important;
+  }
+
+  .network-name {
+    color: #ffffff !important;
+  }
+
+  .balance-info {
+    background: #2a2a2a !important;
+    border-color: #404040 !important;
+  }
+
+  .balance-info::before {
+    background: linear-gradient(180deg, #deec51 0%, #d6e34a 100%) !important;
+  }
+
+  .balance-value {
+    color: #ffffff !important;
+  }
+
+  .code-input-section h4 {
+    color: #ffffff !important;
+  }
+
+  .memo-note {
+    color: #ff6b6b !important;
+  }
+
+  .loading-screen {
+    background-color: var(--bg-primary) !important;
+  }
 }
