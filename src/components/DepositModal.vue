@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -96,8 +96,19 @@ const handleKeyDown = (event) => {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown);
-  // Блокируем скролл body
-  document.body.style.overflow = 'hidden';
+  // Блокируем скролл body только когда модальное окно открыто
+  if (props.show) {
+    document.body.style.overflow = 'hidden';
+  }
+});
+
+// Отслеживаем изменение состояния модального окна
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
 });
 
 onUnmounted(() => {

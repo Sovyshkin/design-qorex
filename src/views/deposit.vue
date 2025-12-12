@@ -256,13 +256,6 @@ const handlePaymentSuccess = () => {
     </main>
   </transition>
 
-  <!-- Отладочная информация (временно) -->
-  <div v-if="true" style="position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999;">
-    showDepositModal: {{ showDepositModal }}<br>
-    paymentUrl: {{ paymentUrl }}<br>
-    <button @click="showDepositModal = true; paymentUrl = 'https://example.com'" style="background: blue; color: white; padding: 5px;">Test Modal</button>
-  </div>
-
   <!-- Модальное окно с iframe для оплаты -->
   <DepositModal
     v-show="showDepositModal"
