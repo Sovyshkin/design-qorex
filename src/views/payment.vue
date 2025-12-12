@@ -18,11 +18,13 @@
       </div>
       
       <iframe
-        v-if="paymentUrl && !loading"
+        v-if="paymentUrl"
+        v-show="!loading"
         ref="paymentFrame"
-        :src="paymentUrl || 'https://pay.cryptocloud.plus/3004J5FJ?lang=ru'"
+        :src="paymentUrl"
         class="payment-iframe"
         @load="onIframeLoad"
+        @error="onIframeError"
         title="Payment Page"
       ></iframe>
     </main>
@@ -49,6 +51,7 @@ const goBack = () => {
 };
 
 const onIframeLoad = () => {
+  console.log('Iframe loaded successfully');
   loading.value = false;
   
   // Пытаемся отслеживать изменения URL в iframe для определения успешной оплаты
@@ -87,8 +90,37 @@ const onIframeLoad = () => {
   }
 };
 
+const onIframeError = () => {
+  console.error('Iframe failed to load');
+  loading.value = false;
+  walletStore.showMessage('Ошибка загрузки страницы оплаты. Попробуйте еще раз.', 'error');
+  setTimeout(() => {
+    router.back();
+  }, 3000);
+};
+
 onMounted(() => {
   console.log('Payment URL:', paymentUrl.value);
+  
+  // Если URL нет, показываем ошибку и возвращаемся назад
+  if (!paymentUrl.value) {
+    console.error('No payment URL provided');
+    walletStore.showMessage('Ошибка: не получена ссылка для оплаты', 'error');
+    setTimeout(() => {
+      router.back();
+    }, 2000);
+    loading.value = false;
+    return;
+  }
+  
+  // Устанавливаем timeout для загрузки iframe (15 секунд)
+  setTimeout(() => {
+    if (loading.value) {
+      console.error('Iframe loading timeout');
+      loading.value = false;
+      walletStore.showMessage('Превышено время ожидания загрузки. Проверьте соединение.', 'error');
+    }
+  }, 15000);
 });
 </script>
 

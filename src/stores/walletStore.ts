@@ -672,7 +672,9 @@ export const useWalletStore = defineStore("wallet", () => {
         pay_link.value = response.data.result.link;
         working_invoice = response.data.result.uuid;
         await creatingInvoceDb();
-        console.log(pay_link.value);
+        console.log('Pay link set:', pay_link.value);
+        console.log('Pay link type:', typeof pay_link.value);
+        console.log('Response data:', response.data.result);
         
         // Возвращаем ссылку для использования в модальном окне
         return pay_link.value;

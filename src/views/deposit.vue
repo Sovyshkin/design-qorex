@@ -132,15 +132,18 @@ const createInvoice = async () => {
     
     const url = await walletStore.createInvoice(selectedNetwork.value);
     console.log('Received payment URL:', url);
+    console.log('URL type:', typeof url);
+    console.log('URL truthy:', !!url);
     
-    if (url) {
+    if (url && url.trim()) {
+      console.log('Navigating to payment page with URL:', url);
       // Переходим на страницу оплаты с URL в параметрах
       router.push({ 
         name: 'payment', 
-        query: { url: url }
+        query: { url: url.trim() }
       });
     } else {
-      console.log('No URL received from createInvoice');
+      console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
     }
   } catch (error) {
