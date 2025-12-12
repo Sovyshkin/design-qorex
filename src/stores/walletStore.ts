@@ -700,6 +700,7 @@ export const useWalletStore = defineStore("wallet", () => {
         amount: String(amount.value),
         id_tg_user: user.value.tg_id,
         working_invoce: working_invoice,
+        type_trans: 'input'
       });
       
       if (response.status !== 200) {
