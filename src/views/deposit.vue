@@ -2,11 +2,16 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref } from "vue";
+import DepositModal from '@/components/DepositModal.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
 const selectedNetwork = ref("USDT_TRC20");
 const localAmount = ref("");
+
+// Состояние модального окна
+const showDepositModal = ref(false);
+const paymentUrl = ref('');
 
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
@@ -126,7 +131,12 @@ const createInvoice = async () => {
   try {
     // Устанавливаем целое число как строку
     walletStore.amount = Math.floor(numAmount).toString();
-    await walletStore.createInvoice(selectedNetwork.value);
+    const url = await walletStore.createInvoice(selectedNetwork.value);
+    
+    if (url) {
+      paymentUrl.value = url;
+      showDepositModal.value = true;
+    }
   } catch (error) {
     handleApiError(error);
   } finally {
@@ -135,6 +145,24 @@ const createInvoice = async () => {
       isDisabled.value = false;
     }, 1000);
   }
+};
+
+// Закрытие модального окна
+const closeDepositModal = () => {
+  showDepositModal.value = false;
+  paymentUrl.value = '';
+};
+
+// Обработчик успешной оплаты
+const handlePaymentSuccess = () => {
+  showDepositModal.value = false;
+  paymentUrl.value = '';
+  walletStore.showMessage(t('payment_successful') || 'Платеж успешно выполнен!', 'success');
+  
+  // Обновляем баланс пользователя
+  setTimeout(() => {
+    walletStore.getUser();
+  }, 2000);
 };
 </script>
 <template>
@@ -220,6 +248,15 @@ const createInvoice = async () => {
     </button>
     </main>
   </transition>
+
+  <!-- Модальное окно с iframe для оплаты -->
+  <DepositModal
+    v-if="showDepositModal"
+    :payment-url="paymentUrl"
+    :show="showDepositModal"
+    @close="closeDepositModal"
+    @payment-success="handlePaymentSuccess"
+  />
 </template>
 <style scoped>
 .header {

@@ -190,7 +190,10 @@ const messages = {
     wallet_not_found: "Кошелек не найден",
     wallet_load_failed: "Не удалось загрузить кошелек",
     view_invoice: "Посмотреть счет",
-    back: "Возврат"
+    back: "Возврат",
+    deposit_payment: "Оплата пополнения",
+    loading_payment_page: "Загрузка страницы оплаты...",
+    payment_successful: "Платеж успешно выполнен!"
   },
   EN: {
     referal: "Referral program",
@@ -383,7 +386,10 @@ const messages = {
     wallet_not_found: "Wallet not found",
     wallet_load_failed: "Failed to load wallet",
     view_invoice: "View invoice",
-    back: "Refund"
+    back: "Refund",
+    deposit_payment: "Deposit payment",
+    loading_payment_page: "Loading payment page...",
+    payment_successful: "Payment successful!"
   },
 };
 

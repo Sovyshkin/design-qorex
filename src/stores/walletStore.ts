@@ -673,9 +673,12 @@ export const useWalletStore = defineStore("wallet", () => {
         working_invoice = response.data.result.uuid;
         await creatingInvoceDb();
         console.log(pay_link.value);
-        window.location.replace(pay_link.value);
+        
+        // Возвращаем ссылку для использования в модальном окне
+        return pay_link.value;
       } else {
         showMessage(t('invoice_creation_failed') || 'Не удалось создать счет для оплаты', 'error');
+        throw new Error('Invoice creation failed');
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
@@ -688,6 +691,7 @@ export const useWalletStore = defineStore("wallet", () => {
       } else {
         showMessage(t('invoice_creation_failed') || 'Не удалось создать счет для оплаты', 'error');
       }
+      throw err;
     } finally {
       isLoading.value = false;
     }
