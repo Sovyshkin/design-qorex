@@ -6,6 +6,8 @@ import { PiniaCookiesPlugin } from './plugins/pinia-cookies';
 import { createPinia } from 'pinia';
 import axios from 'axios'
 import { VueTelegramPlugin } from "vue-tg";
+import './assets/theme.css'; // Подключаем стили темы
+import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
 axios.defaults.baseURL = "https://back.gardawallet.com";
 // axios.defaults.baseURL = "http://45.12.238.27:3030/";

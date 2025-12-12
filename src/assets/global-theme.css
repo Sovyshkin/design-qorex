@@ -1,0 +1,128 @@
+/* Глобальные стили для компонентов с применением темы */
+
+/* Кнопки */
+.btn-primary {
+  background: var(--bg-accent) !important;
+  color: var(--text-on-accent) !important;
+}
+
+.btn-primary:hover {
+  background: var(--bg-accent-hover) !important;
+}
+
+.btn-secondary {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+/* Инпуты */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--border-focus) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+/* Карточки */
+.card,
+.profile-item,
+.list-item {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-primary) !important;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+}
+
+/* Текст */
+p, span, div {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+/* Иконки */
+svg {
+  color: var(--text-primary);
+}
+
+/* Модальные окна */
+.modal,
+.modal-content {
+  background: var(--bg-primary) !important;
+}
+
+.modal-overlay {
+  background: var(--overlay-bg) !important;
+}
+
+/* Навигация */
+.navbar {
+  background: var(--bg-primary) !important;
+  border-top: 1px solid var(--border-primary) !important;
+}
+
+/* Статусы */
+.status-success {
+  color: var(--status-success) !important;
+}
+
+.status-error {
+  color: var(--status-error) !important;
+}
+
+.status-warning {
+  color: var(--status-warning) !important;
+}
+
+.status-info {
+  color: var(--status-info) !important;
+}
+
+/* Разделители */
+hr,
+.divider {
+  border-color: var(--border-primary) !important;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-accent-hover);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-accent) var(--bg-secondary);
+}

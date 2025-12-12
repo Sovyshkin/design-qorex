@@ -155,7 +155,7 @@ const showContent = computed(() => {
 #app {
   font-family: "Geologica", sans-serif;
   width: 100%;
-  background-color: #fff;
+  background-color: var(--bg-primary);
   height: 100vh;
 }
 
@@ -168,7 +168,7 @@ const showContent = computed(() => {
   font-size: 16px;
   line-height: 20px;
   letter-spacing: 0;
-  color: #1c1c1c;
+  color: var(--text-primary);
 }
 
 *,
@@ -191,7 +191,7 @@ body,
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  background-color: var(--bg-primary);
 }
 
 /* Links */
@@ -239,7 +239,7 @@ select {
   font-size: inherit;
   color: inherit;
   background-color: transparent;
-  caret-color: #000000;
+  caret-color: var(--text-primary);
 }
 
 input::-ms-clear {
@@ -272,18 +272,18 @@ button::-moz-focus-inner {
 button:disabled,
 input[type="submit"]:disabled,
 .btn:disabled {
-  opacity: 0.5 !important;
+  opacity: var(--opacity-disabled) !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
-  background-color: #cccccc !important;
+  background-color: var(--bg-tertiary) !important;
 }
 
 button:disabled:hover,
 input[type="submit"]:disabled:hover,
 .btn:disabled:hover {
-  background-color: #cccccc !important;
-  color: #666666 !important;
-  border-color: #cccccc !important;
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-primary) !important;
   transform: none !important;
 }
 
@@ -347,14 +347,14 @@ h1 {
 }
 
 .access-denied-content h1 {
-  color: #141414;
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 15px;
 }
 
 .access-denied-content p {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.6;
   margin-bottom: 10px;
@@ -362,7 +362,7 @@ h1 {
 
 .access-denied-content .sub-text {
   font-size: 14px;
-  color: #999;
+  color: var(--text-tertiary);
   margin-top: 20px;
 }
 
@@ -382,7 +382,7 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: #f5f5f5;
+  background-color: var(--bg-secondary);
 }
 
 /* Фиксированный навбар */

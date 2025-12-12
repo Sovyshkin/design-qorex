@@ -98,6 +98,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const pay_link = ref("");
   const codePasswordActive = ref(false);
   const hideBalanceActive = ref(false);
+  const isDarkTheme = ref(false); // Состояние темной темы
   const pinCode = ref("");
   const pinVerified = ref(false); // Новое состояние для отслеживания верификации PIN
   const pinVerificationTime = ref(0); // Время последней верификации
@@ -304,6 +305,32 @@ export const useWalletStore = defineStore("wallet", () => {
       active: language.value === savedLang, // Сравниваем с сохраненным языком
     }))
   );
+
+  // Инициализация темы из localStorage
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem("theme");
+    isDarkTheme.value = savedTheme === "dark";
+    applyTheme(isDarkTheme.value);
+  };
+
+  // Применение темы к документу
+  const applyTheme = (dark: boolean) => {
+    if (dark) {
+      document.documentElement.classList.add("dark-theme");
+    } else {
+      document.documentElement.classList.remove("dark-theme");
+    }
+  };
+
+  // Переключение темы
+  const toggleTheme = () => {
+    isDarkTheme.value = !isDarkTheme.value;
+    localStorage.setItem("theme", isDarkTheme.value ? "dark" : "light");
+    applyTheme(isDarkTheme.value);
+  };
+
+  // Вызываем инициализацию темы
+  initTheme();
 
   const changeLang = async (lang: string) => {
     try {
@@ -1385,6 +1412,8 @@ export const useWalletStore = defineStore("wallet", () => {
     langs,
     codePasswordActive,
     hideBalanceActive,
+    isDarkTheme,
+    toggleTheme,
     pinCode,
     verifyPin,
     hasPinCode,
