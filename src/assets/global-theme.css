@@ -230,7 +230,14 @@
   img[src*="send.png"],
   img[src*="hide.png"],
   img[src*="open.png"] {
-    filter: invert(1) brightness(1.2);
+    filter: invert(1) brightness(1.2) !important;
+  }
+
+  /* Стрелки в хедерах - дополнительное правило для большей специфичности */
+  .header .arrow,
+  .arrow[src*="arrow-left.svg"],
+  .arrow[src*="arrow-right.svg"] {
+    filter: invert(1) brightness(1.2) !important;
   }
 
   /* Иконки в кнопках действий на главной */
