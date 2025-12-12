@@ -140,6 +140,10 @@ button.active {
   color: var(--tg-theme-button-color, #0373ff);
 }
 
+button.active img {
+  filter: brightness(0) saturate(100%) invert(84%) sepia(71%) saturate(401%) hue-rotate(359deg) brightness(103%) contrast(93%);
+}
+
 button .icon {
   width: 24px;
   height: 24px;

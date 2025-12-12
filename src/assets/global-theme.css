@@ -1,128 +1,629 @@
-/* Глобальные стили для компонентов с применением темы */
+/* Глобальные стили для тёмной темы */
+.dark-theme {
+  /* Фон общий */
+  body,
+  #app {
+    background-color: var(--bg-primary) !important;
+  }
 
-/* Кнопки */
-.btn-primary {
-  background: var(--bg-accent) !important;
-  color: var(--text-on-accent) !important;
-}
+  /* header */
+  header {
+    background-color: var(--bg-primary) !important;
+  }
 
-.btn-primary:hover {
-  background: var(--bg-accent-hover) !important;
-}
+  /* Контейнеры */
+  .container,
+  .profile {
+    background-color: var(--bg-primary) !important;
+  }
 
-.btn-secondary {
-  background: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-primary) !important;
-}
+  /* ИСКЛЮЧАЕМ зеленые кнопки из глобальных стилей */
+  .btn-secondary {
+    background: var(--bg-secondary) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--border-primary) !important;
+  }
 
-/* Инпуты */
-input:not([type="checkbox"]):not([type="radio"]),
-textarea,
-select {
-  background-color: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-primary) !important;
-}
+  /* Только серые кнопки на главной */
+  .btn.transfer span {
+    color: #ffffff !important;
+  }
 
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--border-focus) !important;
-}
+  /* Инпуты */
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--text-tertiary) !important;
-}
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border: 2px solid #DEEC51 !important;
+    background-color: #3a3a3a !important;
+    outline: none !important;
+  }
 
-/* Карточки */
-.card,
-.profile-item,
-.list-item {
-  background: var(--bg-secondary) !important;
-  border: 1px solid var(--border-primary) !important;
-}
+  input::placeholder,
+  textarea::placeholder {
+    color: #666666 !important;
+  }
 
-/* Заголовки */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary) !important;
-}
+  /* Все типы инпутов - серый фон */
+  .amount-input,
+  input[type="number"],
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[inputmode="numeric"] {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+  }
 
-/* Текст */
-p, span, div {
-  color: var(--text-primary);
-}
+  /* Переопределяем инпуты с inline стилями */
+  input[style*="background"],
+  textarea[style*="background"],
+  select[style*="background"] {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+  }
 
-.text-secondary {
-  color: var(--text-secondary) !important;
-}
+  /* Контейнеры профиля - прозрачные */
+  .profile-item {
+    background: transparent !important;
+    border: none !important;
+  }
 
-/* Иконки */
-svg {
-  color: var(--text-primary);
-}
+  /* Пользовательская карточка с аватаром */
+  .user.profile-item,
+  .profile .user {
+    background: #2a2a2a !important;
+    border: none !important;
+  }
 
-/* Модальные окна */
-.modal,
-.modal-content {
-  background: var(--bg-primary) !important;
-}
+  /* Только отдельные элементы списка имеют фон */
+  .list-item {
+    background: #2a2a2a !important;
+    border: none !important;
+  }
 
-.modal-overlay {
-  background: var(--overlay-bg) !important;
-}
+  .card {
+    background: #2a2a2a !important;
+    border: none !important;
+  }
 
-/* Навигация */
-.navbar {
-  background: var(--bg-primary) !important;
-  border-top: 1px solid var(--border-primary) !important;
-}
+  /* Контейнеры форм - прозрачные */
+  .form-container,
+  .deposit-container,
+  .withdraw-container,
+  .transfer-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 
-/* Статусы */
-.status-success {
-  color: var(--status-success) !important;
-}
+  .form-container::before {
+    display: none !important;
+  }
 
-.status-error {
-  color: var(--status-error) !important;
-}
+  /* Контейнеры страниц */
+  .container {
+    background: var(--bg-primary) !important;
+  }
 
-.status-warning {
-  color: var(--status-warning) !important;
-}
+  /* Только отдельные секции имеют фон */
+  .input-section,
+  .network-selector,
+  .wallet-address {
+    background: #2a2a2a !important;
+    border: none !important;
+  }
 
-.status-info {
-  color: var(--status-info) !important;
-}
+  /* Селекторы сетей и элементы списка */
+  .network-item,
+  .network-option {
+    background: #2a2a2a !important;
+    border: none !important;
+  }
 
-/* Разделители */
-hr,
-.divider {
-  border-color: var(--border-primary) !important;
-}
+  .network-item:hover,
+  .network-option:hover {
+    background: #3a3a3a !important;
+  }
 
-/* Скроллбар */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+  .network-item.selected,
+  .network-option.selected {
+    background: #3a3a3a !important;
+    border-left: 3px solid #DEEC51 !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
+  /* Текст в селекторах сети */
+  .network-item span,
+  .network-option span {
+    color: #ffffff !important;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--bg-accent);
-  border-radius: 4px;
-}
+  /* Иконки сетей */
+  .network-item img,
+  .network-option img {
+    filter: none !important;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-accent-hover);
-}
+  /* Заголовки */
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff !important;
+    background: transparent !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
 
-/* Firefox scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--bg-accent) var(--bg-secondary);
+  /* Заголовки страниц */
+  .header h1 {
+    color: #ffffff !important;
+  }
+
+  /* Убираем градиентные цвета из заголовков */
+  .form-container h3 {
+    color: #ffffff !important;
+    background: transparent !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  /* Текст - ИСКЛЮЧАЕМ кнопки */
+  p:not(.btn p):not(.btn span), 
+  span:not(.btn span):not(.btn *), 
+  div:not(.btn):not(.btn div) {
+    color: #ffffff !important;
+  }
+
+  .text-secondary {
+    color: #cccccc !important;
+  }
+
+  /* Специфичные классы текста */
+  .name,
+  .list-value,
+  .coin-name,
+  .coin-balance,
+  .profile-value {
+    color: #ffffff !important;
+  }
+
+  .currency-rate,
+  .coin-balance-name {
+    color: #999999 !important;
+  }
+
+  /* Текст на зеленом фоне должен быть черным */
+  .btn.deposit span,
+  .scanner span,
+  .wrap-img span {
+    color: #141414 !important;
+  }
+
+  /* Текст на белом фоне кнопок */
+  .btn.pay_out span {
+    color: #141414 !important;
+  }
+
+  /* Текст в модальных окнах */
+  .modal p,
+  .modal span,
+  .modal div {
+    color: #ffffff !important;
+  }
+
+  /* Иконки - инвертируем тёмные иконки */
+  img[src*="arrow-left.svg"],
+  img[src*="arrow-right.svg"],
+  img[src*="copy.svg"],
+  img[src*="error.svg"],
+  img[src*="check.svg"],
+  img[src*="delete.png"],
+  img[src*="send.png"],
+  img[src*="hide.png"],
+  img[src*="open.png"] {
+    filter: invert(1) brightness(1.2);
+  }
+
+  /* Иконки в кнопках действий на главной */
+  .btn.deposit img,
+  .btn.transfer img,
+  .btn.pay_out img {
+    filter: none !important;
+  }
+
+  /* Лейблы и описания */
+  label,
+  .label,
+  .input-label,
+  .section-title {
+    color: #cccccc !important;
+  }
+
+  /* SVG иконки */
+  svg {
+    color: var(--text-primary);
+  }
+
+  /* Модальные окна */
+  .modal,
+  .modal-content {
+    background: #2a2a2a !important;
+    color: #ffffff !important;
+  }
+
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.8) !important;
+  }
+
+  /* Модальные формы */
+  .modal .form-container,
+  .modal .input-section {
+    background: #2a2a2a !important;
+  }
+
+  /* Модальные кнопки */
+  .modal-btn {
+    background: #DEEC51 !important;
+    color: #141414 !important;
+  }
+
+  .modal-header {
+    border: none !important;
+  }
+
+  .modal-footer {
+    border: none !important;
+  }
+
+  /* Навигация */
+  .navbar {
+    background: var(--bg-secondary) !important;
+    border: none !important;
+  }
+
+  /* Иконки навигации - делаем светлыми неактивные */
+  .navbar button:not(.active):not(.scanner) img {
+    filter: brightness(0) invert(1) opacity(0.6);
+  }
+
+  /* Активные иконки - желтые */
+  .navbar button.active img {
+    filter: brightness(0) saturate(100%) invert(84%) sepia(71%) saturate(401%) hue-rotate(359deg) brightness(103%) contrast(93%);
+  }
+
+  /* Сканер кнопка остается без изменений */
+  .navbar .scanner img {
+    filter: none !important;
+  }
+
+  /* Текст кнопок */
+  .navbar button span {
+    color: #999 !important;
+  }
+
+  .navbar button.active span {
+    color: #DEEC51 !important;
+  }
+
+  /* Статусы */
+  .status-success {
+    color: var(--status-success) !important;
+  }
+
+  .status-error {
+    color: var(--status-error) !important;
+  }
+
+  .status-warning {
+    color: var(--status-warning) !important;
+  }
+
+  .status-info {
+    color: var(--status-info) !important;
+  }
+
+  /* Сообщения об ошибках */
+  .error-message,
+  .message.error,
+  .alert.error,
+  .notification.error {
+    background: #ff6b6b !important;
+    color: #141414 !important;
+  }
+
+  .error-message p,
+  .message.error p,
+  .alert.error p,
+  .notification.error p {
+    color: #141414 !important;
+  }
+
+  /* Разделители */
+  hr,
+  .divider {
+    border-color: var(--border-primary) !important;
+  }
+
+  /* PIN страница */
+  .pin-page {
+    background-color: var(--bg-primary) !important;
+  }
+
+  /* Скроллбар */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--bg-accent);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-accent-hover);
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-accent) var(--bg-secondary);
+  }
+
+  /* Фон главной страницы */
+  .container {
+    background-color: var(--bg-primary) !important;
+  }
+
+  /* Баланс блок */
+  .wrap-balance {
+    background-color: #2a2a2a !important;
+  }
+
+  /* УБИРАЕМ ПОЛНОСТЬЮ переопределение кнопок - оставляем только специфичные */
+
+  /* Кнопки на главной */
+  .btn.transfer {
+    background-color: #3a3a3a !important;
+    border-color: #4a4a4a !important;
+  }
+
+  .btn.transfer span {
+    color: #fff !important;
+  }
+
+  .btn.pay_out {
+    background-color: #fff !important;
+  }
+
+  .btn.pay_out span {
+    color: #141414 !important;
+  }
+
+  .btn.pay_out .btn-icon {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .btn.pay_out img {
+    filter: brightness(0) !important;
+  }
+
+  /* Монеты */
+  .coin {
+    background-color: var(--bg-secondary) !important;
+  }
+
+  .coin .coin-name {
+    color: #ffffff !important;
+  }
+
+  .coin .coin-balance {
+    color: #ffffff !important;
+  }
+
+  /* Аватар */
+  .wrap-avatar {
+    background-color: #3a3a3a !important;
+  }
+
+  /* История транзакций */
+  .transaction-item {
+    background-color: var(--bg-secondary) !important;
+  }
+
+  .transaction-item .transaction-info span,
+  .transaction-item .transaction-info p {
+    color: #ffffff !important;
+  }
+
+  .transaction-item .transaction-amount {
+    color: #ffffff !important;
+  }
+
+  /* Иконки типов транзакций */
+  img[src*="type-"],
+  img[src*="referal.svg"],
+  img[src*="deposit.svg"],
+  img[src*="refund.svg"] {
+    filter: none !important;
+  }
+
+  /* Кнопка выхода */
+  .exit {
+    color: #ff6b6b !important;
+  }
+
+  /* Адреса кошелька */
+  .wallet-address-text,
+  .address-display {
+    color: #ffffff !important;
+    background: #2a2a2a !important;
+    border: none !important;
+  }
+
+  /* QR коды и изображения */
+  .qr-code {
+    background: #ffffff !important;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  /* Дополнительные элементы форм */
+  .form-section,
+  .amount-display,
+  .fee-info {
+    background: #2a2a2a !important;
+    border: none !important;
+    color: #ffffff !important;
+  }
+
+  /* Копирование */
+  .copy-btn {
+    background: #3a3a3a !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+
+  .copy-btn:hover {
+    background: #4a4a4a !important;
+  }
+
+  /* Переопределяем ВСЕ светлые фоны в компонентах */
+  *[style*="background: #ffffff"],
+  *[style*="background: #fff"],
+  *[style*="background-color: #ffffff"],
+  *[style*="background-color: #fff"],
+  *[style*="background-color: #f8f9fa"],
+  *[style*="background-color: #f5f5f5"],
+  *[style*="background-color: #f0f0f0"],
+  *[style*="background-color: #f6f6f6"],
+  *[style*="background-color: white"],
+  *[style*="background: white"] {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+  }
+
+  /* Специфичные классы с белыми фонами */
+  .wallet-card,
+  .transaction-card,
+  .balance-card,
+  .info-card,
+  .user-card,
+  .amount-input,
+  .address-input,
+  .fee-display,
+  .network-card,
+  .modal-content,
+  .form-field,
+  .input-field {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+  }
+
+  /* СИЛЬНОЕ переопределение для всех инпутов */
+  input,
+  textarea,
+  select {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+  }
+
+  /* Специфичные инпуты */
+  .code-input,
+  .pin-input,
+  .verification-input,
+  input[maxlength="6"],
+  input[type="tel"] {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+  }
+
+  /* Balance info блок */
+  .balance-info,
+  .balance-card,
+  .balance-display {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+  }
+
+  /* Анимация загрузки */
+  .wrap-load,
+  .loading-screen {
+    background: #1a1a1a !important;
+    background-color: #1a1a1a !important;
+  }
+
+  .loader,
+  .loading,
+  .spinner,
+  .loading-container,
+  .app-loader {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  /* Зеленый крутящийся круг */
+  .loader,
+  .spinner,
+  .loading {
+    border-color: #DEEC51 !important;
+  }
+
+  .loader::before,
+  .spinner::before,
+  .loading::before,
+  .loader::after,
+  .spinner::after,
+  .loading::after {
+    background: #DEEC51 !important;
+    border-color: #DEEC51 !important;
+  }
+
+  /* AppLoader специфичные стили */
+  .app-loader .spinner,
+  .app-loader .loader {
+    border: 4px solid rgba(222, 236, 81, 0.3) !important;
+    border-top: 4px solid #DEEC51 !important;
+  }
+
+  /* Переопределяем SVG спиннер в AppLoader */
+  .app-loader svg circle,
+  svg circle {
+    stroke: #DEEC51 !important;
+  }
+
+  /* Элементы с градиентными фонами - НЕ для контейнеров */
+  .wallet-info,
+  .balance-section {
+    background: #2a2a2a !important;
+  }
+
+  /* ИСКЛЮЧАЕМ контейнеры из градиентного переопределения */
+  .form-container[style*="linear-gradient"],
+  .my-wallet-section[style*="linear-gradient"] {
+    background: transparent !important;
+  }
+
+  /* Но отдельные элементы внутри должны иметь фон */
+  .wallet-card,
+  .balance-card,
+  .amount-card {
+    background: #2a2a2a !important;
+  }
 }

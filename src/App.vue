@@ -155,7 +155,7 @@ const showContent = computed(() => {
 #app {
   font-family: "Geologica", sans-serif;
   width: 100%;
-  background-color: var(--bg-primary);
+  background-color: #fff;
   height: 100vh;
 }
 
@@ -168,7 +168,7 @@ const showContent = computed(() => {
   font-size: 16px;
   line-height: 20px;
   letter-spacing: 0;
-  color: var(--text-primary);
+  color: #1c1c1c;
 }
 
 *,
@@ -191,7 +191,12 @@ body,
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-primary);
+  background-color: #f5f5f5;
+}
+
+body.dark-theme,
+body.dark-theme #app {
+  background-color: #1a1a1a !important;
 }
 
 /* Links */
@@ -239,7 +244,7 @@ select {
   font-size: inherit;
   color: inherit;
   background-color: transparent;
-  caret-color: var(--text-primary);
+  caret-color: #000000;
 }
 
 input::-ms-clear {
@@ -272,18 +277,18 @@ button::-moz-focus-inner {
 button:disabled,
 input[type="submit"]:disabled,
 .btn:disabled {
-  opacity: var(--opacity-disabled) !important;
+  opacity: 0.5 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
-  background-color: var(--bg-tertiary) !important;
+  background-color: #cccccc !important;
 }
 
 button:disabled:hover,
 input[type="submit"]:disabled:hover,
 .btn:disabled:hover {
-  background-color: var(--bg-tertiary) !important;
-  color: var(--text-secondary) !important;
-  border-color: var(--border-primary) !important;
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  border-color: #cccccc !important;
   transform: none !important;
 }
 
@@ -294,6 +299,10 @@ input[type="submit"]:disabled:hover,
   align-items: center;
   flex: 1;
   min-height: calc(100vh - 80px);
+}
+
+body.dark-theme .wrap-load {
+  background-color: #1a1a1a !important;
 }
 
 .fade-enter-active,
@@ -347,14 +356,14 @@ h1 {
 }
 
 .access-denied-content h1 {
-  color: var(--text-primary);
+  color: #141414;
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 15px;
 }
 
 .access-denied-content p {
-  color: var(--text-secondary);
+  color: #666;
   font-size: 16px;
   line-height: 1.6;
   margin-bottom: 10px;
@@ -362,7 +371,7 @@ h1 {
 
 .access-denied-content .sub-text {
   font-size: 14px;
-  color: var(--text-tertiary);
+  color: #999;
   margin-top: 20px;
 }
 
@@ -382,7 +391,7 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: var(--bg-secondary);
+  background-color: #f5f5f5;
 }
 
 /* Фиксированный навбар */

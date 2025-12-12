@@ -3,16 +3,11 @@ import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useWalletStore } from "@/stores/walletStore";
-import InputCheck from "@/components/ui/inputs/InputCheck.vue";
+import ThemeToggle from "@/components/ui/ThemeToggle.vue";
 
 const walletStore = useWalletStore();
 const { t } = useI18n();
 const router = useRouter();
-const isDarkTheme = computed(() => walletStore.isDarkTheme);
-
-const toggleTheme = () => {
-  walletStore.toggleTheme();
-};
 
 const params = ref([
   {
@@ -162,17 +157,8 @@ onMounted(async () => {
         </div>
         
         <!-- Переключатель темы -->
-        <div class="list-item theme-toggle">
-          <div class="info">
-            <div class="wrap-img">
-              <img src="/assets/theme-icon.svg" alt="theme" />
-            </div>
-            <span class="list-value">{{ isDarkTheme ? t("dark_theme") : t("light_theme") }}</span>
-          </div>
-          <InputCheck
-            :modelValue="isDarkTheme"
-            @update:modelValue="toggleTheme"
-          />
+        <div class="theme-toggle-wrapper">
+          <ThemeToggle />
         </div>
       </div>
     </transition>
@@ -289,12 +275,9 @@ onMounted(async () => {
 }
 
 /* Стили для переключателя темы */
-.theme-toggle {
-  cursor: default;
-}
-
-.theme-toggle:hover .arrow {
-  transform: none;
+.theme-toggle-wrapper {
+  padding: 0 16px;
+  margin-top: 8px;
 }
 
 .exit {
