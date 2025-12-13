@@ -1,7 +1,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, watch } from "vue";
+import { ref, watch, nextTick } from "vue";
 import { useRouter } from 'vue-router';
 import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue';
 
@@ -189,24 +189,11 @@ const createInvoice = async () => {
     console.log('URL type:', typeof url);
     console.log('URL truthy:', !!url);
     
+    // Сохраняем URL для дальнейшего использования
     if (url && url.trim()) {
       console.log('✅ Received valid URL:', url);
-      console.log('🔄 Setting up modal data...');
-      
-      // Сохраняем данные для модального окна
       currentPaymentUrl.value = url.trim();
       currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
-      
-      console.log('📊 Modal data set:', {
-        url: currentPaymentUrl.value,
-        amount: localAmount.value,
-        network: currentNetworkName.value
-      });
-      
-      // Показываем модальное окно выбора
-      console.log('🎯 Showing payment choice modal...');
-      showPaymentChoiceModal.value = true;
-      console.log('✨ showPaymentChoiceModal.value =', showPaymentChoiceModal.value);
     } else {
       console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
@@ -216,6 +203,25 @@ const createInvoice = async () => {
     handleApiError(error);
   } finally {
     isCreatingInvoice.value = false;
+    
+    // Показываем модальное окно ПОСЛЕ завершения всех операций
+    if (currentPaymentUrl.value) {
+      console.log('🔄 Setting up modal data in finally...');
+      console.log('📊 Modal data:', {
+        url: currentPaymentUrl.value,
+        amount: localAmount.value,
+        network: currentNetworkName.value
+      });
+      
+      console.log('🎯 Showing payment choice modal in finally...');
+      
+      // Используем nextTick для обеспечения того, что DOM обновится
+      nextTick(() => {
+        showPaymentChoiceModal.value = true;
+        console.log('✨ showPaymentChoiceModal.value in nextTick =', showPaymentChoiceModal.value);
+      });
+    }
+    
     setTimeout(() => {
       isDisabled.value = false;
     }, 1000);
@@ -304,6 +310,14 @@ const createInvoice = async () => {
         <span v-if="!isDisabled">{{ t("continue") }}</span>
         <span v-else>{{ t("processing") }}</span>
       </div>
+    </button>
+    
+    <!-- Тестовая кнопка для отладки -->
+    <button 
+      @click="showPaymentChoiceModal = true; currentPaymentUrl = 'https://test.com'; currentNetworkName = 'TEST'"
+      style="margin: 20px; padding: 10px; background: red; color: white; border: none; border-radius: 5px;"
+    >
+      ТЕСТ МОДАЛЬНОГО ОКНА
     </button>
     </main>
   </transition>
