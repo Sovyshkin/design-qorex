@@ -3,7 +3,7 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, watch, nextTick } from "vue";
 import { useRouter } from 'vue-router';
-import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue';
+// import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue'; // Убираем, используем встроенное модальное окно
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -133,19 +133,18 @@ const closePaymentModal = () => {
   showPaymentChoiceModal.value = false;
 };
 
-// Функция для сброса формы
-const resetForm = () => {
-  console.log('🔄 Resetting form...');
-  invoiceCreated.value = false;
-  currentPaymentUrl.value = '';
-  currentNetworkName.value = '';
-  localAmount.value = '';
-  walletStore.amount = '';
+// Функции для модального окна
+const copyPaymentLink = () => {
+  handleCopyLink(currentPaymentUrl.value);
 };
 
-// Добавляем watcher для отслеживания состояния инвойса
-watch(invoiceCreated, (newVal, oldVal) => {
-  console.log('📋 Invoice created state changed:', { from: oldVal, to: newVal });
+const openPaymentInApp = () => {
+  handleOpenInApp(currentPaymentUrl.value);
+};
+
+// Добавляем watcher для отслеживания состояния модального окна
+watch(showPaymentChoiceModal, (newVal, oldVal) => {
+  console.log('🎭 Modal state changed:', { from: oldVal, to: newVal });
 });
 
 const createInvoice = async () => {
@@ -193,14 +192,14 @@ const createInvoice = async () => {
     console.log('URL type:', typeof url);
     console.log('URL truthy:', !!url);
     
-    // Сохраняем URL для дальнейшего использования
+    // Сохраняем URL для модального окна
     if (url && url.trim()) {
       console.log('✅ Received valid URL:', url);
       currentPaymentUrl.value = url.trim();
       currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
-      console.log('🔄 Setting invoiceCreated to true...');
-      invoiceCreated.value = true;
-      console.log('✅ invoiceCreated.value:', invoiceCreated.value);
+      console.log('🔄 Showing payment choice modal...');
+      showPaymentChoiceModal.value = true;
+      console.log('✅ showPaymentChoiceModal.value:', showPaymentChoiceModal.value);
     } else {
       console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
@@ -287,9 +286,7 @@ const createInvoice = async () => {
       </div>
     </div>
     
-    <!-- Обычная кнопка продолжить, если инвойс еще не создан -->
     <button 
-      v-if="!invoiceCreated"
       class="btn" 
       :class="{ loading: isCreatingInvoice || isDisabled }"
       :disabled="isCreatingInvoice || isDisabled"
@@ -302,54 +299,50 @@ const createInvoice = async () => {
         <span v-else>{{ t("processing") }}</span>
       </div>
     </button>
-    
-    <!-- Кнопки выбора способа оплаты после создания инвойса -->
-    <div v-if="invoiceCreated" class="payment-choice-buttons">
-      <h3 class="choice-title">Выберите способ оплаты:</h3>
-      
-      <button class="choice-btn copy-btn" @click="handleCopyLink(currentPaymentUrl)">
-        <div class="btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="btn-content-choice">
-          <span class="btn-title">Скопировать ссылку</span>
-          <span class="btn-subtitle">Открыть в браузере</span>
-        </div>
-      </button>
-      
-      <button class="choice-btn iframe-btn" @click="handleOpenInApp(currentPaymentUrl)">
-        <div class="btn-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 15l3-3-3-3m0 6l-3-3 3-3m0 6V9m9 3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="btn-content-choice">
-          <span class="btn-title">Открыть в приложении</span>
-          <span class="btn-subtitle">Встроенный браузер</span>
-        </div>
-      </button>
-      
-      <div class="payment-info">
-        <div class="info-item">
-          <span class="info-label">Сумма:</span>
-          <span class="info-value">{{ localAmount }} USDT</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Сеть:</span>
-          <span class="info-value">{{ currentNetworkName }}</span>
-        </div>
-      </div>
-      
-      <button class="back-btn" @click="resetForm()">
-        Создать новый платеж
-      </button>
-    </div>
     </main>
   </transition>
 
-
+  <!-- Модальное окно выбора способа оплаты -->
+  <div 
+    v-if="showPaymentChoiceModal" 
+    class="payment-modal-overlay"
+    @click.self="closePaymentModal"
+  >
+    <div class="payment-modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Способ оплаты</h3>
+        <p class="modal-subtitle">Выберите удобный способ оплаты счёта</p>
+      </div>
+      
+      <div class="payment-methods">
+        <button 
+          class="payment-method-btn" 
+          @click="copyPaymentLink"
+        >
+          <div class="method-icon">📋</div>
+          <div class="method-text">
+            <div class="method-title">Скопировать ссылку</div>
+            <div class="method-description">Ссылку можно открыть в любом браузере</div>
+          </div>
+        </button>
+        
+        <button 
+          class="payment-method-btn" 
+          @click="openPaymentInApp"
+        >
+          <div class="method-icon">💳</div>
+          <div class="method-text">
+            <div class="method-title">Открыть в приложении</div>
+            <div class="method-description">Быстрая оплата без перехода</div>
+          </div>
+        </button>
+      </div>
+      
+      <button class="modal-close-btn" @click="closePaymentModal">
+        Отмена
+      </button>
+    </div>
+  </div>
 
 </template>
 <style scoped>
@@ -775,170 +768,110 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   }
 }
 
-/* Стили для кнопок выбора способа оплаты */
-.payment-choice-buttons {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 24px;
-  margin: 0 20px 20px 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.choice-title {
-  text-align: center;
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #141414;
-  background: linear-gradient(135deg, #141414 0%, #374151 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.choice-btn {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 20px 24px;
-  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-  text-align: left;
+/* Модальное окно выбора способа оплаты в стиле приложения */
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: modalOverlayAppear 0.3s ease-out;
+}
+
+@keyframes modalOverlayAppear {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
+}
+
+.payment-modal {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  padding: 32px 28px;
+  width: 90%;
+  max-width: 400px;
+  margin: 0 20px;
   box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 32px 64px -12px rgba(0, 0, 0, 0.25),
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  backdrop-filter: blur(20px);
   position: relative;
   overflow: hidden;
 }
 
-.choice-btn::before {
+.payment-modal::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.6s ease;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
 }
 
-.choice-btn:hover::before {
-  left: 100%;
+@keyframes modalAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
 }
 
-.choice-btn:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.15),
-    0 8px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+.modal-header {
+  text-align: center;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
 }
 
-.choice-btn:active {
-  transform: translateY(-2px) scale(0.99);
-}
-
-.copy-btn {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  box-shadow: 
-    0 4px 16px rgba(59, 130, 246, 0.2),
-    0 2px 8px rgba(59, 130, 246, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.copy-btn:hover {
-  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
-  box-shadow: 
-    0 20px 40px rgba(59, 130, 246, 0.3),
-    0 8px 16px rgba(59, 130, 246, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.copy-btn .btn-icon {
-  color: #2563eb;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 12px;
-  padding: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.iframe-btn {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  box-shadow: 
-    0 4px 16px rgba(222, 236, 81, 0.3),
-    0 2px 8px rgba(222, 236, 81, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.iframe-btn:hover {
-  background: linear-gradient(135deg, #fde68a 0%, #facc15 100%);
-  box-shadow: 
-    0 20px 40px rgba(222, 236, 81, 0.4),
-    0 8px 16px rgba(222, 236, 81, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.iframe-btn .btn-icon {
-  color: #a16207;
-  background: rgba(222, 236, 81, 0.2);
-  border-radius: 12px;
-  padding: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon {
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.btn-content-choice {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.btn-title {
-  font-size: 17px;
+.modal-header h3 {
+  font-size: 22px;
   font-weight: 700;
   color: #111827;
-  line-height: 1.2;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
 }
 
-.btn-subtitle {
-  font-size: 13px;
+.modal-header p {
+  font-size: 15px;
   color: #6b7280;
-  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .payment-info {
-  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+  background: rgba(222, 236, 81, 0.1);
+  border: 1px solid rgba(222, 236, 81, 0.2);
   border-radius: 16px;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 4px;
-  border: 1px solid rgba(14, 165, 233, 0.2);
-  box-shadow: 
-    0 4px 12px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .info-item {
@@ -946,54 +879,317 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
 }
 
-.info-item:last-child {
-  border-bottom: none;
+.info-item:not(:last-child) {
+  border-bottom: 1px solid rgba(222, 236, 81, 0.2);
 }
 
 .info-label {
-  font-size: 14px;
-  color: #0369a1;
+  font-size: 15px;
+  color: #374151;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.info-label::before {
-  content: '•';
-  color: #0ea5e9;
-  font-size: 16px;
 }
 
 .info-value {
   font-size: 15px;
   font-weight: 700;
-  color: #0c4a6e;
-  background: rgba(255, 255, 255, 0.6);
+  color: #111827;
+  background: rgba(222, 236, 81, 0.2);
   padding: 4px 8px;
   border-radius: 8px;
 }
 
-.back-btn {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  color: #374151;
-  border: 2px solid #d1d5db;
-  padding: 14px 20px;
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(222, 236, 81, 0.3);
   border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-method:hover {
+  background: rgba(222, 236, 81, 0.1);
+  border-color: rgba(222, 236, 81, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(222, 236, 81, 0.2);
+}
+
+.payment-method:active {
+  transform: translateY(0);
+}
+
+.method-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(222, 236, 81, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #84cc16;
+  flex-shrink: 0;
+}
+
+.copy-method .method-icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.method-content {
+  flex: 1;
+}
+
+.method-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.method-subtitle {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  background: rgba(241, 245, 249, 0.8);
+  color: #64748b;
+  backdrop-filter: blur(10px);
+}
+
+.cancel-btn:hover {
+  background: rgba(226, 232, 240, 0.9);
+  color: #475569;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Модальное окно выбора способа оплаты */
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: backdropAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  padding: 20px;
+}
+
+@keyframes backdropAppear {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+.payment-modal {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 30px;
+  min-width: 320px;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform: scale(0.9) translateY(20px);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.modal-subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.payment-method-btn {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.payment-method-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.payment-method-btn:hover::before {
+  left: 100%;
+}
+
+.payment-method-btn:hover {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border-color: #0ea5e9;
+  color: #0c4a6e;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.payment-method-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 12px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.method-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.method-text {
+  flex: 1;
+  text-align: left;
+}
+
+.method-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.method-description {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.modal-close-btn {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 2px solid #d1d5db;
+  border-radius: 16px;
+  padding: 14px 24px;
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
+  color: #374151;
+  width: 100%;
   transition: all 0.3s ease;
-  margin-top: 8px;
   box-shadow: 
     0 4px 12px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.back-btn:hover {
+.modal-close-btn:hover {
   background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
   border-color: #9ca3af;
   color: #111827;
@@ -1003,25 +1199,48 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+  .payment-modal {
+    margin: 0 15px;
+    padding: 25px 20px;
+    min-width: auto;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+  }
+  
+  .payment-method-btn {
+    padding: 16px;
+    font-size: 15px;
+  }
+  
+  .method-icon {
+    width: 22px;
+    height: 22px;
+  }
+}
+
 /* Специфично для iPhone SE и подобных устройств */
 @media (max-width: 375px) and (max-height: 667px) {
   .container {
-    padding: 0 0 180px 0; /* Увеличиваем нижний отступ для маленьких экранов */
+    padding: 0 0 180px 0;
   }
   
   .btn {
-    margin-bottom: 30px; /* Дополнительный отступ для кнопки */
+    margin-bottom: 30px;
   }
 }
 
 /* Дополнительные стили для корректного отображения на всю ширину */
 @media (max-width: 768px) {
   .container {
-    padding-bottom: 160px; /* Увеличиваем нижний отступ */
+    padding-bottom: 160px;
   }
   
   .form-container {
-    padding: 24px 16px; /* Уменьшаем внутренние отступы на мобильных */
+    padding: 24px 16px;
   }
 }
 </style>
