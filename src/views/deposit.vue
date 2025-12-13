@@ -24,6 +24,7 @@ const currentPaymentUrl = ref('');
 const currentNetworkName = ref('');
 const showPaymentOptions = ref(false);
 const invoiceCreated = ref(false);
+const copyStatus = ref(''); // '' | 'copying' | 'copied' | 'error'
 
 // Функция для обработки ошибок API
 const handleApiError = (error) => {
@@ -107,15 +108,29 @@ const selectQuickAmount = (amount) => {
 // Функции для обработки выбора способа оплаты
 const handleCopyLink = async (url) => {
   console.log('📋 Copy link handler called with URL:', url);
+  copyStatus.value = 'copying';
+  
   try {
     await navigator.clipboard.writeText(url);
+    copyStatus.value = 'copied';
     walletStore.showMessage('Ссылка скопирована в буфер обмена', 'success');
     console.log('✅ Link copied successfully');
+    
+    // Сбрасываем статус через 2 секунды
+    setTimeout(() => {
+      copyStatus.value = '';
+    }, 2000);
   } catch (error) {
+    copyStatus.value = 'error';
     console.error('❌ Failed to copy link:', error);
     walletStore.showMessage('Не удалось скопировать ссылку', 'error');
+    
+    // Сбрасываем статус через 2 секунды
+    setTimeout(() => {
+      copyStatus.value = '';
+    }, 2000);
   }
-  showPaymentChoiceModal.value = false;
+  // НЕ закрываем модальное окно
 };
 
 const handleOpenInApp = (url) => {
@@ -130,6 +145,7 @@ const handleOpenInApp = (url) => {
 
 const closePaymentModal = () => {
   console.log('❌ Close payment modal called');
+  copyStatus.value = ''; // Сбрасываем статус копирования
   showPaymentChoiceModal.value = false;
 };
 
@@ -317,12 +333,32 @@ const createInvoice = async () => {
       <div class="payment-methods">
         <button 
           class="payment-method-btn" 
+          :class="{ 
+            'copying': copyStatus === 'copying', 
+            'copied': copyStatus === 'copied',
+            'error': copyStatus === 'error'
+          }"
           @click="copyPaymentLink"
+          :disabled="copyStatus === 'copying'"
         >
-          <div class="method-icon">📋</div>
+          <div class="method-icon">
+            <span v-if="copyStatus === 'copying'">⏳</span>
+            <span v-else-if="copyStatus === 'copied'">✅</span>
+            <span v-else-if="copyStatus === 'error'">❌</span>
+            <span v-else>📋</span>
+          </div>
           <div class="method-text">
-            <div class="method-title">Скопировать ссылку</div>
-            <div class="method-description">Ссылку можно открыть в любом браузере</div>
+            <div class="method-title">
+              <span v-if="copyStatus === 'copying'">Копирование...</span>
+              <span v-else-if="copyStatus === 'copied'">Ссылка скопирована!</span>
+              <span v-else-if="copyStatus === 'error'">Ошибка копирования</span>
+              <span v-else>Скопировать ссылку</span>
+            </div>
+            <div class="method-description">
+              <span v-if="copyStatus === 'copied'">Ссылка сохранена в буфере обмена</span>
+              <span v-else-if="copyStatus === 'error'">Попробуйте еще раз</span>
+              <span v-else>Ссылку можно открыть в любом браузере</span>
+            </div>
           </div>
         </button>
         
@@ -1171,6 +1207,36 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   font-size: 13px;
   color: #666666;
   font-weight: 400;
+}
+
+/* Состояния кнопки копирования */
+.payment-method-btn.copying {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border-color: #87ceeb;
+  cursor: not-allowed;
+}
+
+.payment-method-btn.copied {
+  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
+  border-color: #deec51;
+  animation: pulse-success 0.5s ease-out;
+}
+
+.payment-method-btn.error {
+  background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+  border-color: #ff6b6b;
+  animation: shake 0.5s ease-out;
+}
+
+@keyframes pulse-success {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
 }
 
 .modal-close-btn {

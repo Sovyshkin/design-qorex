@@ -161,10 +161,10 @@ const clearMessage = () => {
   color: #14532d;
 }
 body.dark-theme .success {
-  background-color: #0f3f24;
-  border-color: #deec51;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(222, 236, 81, 0.3);
+  background-color: #deec51;
+  border-color: #f9f871;
+  color: #000000;
+  box-shadow: 0 4px 12px rgba(222, 236, 81, 0.5);
 }
 .success .icon {
   color: #16a34a;
@@ -173,8 +173,8 @@ body.dark-theme .success {
   background-color: #dcfce7;
 }
 body.dark-theme .success:hover {
-  background-color: #155928;
-  box-shadow: 0 6px 16px rgba(222, 236, 81, 0.4);
+  background-color: #f9f871;
+  box-shadow: 0 6px 16px rgba(222, 236, 81, 0.6);
   transform: translateX(-50%) scale(1.05);
 }
 

@@ -1245,4 +1245,23 @@
     border-color: #666666 !important;
     color: #ffffff !important;
   }
+
+  /* Состояния кнопки копирования в темной теме */
+  .payment-method-btn.copying {
+    background: linear-gradient(135deg, #1a2332 0%, #2a3441 100%) !important;
+    border-color: #4a9eff !important;
+    color: #ffffff !important;
+  }
+
+  .payment-method-btn.copied {
+    background: linear-gradient(135deg, #deec51 0%, #f9f871 100%) !important;
+    border-color: #deec51 !important;
+    color: #000000 !important;
+  }
+
+  .payment-method-btn.error {
+    background: linear-gradient(135deg, #3d1a1a 0%, #4d2020 100%) !important;
+    border-color: #ff6b6b !important;
+    color: #ffcccc !important;
+  }
 }
