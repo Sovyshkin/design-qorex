@@ -673,7 +673,7 @@ export const useWalletStore = defineStore("wallet", () => {
       console.log('Using tg_id for invoice:', tgId);
       
       let response = await axios.post(`/create_invoces`, {
-        tg_id: tgId,
+        tg_id: String(tgId),
         amount: amount.value,
         cryptocurrency: cryptocurrency,
       });
