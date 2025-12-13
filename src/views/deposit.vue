@@ -231,7 +231,7 @@ const createInvoice = async () => {
     </header>
   </transition>
   <transition name="fade-scale" appear>
-    <main class="container">
+    <main class="container deposit-page">
     <div class="form-container">
       <div class="input-section">
         <div class="group">
