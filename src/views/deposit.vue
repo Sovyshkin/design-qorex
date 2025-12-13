@@ -3,6 +3,7 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
+import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -18,6 +19,9 @@ const networks = [
 
 const isCreatingInvoice = ref(false);
 const isDisabled = ref(false);
+const showPaymentChoiceModal = ref(false);
+const currentPaymentUrl = ref('');
+const currentNetworkName = ref('');
 
 // Функция для обработки ошибок API
 const handleApiError = (error) => {
@@ -98,6 +102,31 @@ const selectQuickAmount = (amount) => {
   walletStore.amount = amount.toString();
 };
 
+// Функции для обработки выбора способа оплаты
+const handleCopyLink = async (url) => {
+  try {
+    await navigator.clipboard.writeText(url);
+    walletStore.showMessage('Ссылка скопирована в буфер обмена', 'success');
+  } catch (error) {
+    console.error('Failed to copy link:', error);
+    walletStore.showMessage('Не удалось скопировать ссылку', 'error');
+  }
+  showPaymentChoiceModal.value = false;
+};
+
+const handleOpenInApp = (url) => {
+  // Переходим на страницу оплаты с URL в параметрах
+  router.push({ 
+    name: 'payment', 
+    query: { url: url }
+  });
+  showPaymentChoiceModal.value = false;
+};
+
+const closePaymentModal = () => {
+  showPaymentChoiceModal.value = false;
+};
+
 const createInvoice = async () => {
   if (isDisabled.value) return;
 
@@ -136,12 +165,13 @@ const createInvoice = async () => {
     console.log('URL truthy:', !!url);
     
     if (url && url.trim()) {
-      console.log('Navigating to payment page with URL:', url);
-      // Переходим на страницу оплаты с URL в параметрах
-      router.push({ 
-        name: 'payment', 
-        query: { url: url.trim() }
-      });
+      console.log('Showing payment choice modal with URL:', url);
+      // Сохраняем данные для модального окна
+      currentPaymentUrl.value = url.trim();
+      currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
+      
+      // Показываем модальное окно выбора
+      showPaymentChoiceModal.value = true;
     } else {
       console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
@@ -243,6 +273,16 @@ const createInvoice = async () => {
     </main>
   </transition>
 
+  <!-- Модальное окно выбора способа оплаты -->
+  <PaymentChoiceModal
+    v-if="showPaymentChoiceModal"
+    :payment-url="currentPaymentUrl"
+    :amount="localAmount"
+    :network-name="currentNetworkName"
+    @close="closePaymentModal"
+    @copy-link="handleCopyLink"
+    @open-in-app="handleOpenInApp"
+  />
 
 </template>
 <style scoped>
