@@ -1042,7 +1042,7 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   position: relative;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(222, 236, 81, 0.3);
   box-shadow: 
     0 20px 40px rgba(0, 0, 0, 0.15),
     0 1px 0 rgba(255, 255, 255, 0.8) inset;
@@ -1069,14 +1069,14 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 .modal-title {
   font-size: 22px;
   font-weight: 700;
-  color: #1f2937;
+  color: #000000;
   margin-bottom: 8px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .modal-subtitle {
   font-size: 15px;
-  color: #6b7280;
+  color: #666666;
   line-height: 1.4;
 }
 
@@ -1088,8 +1088,8 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 }
 
 .payment-method-btn {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  border: 2px solid #e0e0e0;
   border-radius: 16px;
   padding: 18px;
   cursor: pointer;
@@ -1099,11 +1099,11 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   gap: 15px;
   font-size: 16px;
   font-weight: 600;
-  color: #374151;
+  color: #000000;
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -1127,12 +1127,12 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 }
 
 .payment-method-btn:hover {
-  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-  border-color: #0ea5e9;
-  color: #0c4a6e;
+  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
+  border-color: #deec51;
+  color: #000000;
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 25px rgba(14, 165, 233, 0.15),
+    0 8px 25px rgba(222, 236, 81, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -1150,11 +1150,11 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #deec51, #f9f871);
   border-radius: 8px;
-  color: white;
+  color: #000000;
   font-size: 14px;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 4px rgba(222, 236, 81, 0.4);
 }
 
 .method-text {
@@ -1169,19 +1169,19 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 
 .method-description {
   font-size: 13px;
-  color: #6b7280;
+  color: #666666;
   font-weight: 400;
 }
 
 .modal-close-btn {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  border: 2px solid #d1d5db;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  border: 2px solid #d0d0d0;
   border-radius: 16px;
   padding: 14px 24px;
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  color: #374151;
+  color: #000000;
   width: 100%;
   transition: all 0.3s ease;
   box-shadow: 
@@ -1190,9 +1190,9 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 }
 
 .modal-close-btn:hover {
-  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
-  border-color: #9ca3af;
-  color: #111827;
+  background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
+  border-color: #999999;
+  color: #000000;
   transform: translateY(-2px);
   box-shadow: 
     0 8px 20px rgba(0, 0, 0, 0.12),
