@@ -80,6 +80,7 @@ onMounted(() => {
     amount: props.amount,
     networkName: props.networkName
   });
+  console.log('🎭 Modal overlay should be visible now');
 });
 
 const closeModal = () => {
@@ -97,21 +98,23 @@ const openInApp = () => {
 
 <style scoped>
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10001 !important;
   backdrop-filter: blur(4px);
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .modal-content {
-  background: white;
+  background: white !important;
   border-radius: 20px;
   width: calc(100% - 40px);
   max-width: 400px;
@@ -120,7 +123,10 @@ const openInApp = () => {
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.3),
     0 8px 24px rgba(0, 0, 0, 0.2);
-  animation: modalSlideUp 0.3s ease-out;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  /* animation: modalSlideUp 0.3s ease-out; */
 }
 
 @keyframes modalSlideUp {

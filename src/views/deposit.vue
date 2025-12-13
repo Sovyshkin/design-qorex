@@ -1,7 +1,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from 'vue-router';
 import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue';
 
@@ -130,6 +130,19 @@ const closePaymentModal = () => {
   console.log('❌ Close payment modal called');
   showPaymentChoiceModal.value = false;
 };
+
+// Добавляем watcher для отладки
+watch(showPaymentChoiceModal, (newVal, oldVal) => {
+  console.log('🎭 Modal state changed:', { from: oldVal, to: newVal });
+  if (newVal) {
+    console.log('🎭 Modal should be visible now');
+    console.log('🎭 Current data:', {
+      url: currentPaymentUrl.value,
+      amount: localAmount.value,
+      network: currentNetworkName.value
+    });
+  }
+});
 
 const createInvoice = async () => {
   console.log('🚀 createInvoice called');
@@ -295,8 +308,27 @@ const createInvoice = async () => {
     </main>
   </transition>
 
+  <!-- Debug: проверка состояния -->
+  <div v-if="showPaymentChoiceModal" style="position: fixed; top: 50px; left: 10px; background: green; color: white; padding: 5px; z-index: 9998; font-size: 10px;">
+    Modal active: {{ showPaymentChoiceModal }}<br/>
+    URL: {{ currentPaymentUrl.substring(0, 30) }}...
+  </div>
+
+  <!-- Простое тестовое модальное окно -->
+  <div v-if="showPaymentChoiceModal" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(255,0,0,0.8) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important;">
+    <div style="background: white !important; padding: 20px !important; border-radius: 10px !important; text-align: center !important; min-width: 300px !important;">
+      <h3>ТЕСТ МОДАЛЬНОГО ОКНА</h3>
+      <p>URL: {{ currentPaymentUrl }}</p>
+      <p>Сумма: {{ localAmount }} USDT</p>
+      <p>Сеть: {{ currentNetworkName }}</p>
+      <button @click="closePaymentModal" style="padding: 10px 20px; background: #deec51; border: none; border-radius: 5px; cursor: pointer;">
+        Закрыть
+      </button>
+    </div>
+  </div>
+
   <!-- Модальное окно выбора способа оплаты -->
-  <PaymentChoiceModal
+  <!-- <PaymentChoiceModal
     v-if="showPaymentChoiceModal"
     :payment-url="currentPaymentUrl"
     :amount="localAmount"
@@ -304,7 +336,7 @@ const createInvoice = async () => {
     @close="closePaymentModal"
     @copy-link="handleCopyLink"
     @open-in-app="handleOpenInApp"
-  />
+  /> -->
 
 </template>
 <style scoped>
