@@ -160,10 +160,11 @@ const clearMessage = () => {
   border-color: #22c55e;
   color: #14532d;
 }
-.dark .success {
-  background-color: #052e16;
-  border-color: #15803d;
-  color: #f0fdf4;
+body.dark-theme .success {
+  background-color: #0f3f24;
+  border-color: #deec51;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(222, 236, 81, 0.3);
 }
 .success .icon {
   color: #16a34a;
@@ -171,8 +172,10 @@ const clearMessage = () => {
 .success:hover {
   background-color: #dcfce7;
 }
-.dark .success:hover {
-  background-color: #166534;
+body.dark-theme .success:hover {
+  background-color: #155928;
+  box-shadow: 0 6px 16px rgba(222, 236, 81, 0.4);
+  transform: translateX(-50%) scale(1.05);
 }
 
 /* Info */
@@ -181,7 +184,7 @@ const clearMessage = () => {
   border-color: #3b82f6;
   color: #1e40af;
 }
-.dark .info {
+body.dark-theme .info {
   background-color: #172554;
   border-color: #1d4ed8;
   color: #f0f9ff;
@@ -192,7 +195,7 @@ const clearMessage = () => {
 .info:hover {
   background-color: #e0f2fe;
 }
-.dark .info:hover {
+body.dark-theme .info:hover {
   background-color: #1e40af;
 }
 
@@ -202,7 +205,7 @@ const clearMessage = () => {
   border-color: #f59e0b;
   color: #854d0e;
 }
-.dark .warning {
+body.dark-theme .warning {
   background-color: #422006;
   border-color: #b45309;
   color: #fefce8;
@@ -213,7 +216,7 @@ const clearMessage = () => {
 .warning:hover {
   background-color: #fef08a;
 }
-.dark .warning:hover {
+body.dark-theme .warning:hover {
   background-color: #713f12;
 }
 
@@ -223,7 +226,7 @@ const clearMessage = () => {
   border-color: #ef4444;
   color: #991b1b;
 }
-.dark .error {
+body.dark-theme .error {
   background-color: #450a0a;
   border-color: #b91c1c;
   color: #fee2e2;
@@ -234,7 +237,7 @@ const clearMessage = () => {
 .error:hover {
   background-color: #fecaca;
 }
-.dark .error:hover {
+body.dark-theme .error:hover {
   background-color: #7f1d1d;
 }
 </style>
