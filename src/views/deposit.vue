@@ -104,17 +104,20 @@ const selectQuickAmount = (amount) => {
 
 // Функции для обработки выбора способа оплаты
 const handleCopyLink = async (url) => {
+  console.log('📋 Copy link handler called with URL:', url);
   try {
     await navigator.clipboard.writeText(url);
     walletStore.showMessage('Ссылка скопирована в буфер обмена', 'success');
+    console.log('✅ Link copied successfully');
   } catch (error) {
-    console.error('Failed to copy link:', error);
+    console.error('❌ Failed to copy link:', error);
     walletStore.showMessage('Не удалось скопировать ссылку', 'error');
   }
   showPaymentChoiceModal.value = false;
 };
 
 const handleOpenInApp = (url) => {
+  console.log('📱 Open in app handler called with URL:', url);
   // Переходим на страницу оплаты с URL в параметрах
   router.push({ 
     name: 'payment', 
@@ -124,10 +127,19 @@ const handleOpenInApp = (url) => {
 };
 
 const closePaymentModal = () => {
+  console.log('❌ Close payment modal called');
   showPaymentChoiceModal.value = false;
 };
 
 const createInvoice = async () => {
+  console.log('🚀 createInvoice called');
+  console.log('📊 Current state:', {
+    isDisabled: isDisabled.value,
+    localAmount: localAmount.value,
+    selectedNetwork: selectedNetwork.value,
+    showPaymentChoiceModal: showPaymentChoiceModal.value
+  });
+  
   if (isDisabled.value) return;
 
   // Валидация суммы
@@ -165,13 +177,23 @@ const createInvoice = async () => {
     console.log('URL truthy:', !!url);
     
     if (url && url.trim()) {
-      console.log('Showing payment choice modal with URL:', url);
+      console.log('✅ Received valid URL:', url);
+      console.log('🔄 Setting up modal data...');
+      
       // Сохраняем данные для модального окна
       currentPaymentUrl.value = url.trim();
       currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
       
+      console.log('📊 Modal data set:', {
+        url: currentPaymentUrl.value,
+        amount: localAmount.value,
+        network: currentNetworkName.value
+      });
+      
       // Показываем модальное окно выбора
+      console.log('🎯 Showing payment choice modal...');
       showPaymentChoiceModal.value = true;
+      console.log('✨ showPaymentChoiceModal.value =', showPaymentChoiceModal.value);
     } else {
       console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
@@ -272,6 +294,14 @@ const createInvoice = async () => {
     </button>
     </main>
   </transition>
+
+  <!-- Debug info (убрать после тестирования) -->
+  <div v-if="showPaymentChoiceModal" style="position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999; font-size: 12px;">
+    DEBUG: Modal should show<br/>
+    URL: {{ currentPaymentUrl }}<br/>
+    Amount: {{ localAmount }}<br/>
+    Network: {{ currentNetworkName }}
+  </div>
 
   <!-- Модальное окно выбора способа оплаты -->
   <PaymentChoiceModal

@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { defineEmits } from 'vue';
+import { defineEmits, onMounted } from 'vue';
 
 const props = defineProps({
   paymentUrl: {
@@ -73,6 +73,14 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'copy-link', 'open-in-app']);
+
+onMounted(() => {
+  console.log('🎭 PaymentChoiceModal mounted with props:', {
+    paymentUrl: props.paymentUrl,
+    amount: props.amount,
+    networkName: props.networkName
+  });
+});
 
 const closeModal = () => {
   emit('close');
