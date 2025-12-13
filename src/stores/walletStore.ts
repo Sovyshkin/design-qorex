@@ -672,6 +672,22 @@ export const useWalletStore = defineStore("wallet", () => {
       // Убеждаемся что используем правильный tg_id
       const tgId = user.value.tg_id || userTg.value.id;
       console.log('Using tg_id for invoice:', tgId);
+      console.log('user.value.tg_id:', user.value.tg_id);
+      console.log('userTg.value.id:', userTg.value.id);
+      
+      if (!tgId) {
+        console.error('Нет tg_id для создания счета');
+        showMessage('Не удалось определить пользователя', 'error');
+        throw new Error('No tg_id available');
+      }
+      console.log('user.value.tg_id:', user.value.tg_id);
+      console.log('userTg.value.id:', userTg.value.id);
+      
+      if (!tgId) {
+        console.error('Нет tg_id для создания счета');
+        showMessage('Не удалось определить пользователя', 'error');
+        throw new Error('No tg_id available');
+      }
       
       let response = await axios.post(`/create_invoces`, {
         tg_id: String(tgId),
@@ -713,10 +729,13 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const creatingInvoceDb = async () => {
     try {
+      const tgId = user.value.tg_id || userTg.value.id;
+      console.log('Creating invoice DB with tg_id:', tgId);
+      
       let response = await axios.post("/creating_invoce_db", {
         datatime: new Date(),
         amount: String(amount.value),
-        id_tg_user: user.value.tg_id,
+        id_tg_user: tgId,
         working_invoce: working_invoice,
         type_trans: 'input'
       });

@@ -37,7 +37,13 @@ onMounted(async () => {
     // Загружаем данные пользователя если их нет
     if (!hasUserData && walletStore.userTg?.id) {
       console.log('Loading user data...');
+      console.log('userTg.id:', walletStore.userTg.id);
+      console.log('user.tg_id:', walletStore.user?.tg_id);
+      console.log('Current user object:', walletStore.user);
       await walletStore.getUser();
+    } else if (!walletStore.userTg?.id) {
+      console.warn('No userTg.id available, cannot load user data');
+      console.log('userTg object:', walletStore.userTg);
     }
     
     // Загружаем цену если ее нет
@@ -62,7 +68,7 @@ onMounted(async () => {
             <div class="wrap-avatar">
               <img :src="walletStore.userTg.photo_url" alt="" />
             </div>
-            <span class="name">{{ walletStore.user.first_name }}</span>
+            <span class="name">{{ walletStore.user.first_name || walletStore.userTg.first_name || 'Пользователь' }}</span>
           </div>
         </header>
       </transition>
