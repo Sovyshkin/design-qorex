@@ -105,9 +105,18 @@ onMounted(async () => {
     <transition name="user-appear" appear>
       <div class="user profile-item">
         <div class="wrap-avatar">
-          <img :src="walletStore.userTg.photo_url" alt="" />
+          <img v-if="walletStore.userTg.photo_url" :src="walletStore.userTg.photo_url" alt="" />
+          <div v-else class="default-avatar">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+            </svg>
+          </div>
         </div>
-        <span class="name">@{{ walletStore.user.username }}</span>
+        <span class="name">
+          <span v-if="walletStore.user.username">@{{ walletStore.user.username }}</span>
+          <span v-else-if="walletStore.userTg.username">@{{ walletStore.userTg.username }}</span>
+          <span v-else>{{ walletStore.userTg.first_name }} {{ walletStore.userTg.last_name }}</span>
+        </span>
       </div>
     </transition>
     <transition name="referal-appear" appear>
@@ -297,11 +306,11 @@ onMounted(async () => {
 }
 
 .wrap-avatar {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f0f0f0;
+  background: #deec51;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -311,6 +320,16 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.default-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #141414;
+  background: #deec51;
 }
 
 .name {

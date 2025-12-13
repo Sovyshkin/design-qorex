@@ -92,6 +92,7 @@ export const useWalletStore = defineStore("wallet", () => {
     last_name: "",
     username: "",
     id: "",
+    photo_url: "",
   });
   const user = ref<any>({});
   const amount = ref("");
@@ -479,6 +480,8 @@ export const useWalletStore = defineStore("wallet", () => {
               last_name: telegramUser.last_name || "",
               username: telegramUser.username || "",
               id: String(telegramUser.id) || "",
+              photo_url: telegramUser.photo_url || "",
+            };photo_url: telegramUser.photo_url || "",
             };
             localStorage.setItem("user", JSON.stringify(userTg.value));
             console.log('Set user data from initDataUnsafe:', userTg.value);
@@ -496,6 +499,7 @@ export const useWalletStore = defineStore("wallet", () => {
             last_name: telegramUser.last_name || "",
             username: telegramUser.username || "",
             id: String(telegramUser.id) || "",
+            photo_url: telegramUser.photo_url || "",
           };
           localStorage.setItem("user", JSON.stringify(userTg.value));
           console.log('Set user data from initDataUnsafe (no initData):', userTg.value);
@@ -524,9 +528,11 @@ export const useWalletStore = defineStore("wallet", () => {
       const userData: any = {
         first_name: userTg.value.first_name,
         last_name: userTg.value.last_name,
-        username: userTg.value.username,
+        username: userTg.value.username || "", // Убеждаемся что username передается, даже если пустой
         tg_id: String(userTg.value.id),
       };
+      
+      console.log('Creating user with data:', userData);
 
       // Добавляем поле whoreferal если есть реферальный ID
       if (referalId.value) {
@@ -594,6 +600,7 @@ export const useWalletStore = defineStore("wallet", () => {
       console.log('Making request to:', `${axios.defaults.baseURL}/user/${userTg.value.id}`);
       let response = await axios.get(`/user/${userTg.value.id}`);
 
+      console.log('Received user data from server:', response.data);
       user.value = response.data;
       balance.value = response.data.balance || 0;
       pinCode.value = response.data.pincode;
@@ -662,8 +669,12 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       clearAllMessages();
       isLoading.value = true;
+      // Убеждаемся что используем правильный tg_id
+      const tgId = user.value.tg_id || userTg.value.id;
+      console.log('Using tg_id for invoice:', tgId);
+      
       let response = await axios.post(`/create_invoces`, {
-        tg_id: user.value.tg_id,
+        tg_id: tgId,
         amount: amount.value,
         cryptocurrency: cryptocurrency,
       });

@@ -1076,4 +1076,10 @@
   .payment-info .info-value {
     color: #ffffff !important;
   }
+
+  /* Темная тема для default avatar */
+  .default-avatar {
+    background: #deec51 !important;
+    color: #141414 !important;
+  }
 }

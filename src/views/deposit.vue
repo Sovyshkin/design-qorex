@@ -295,14 +295,6 @@ const createInvoice = async () => {
     </main>
   </transition>
 
-  <!-- Debug info (убрать после тестирования) -->
-  <div v-if="showPaymentChoiceModal" style="position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999; font-size: 12px;">
-    DEBUG: Modal should show<br/>
-    URL: {{ currentPaymentUrl }}<br/>
-    Amount: {{ localAmount }}<br/>
-    Network: {{ currentNetworkName }}
-  </div>
-
   <!-- Модальное окно выбора способа оплаты -->
   <PaymentChoiceModal
     v-if="showPaymentChoiceModal"
