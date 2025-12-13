@@ -667,7 +667,8 @@ export const useWalletStore = defineStore("wallet", () => {
   const createInvoice = async (cryptocurrency = "USDT_TRC20") => {
     try {
       clearAllMessages();
-      isLoading.value = true;
+      // НЕ устанавливаем глобальный isLoading для createInvoice
+      // isLoading.value = true;
       // Убеждаемся что используем правильный tg_id
       const tgId = user.value.tg_id || userTg.value.id;
       console.log('Using tg_id for invoice:', tgId);
@@ -705,7 +706,8 @@ export const useWalletStore = defineStore("wallet", () => {
       }
       throw err;
     } finally {
-      isLoading.value = false;
+      // НЕ сбрасываем глобальный isLoading для createInvoice
+      // isLoading.value = false;
     }
   };
 

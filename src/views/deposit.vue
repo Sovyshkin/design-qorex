@@ -135,12 +135,18 @@ const closePaymentModal = () => {
 
 // Функция для сброса формы
 const resetForm = () => {
+  console.log('🔄 Resetting form...');
   invoiceCreated.value = false;
   currentPaymentUrl.value = '';
   currentNetworkName.value = '';
   localAmount.value = '';
   walletStore.amount = '';
 };
+
+// Добавляем watcher для отслеживания состояния инвойса
+watch(invoiceCreated, (newVal, oldVal) => {
+  console.log('📋 Invoice created state changed:', { from: oldVal, to: newVal });
+});
 
 const createInvoice = async () => {
   console.log('🚀 createInvoice called');
@@ -192,7 +198,9 @@ const createInvoice = async () => {
       console.log('✅ Received valid URL:', url);
       currentPaymentUrl.value = url.trim();
       currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
+      console.log('🔄 Setting invoiceCreated to true...');
       invoiceCreated.value = true;
+      console.log('✅ invoiceCreated.value:', invoiceCreated.value);
     } else {
       console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
@@ -283,13 +291,14 @@ const createInvoice = async () => {
     <button 
       v-if="!invoiceCreated"
       class="btn" 
-      :class="{ loading: isDisabled }"
-      :disabled="isDisabled"
+      :class="{ loading: isCreatingInvoice || isDisabled }"
+      :disabled="isCreatingInvoice || isDisabled"
       @click="createInvoice()"
     >
       <div class="btn-content">
-        <div class="loader" v-if="isDisabled"></div>
-        <span v-if="!isDisabled">{{ t("continue") }}</span>
+        <div class="loader" v-if="isCreatingInvoice || isDisabled"></div>
+        <span v-if="!isCreatingInvoice && !isDisabled">{{ t("continue") }}</span>
+        <span v-else-if="isCreatingInvoice">Создание платежа...</span>
         <span v-else>{{ t("processing") }}</span>
       </div>
     </button>
