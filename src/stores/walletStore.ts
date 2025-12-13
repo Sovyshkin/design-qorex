@@ -481,7 +481,6 @@ export const useWalletStore = defineStore("wallet", () => {
               username: telegramUser.username || "",
               id: String(telegramUser.id) || "",
               photo_url: telegramUser.photo_url || "",
-            };photo_url: telegramUser.photo_url || "",
             };
             localStorage.setItem("user", JSON.stringify(userTg.value));
             console.log('Set user data from initDataUnsafe:', userTg.value);
