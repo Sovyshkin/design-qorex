@@ -1082,4 +1082,57 @@
     background: #deec51 !important;
     color: #141414 !important;
   }
+
+  /* Темная тема для кнопок выбора способа оплаты */
+  .choice-title {
+    color: #ffffff !important;
+  }
+
+  .choice-btn {
+    background: #1a1a1a !important;
+    border-color: #404040 !important;
+  }
+
+  .choice-btn:hover {
+    background: #2a2a2a !important;
+  }
+
+  .copy-btn:hover {
+    background: #1e3a5f !important;
+    border-color: #3b82f6 !important;
+  }
+
+  .iframe-btn:hover {
+    background: #2d3a1a !important;
+    border-color: #deec51 !important;
+  }
+
+  .btn-title {
+    color: #ffffff !important;
+  }
+
+  .btn-subtitle {
+    color: #cccccc !important;
+  }
+
+  .payment-info {
+    background: #1a1a1a !important;
+  }
+
+  .info-label {
+    color: #cccccc !important;
+  }
+
+  .info-value {
+    color: #ffffff !important;
+  }
+
+  .back-btn {
+    background: #404040 !important;
+    color: #ffffff !important;
+  }
+
+  .back-btn:hover {
+    background: #525252 !important;
+  }
 }

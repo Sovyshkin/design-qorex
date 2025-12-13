@@ -22,6 +22,8 @@ const isDisabled = ref(false);
 const showPaymentChoiceModal = ref(false);
 const currentPaymentUrl = ref('');
 const currentNetworkName = ref('');
+const showPaymentOptions = ref(false);
+const invoiceCreated = ref(false);
 
 // Функция для обработки ошибок API
 const handleApiError = (error) => {
@@ -131,18 +133,14 @@ const closePaymentModal = () => {
   showPaymentChoiceModal.value = false;
 };
 
-// Добавляем watcher для отладки
-watch(showPaymentChoiceModal, (newVal, oldVal) => {
-  console.log('🎭 Modal state changed:', { from: oldVal, to: newVal });
-  if (newVal) {
-    console.log('🎭 Modal should be visible now');
-    console.log('🎭 Current data:', {
-      url: currentPaymentUrl.value,
-      amount: localAmount.value,
-      network: currentNetworkName.value
-    });
-  }
-});
+// Функция для сброса формы
+const resetForm = () => {
+  invoiceCreated.value = false;
+  currentPaymentUrl.value = '';
+  currentNetworkName.value = '';
+  localAmount.value = '';
+  walletStore.amount = '';
+};
 
 const createInvoice = async () => {
   console.log('🚀 createInvoice called');
@@ -194,6 +192,7 @@ const createInvoice = async () => {
       console.log('✅ Received valid URL:', url);
       currentPaymentUrl.value = url.trim();
       currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
+      invoiceCreated.value = true;
     } else {
       console.error('Invalid URL received from createInvoice:', url);
       walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
@@ -203,28 +202,9 @@ const createInvoice = async () => {
     handleApiError(error);
   } finally {
     isCreatingInvoice.value = false;
-    
-    // Показываем модальное окно ПОСЛЕ завершения всех операций
-    if (currentPaymentUrl.value) {
-      console.log('🔄 Setting up modal data in finally...');
-      console.log('📊 Modal data:', {
-        url: currentPaymentUrl.value,
-        amount: localAmount.value,
-        network: currentNetworkName.value
-      });
-      
-      console.log('🎯 Showing payment choice modal in finally...');
-      
-      // Используем nextTick для обеспечения того, что DOM обновится
-      nextTick(() => {
-        showPaymentChoiceModal.value = true;
-        console.log('✨ showPaymentChoiceModal.value in nextTick =', showPaymentChoiceModal.value);
-      });
-    }
-    
     setTimeout(() => {
       isDisabled.value = false;
-    }, 1000);
+    }, 500);
   }
 };
 
@@ -299,7 +279,9 @@ const createInvoice = async () => {
       </div>
     </div>
     
+    <!-- Обычная кнопка продолжить, если инвойс еще не создан -->
     <button 
+      v-if="!invoiceCreated"
       class="btn" 
       :class="{ loading: isDisabled }"
       :disabled="isDisabled"
@@ -312,45 +294,53 @@ const createInvoice = async () => {
       </div>
     </button>
     
-    <!-- Тестовая кнопка для отладки -->
-    <button 
-      @click="showPaymentChoiceModal = true; currentPaymentUrl = 'https://test.com'; currentNetworkName = 'TEST'"
-      style="margin: 20px; padding: 10px; background: red; color: white; border: none; border-radius: 5px;"
-    >
-      ТЕСТ МОДАЛЬНОГО ОКНА
-    </button>
+    <!-- Кнопки выбора способа оплаты после создания инвойса -->
+    <div v-if="invoiceCreated" class="payment-choice-buttons">
+      <h3 class="choice-title">Выберите способ оплаты:</h3>
+      
+      <button class="choice-btn copy-btn" @click="handleCopyLink(currentPaymentUrl)">
+        <div class="btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="btn-content-choice">
+          <span class="btn-title">Скопировать ссылку</span>
+          <span class="btn-subtitle">Открыть в браузере</span>
+        </div>
+      </button>
+      
+      <button class="choice-btn iframe-btn" @click="handleOpenInApp(currentPaymentUrl)">
+        <div class="btn-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15l3-3-3-3m0 6l-3-3 3-3m0 6V9m9 3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="btn-content-choice">
+          <span class="btn-title">Открыть в приложении</span>
+          <span class="btn-subtitle">Встроенный браузер</span>
+        </div>
+      </button>
+      
+      <div class="payment-info">
+        <div class="info-item">
+          <span class="info-label">Сумма:</span>
+          <span class="info-value">{{ localAmount }} USDT</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Сеть:</span>
+          <span class="info-value">{{ currentNetworkName }}</span>
+        </div>
+      </div>
+      
+      <button class="back-btn" @click="resetForm()">
+        Создать новый платеж
+      </button>
+    </div>
     </main>
   </transition>
 
-  <!-- Debug: проверка состояния -->
-  <div v-if="showPaymentChoiceModal" style="position: fixed; top: 50px; left: 10px; background: green; color: white; padding: 5px; z-index: 9998; font-size: 10px;">
-    Modal active: {{ showPaymentChoiceModal }}<br/>
-    URL: {{ currentPaymentUrl.substring(0, 30) }}...
-  </div>
 
-  <!-- Простое тестовое модальное окно -->
-  <div v-if="showPaymentChoiceModal" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(255,0,0,0.8) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important;">
-    <div style="background: white !important; padding: 20px !important; border-radius: 10px !important; text-align: center !important; min-width: 300px !important;">
-      <h3>ТЕСТ МОДАЛЬНОГО ОКНА</h3>
-      <p>URL: {{ currentPaymentUrl }}</p>
-      <p>Сумма: {{ localAmount }} USDT</p>
-      <p>Сеть: {{ currentNetworkName }}</p>
-      <button @click="closePaymentModal" style="padding: 10px 20px; background: #deec51; border: none; border-radius: 5px; cursor: pointer;">
-        Закрыть
-      </button>
-    </div>
-  </div>
-
-  <!-- Модальное окно выбора способа оплаты -->
-  <!-- <PaymentChoiceModal
-    v-if="showPaymentChoiceModal"
-    :payment-url="currentPaymentUrl"
-    :amount="localAmount"
-    :network-name="currentNetworkName"
-    @close="closePaymentModal"
-    @copy-link="handleCopyLink"
-    @open-in-app="handleOpenInApp"
-  /> -->
 
 </template>
 <style scoped>
@@ -774,6 +764,133 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
   input {
     padding: 12px 16px; /* Уменьшаем padding input */
   }
+}
+
+/* Стили для кнопок выбора способа оплаты */
+.payment-choice-buttons {
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.choice-title {
+  text-align: center;
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.choice-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.copy-btn {
+  border-color: #3b82f6;
+}
+
+.copy-btn:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.copy-btn .btn-icon {
+  color: #3b82f6;
+}
+
+.iframe-btn {
+  border-color: #deec51;
+}
+
+.iframe-btn:hover {
+  border-color: #d6e34a;
+  background: #fefce8;
+}
+
+.iframe-btn .btn-icon {
+  color: #84cc16;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.btn-content-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.btn-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.payment-info {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.back-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.back-btn:hover {
+  background: #525252;
+  transform: translateY(-1px);
 }
 
 /* Специфично для iPhone SE и подобных устройств */
