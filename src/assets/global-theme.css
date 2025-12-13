@@ -1084,27 +1084,66 @@
   }
 
   /* Темная тема для кнопок выбора способа оплаты */
+  .payment-choice-buttons {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+  }
+
   .choice-title {
     color: #ffffff !important;
+    background: linear-gradient(135deg, #ffffff 0%, #d1d5db 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
   }
 
   .choice-btn {
-    background: #1a1a1a !important;
-    border-color: #404040 !important;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.3) !important,
+      0 2px 8px rgba(0, 0, 0, 0.2) !important,
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   }
 
   .choice-btn:hover {
-    background: #2a2a2a !important;
+    background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%) !important;
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.4) !important,
+      0 8px 16px rgba(0, 0, 0, 0.3) !important,
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .copy-btn {
+    background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%) !important;
+    box-shadow: 
+      0 4px 16px rgba(59, 130, 246, 0.3) !important,
+      0 2px 8px rgba(59, 130, 246, 0.2) !important,
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   }
 
   .copy-btn:hover {
-    background: #1e3a5f !important;
-    border-color: #3b82f6 !important;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+  }
+
+  .copy-btn .btn-icon {
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
+  }
+
+  .iframe-btn {
+    background: linear-gradient(135deg, #2d3a1a 0%, #365314 100%) !important;
+    box-shadow: 
+      0 4px 16px rgba(222, 236, 81, 0.3) !important,
+      0 2px 8px rgba(222, 236, 81, 0.2) !important,
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   }
 
   .iframe-btn:hover {
-    background: #2d3a1a !important;
-    border-color: #deec51 !important;
+    background: linear-gradient(135deg, #4d7c0f 0%, #65a30d 100%) !important;
+  }
+
+  .iframe-btn .btn-icon {
+    background: rgba(222, 236, 81, 0.3) !important;
+    color: #bef264 !important;
   }
 
   .btn-title {
@@ -1112,27 +1151,40 @@
   }
 
   .btn-subtitle {
-    color: #cccccc !important;
+    color: #d1d5db !important;
   }
 
   .payment-info {
-    background: #1a1a1a !important;
+    background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .info-item {
+    border-bottom-color: rgba(59, 130, 246, 0.2) !important;
   }
 
   .info-label {
-    color: #cccccc !important;
+    color: #93c5fd !important;
+  }
+
+  .info-label::before {
+    color: #60a5fa !important;
   }
 
   .info-value {
-    color: #ffffff !important;
+    color: #dbeafe !important;
+    background: rgba(255, 255, 255, 0.1) !important;
   }
 
   .back-btn {
-    background: #404040 !important;
-    color: #ffffff !important;
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%) !important;
+    color: #f3f4f6 !important;
+    border-color: #6b7280 !important;
   }
 
   .back-btn:hover {
-    background: #525252 !important;
+    background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%) !important;
+    border-color: #9ca3af !important;
+    color: #ffffff !important;
   }
 }

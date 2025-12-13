@@ -777,129 +777,230 @@ input[inputmode="decimal"]::-webkit-inner-spin-button {
 
 /* Стили для кнопок выбора способа оплаты */
 .payment-choice-buttons {
-  padding: 0 20px 20px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 24px;
+  margin: 0 20px 20px 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .choice-title {
   text-align: center;
-  margin: 0 0 20px 0;
-  font-size: 18px;
-  font-weight: 600;
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 700;
   color: #141414;
+  background: linear-gradient(135deg, #141414 0%, #374151 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .choice-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 16px;
+  gap: 20px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  border: none;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
   text-align: left;
   width: 100%;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.choice-btn:hover::before {
+  left: 100%;
 }
 
 .choice-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.choice-btn:active {
+  transform: translateY(-2px) scale(0.99);
 }
 
 .copy-btn {
-  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  box-shadow: 
+    0 4px 16px rgba(59, 130, 246, 0.2),
+    0 2px 8px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .copy-btn:hover {
-  border-color: #2563eb;
-  background: #eff6ff;
+  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+  box-shadow: 
+    0 20px 40px rgba(59, 130, 246, 0.3),
+    0 8px 16px rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .copy-btn .btn-icon {
-  color: #3b82f6;
+  color: #2563eb;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .iframe-btn {
-  border-color: #deec51;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  box-shadow: 
+    0 4px 16px rgba(222, 236, 81, 0.3),
+    0 2px 8px rgba(222, 236, 81, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .iframe-btn:hover {
-  border-color: #d6e34a;
-  background: #fefce8;
+  background: linear-gradient(135deg, #fde68a 0%, #facc15 100%);
+  box-shadow: 
+    0 20px 40px rgba(222, 236, 81, 0.4),
+    0 8px 16px rgba(222, 236, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .iframe-btn .btn-icon {
-  color: #84cc16;
+  color: #a16207;
+  background: rgba(222, 236, 81, 0.2);
+  border-radius: 12px;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-icon {
   flex-shrink: 0;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .btn-content-choice {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  flex: 1;
 }
 
 .btn-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #141414;
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
 }
 
 .btn-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
+  font-weight: 500;
 }
 
 .payment-info {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: 4px;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  box-shadow: 
+    0 4px 12px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+}
+
+.info-item:last-child {
+  border-bottom: none;
 }
 
 .info-label {
   font-size: 14px;
-  color: #6b7280;
+  color: #0369a1;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-label::before {
+  content: '•';
+  color: #0ea5e9;
+  font-size: 16px;
 }
 
 .info-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #141414;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0c4a6e;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 
 .back-btn {
-  background: #6b7280;
-  color: white;
-  border: none;
-  padding: 12px 16px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #374151;
+  border: 2px solid #d1d5db;
+  padding: 14px 20px;
+  border-radius: 16px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
   transition: all 0.3s ease;
   margin-top: 8px;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .back-btn:hover {
-  background: #525252;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  border-color: #9ca3af;
+  color: #111827;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* Специфично для iPhone SE и подобных устройств */
