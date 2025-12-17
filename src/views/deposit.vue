@@ -14,7 +14,8 @@ const localAmount = ref("");
 const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
   { id: "USDT_TON", name: "TON", icon: "ton" },
-  { id: "USDT_ERC20", name: "ERC20 (Ethereum)", icon: "ethereum" }
+  { id: "USDT_ERC20", name: "ERC20 (Ethereum)", icon: "ethereum" },
+  { id: "USDT_BSC", name: "BEP20 (BSC)", icon: "bsc" }
 ];
 
 const isCreatingInvoice = ref(false);
