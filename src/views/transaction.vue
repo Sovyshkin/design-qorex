@@ -110,10 +110,16 @@ const canViewInvoice = (transactionType, transactionId) => {
 };
 
 // Открываем модальное окно для выбора способа просмотра счета
-const viewInvoice = (transactionId) => {
+const viewInvoice = (transactionId, event) => {
+  console.log('viewInvoice called with:', transactionId);
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   const url = `https://pay.cryptocloud.plus/${transactionId}`;
   currentPaymentUrl.value = url;
   showPaymentChoiceModal.value = true;
+  console.log('Modal should be visible:', showPaymentChoiceModal.value);
 };
 
 // Функции для обработки выбора способа просмотра
@@ -266,7 +272,7 @@ onMounted(() => {
               src="@/assets/copy.svg" alt="copy"></span>
             <button 
               v-if="canViewInvoice(walletStore.transaction.type_trans, walletStore.transaction.working_invoce)"
-              @click="viewInvoice(walletStore.transaction.working_invoce)"
+              @click.prevent="viewInvoice(walletStore.transaction.working_invoce, $event)"
               class="view-invoice-btn"
             >
               {{ t('view_invoice') }}
@@ -283,7 +289,7 @@ onMounted(() => {
               src="@/assets/copy.svg" alt="copy"></span>
             <button 
               v-if="canViewInvoice(walletStore.transaction.type_trans, walletStore.transaction.id)"
-              @click="viewInvoice(walletStore.transaction.id)"
+              @click.prevent="viewInvoice(walletStore.transaction.id, $event)"
               class="view-invoice-btn"
             >
               {{ t('view_invoice') }}
