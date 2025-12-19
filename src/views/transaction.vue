@@ -9,6 +9,9 @@ const router = useRouter();
 const route = useRoute()
 const showCopiedNotification = ref(false);
 const walletStore = useWalletStore();
+const showPaymentChoiceModal = ref(false);
+const currentPaymentUrl = ref('');
+const copyStatus = ref(''); // '' | 'copying' | 'copied' | 'error'
 
 const goBack = () => {
   router.go(-1);
@@ -106,10 +109,58 @@ const canViewInvoice = (transactionType, transactionId) => {
          !transactionId.toString().includes('_');
 };
 
-// Открываем счет в кассе
+// Открываем модальное окно для выбора способа просмотра счета
 const viewInvoice = (transactionId) => {
   const url = `https://pay.cryptocloud.plus/${transactionId}`;
-  window.open(url, '_blank');
+  currentPaymentUrl.value = url;
+  showPaymentChoiceModal.value = true;
+};
+
+// Функции для обработки выбора способа просмотра
+const handleCopyLink = async (url) => {
+  console.log('📋 Copy link handler called with URL:', url);
+  copyStatus.value = 'copying';
+  
+  try {
+    await navigator.clipboard.writeText(url);
+    copyStatus.value = 'copied';
+    walletStore.showMessage('Ссылка скопирована в буфер обмена', 'success');
+    console.log('✅ Link copied successfully');
+    
+    // Сбрасываем статус через 2 секунды
+    setTimeout(() => {
+      copyStatus.value = '';
+    }, 2000);
+  } catch (error) {
+    copyStatus.value = 'error';
+    console.error('❌ Failed to copy link:', error);
+    walletStore.showMessage('Не удалось скопировать ссылку', 'error');
+    
+    // Сбрасываем статус через 2 секунды
+    setTimeout(() => {
+      copyStatus.value = '';
+    }, 2000);
+  }
+};
+
+const handleOpenInApp = (url) => {
+  console.log('📱 Open in app handler called with URL:', url);
+  // Переходим на страницу оплаты с URL в параметрах
+  router.push({ 
+    name: 'payment', 
+    query: { url: url }
+  });
+  showPaymentChoiceModal.value = false;
+};
+
+const closePaymentModal = () => {
+  console.log('❌ Close payment modal called');
+  copyStatus.value = ''; // Сбрасываем статус копирования
+  showPaymentChoiceModal.value = false;
+};
+
+const copyPaymentLink = () => {
+  handleCopyLink(currentPaymentUrl.value);
 };
 
 onMounted(() => {
@@ -268,6 +319,61 @@ onMounted(() => {
           {{ t("copied") }}
         </div>
       </transition>
+    </div>
+  </div>
+
+  <!-- Модальное окно выбора способа просмотра счета -->
+  <div 
+    v-if="showPaymentChoiceModal" 
+    class="payment-modal-overlay"
+    @click.self="closePaymentModal"
+  >
+    <div class="payment-modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Просмотр счёта</h3>
+        <p class="modal-subtitle">Выберите способ просмотра счёта</p>
+      </div>
+      
+      <div class="payment-methods">
+        <button 
+          class="payment-method-btn" 
+          :class="{ 
+            'copying': copyStatus === 'copying', 
+            'copied': copyStatus === 'copied',
+            'error': copyStatus === 'error'
+          }"
+          @click="copyPaymentLink"
+          :disabled="copyStatus === 'copying'"
+        >
+          <div class="method-icon">
+            <span v-if="copyStatus === 'copying'">⏳</span>
+            <span v-else-if="copyStatus === 'copied'">✅</span>
+            <span v-else-if="copyStatus === 'error'">❌</span>
+            <span v-else>📋</span>
+          </div>
+          <div class="method-text">
+            <div class="method-title">Скопировать ссылку</div>
+            <div class="method-description">Откройте в любом браузере</div>
+          </div>
+        </button>
+        
+        <button 
+          class="payment-method-btn" 
+          @click="handleOpenInApp(currentPaymentUrl)"
+        >
+          <div class="method-icon">📱</div>
+          <div class="method-text">
+            <div class="method-title">Открыть в приложении</div>
+            <div class="method-description">Встроенный браузер</div>
+          </div>
+        </button>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="modal-close-btn" @click="closePaymentModal">
+          Закрыть
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -464,5 +570,213 @@ h1 {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Модальное окно просмотра счета */
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: modalOverlayAppear 0.3s ease-out;
+}
+
+@keyframes modalOverlayAppear {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
+}
+
+.payment-modal {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  padding: 32px 28px;
+  width: 90%;
+  max-width: 400px;
+  margin: 0 20px;
+  box-shadow: 
+    0 32px 64px -12px rgba(0, 0, 0, 0.25),
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes modalAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.payment-method-btn {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.payment-method-btn:hover {
+  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
+  border-color: #deec51;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(222, 236, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.method-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.method-text {
+  flex: 1;
+  text-align: left;
+}
+
+.method-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.method-description {
+  font-size: 13px;
+  color: #666666;
+  font-weight: 400;
+}
+
+.payment-method-btn.copying {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border-color: #87ceeb;
+  cursor: not-allowed;
+}
+
+.payment-method-btn.copied {
+  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
+  border-color: #deec51;
+  animation: pulse-success 0.5s ease-out;
+}
+
+.payment-method-btn.error {
+  background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+  border-color: #ff6b6b;
+  animation: shake 0.5s ease-out;
+}
+
+@keyframes pulse-success {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+}
+
+.modal-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.modal-close-btn {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  border: 2px solid #d0d0d0;
+  border-radius: 16px;
+  padding: 14px 24px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000000;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.modal-close-btn:hover {
+  background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
+  border-color: #999999;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 </style>

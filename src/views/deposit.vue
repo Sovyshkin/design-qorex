@@ -31,6 +31,13 @@ const copyStatus = ref(''); // '' | 'copying' | 'copied' | 'error'
 const handleApiError = (error) => {
   console.error('API Error:', error);
   
+  // Специальная обработка для ошибки 400 с "транзакция уже есть"
+  if (error.response?.status === 400 && 
+      error.response?.data?.detail === "транзакция уже есть") {
+    walletStore.showMessage('Транзакция уже существует. Проверьте историю операций.', 'warning');
+    return;
+  }
+  
   // Если это ошибка валидации от FastAPI
   if (error.response?.data?.detail && Array.isArray(error.response.data.detail)) {
     const validationErrors = error.response.data.detail;
