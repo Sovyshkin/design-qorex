@@ -164,7 +164,7 @@ watch(showPaymentChoiceModal, (newVal, oldVal) => {
   console.log('🎭 Modal state changed:', { from: oldVal, to: newVal });
 });
 
-const createInvoice = async () => {
+const createInvoice2 = async () => {
   console.log('🚀 createInvoice called');
   console.log('📊 Current state:', {
     isDisabled: isDisabled.value,
@@ -311,7 +311,7 @@ onMounted(() => {
       class="btn" 
       :class="{ loading: isCreatingInvoice || isDisabled, 'rate-limited': walletStore.remainingInvoiceTime > 0 }"
       :disabled="isCreatingInvoice || isDisabled || walletStore.remainingInvoiceTime > 0"
-      @click="createInvoice()"
+      @click="createInvoice2()"
     >
       <div class="btn-content">
         <div class="loader" v-if="isCreatingInvoice || isDisabled"></div>
