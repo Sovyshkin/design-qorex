@@ -1,7 +1,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, watch, nextTick } from "vue";
+import { ref, watch, nextTick, onMounted } from "vue";
 import { useRouter } from 'vue-router';
 // import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue'; // Убираем, используем встроенное модальное окно
 
@@ -232,6 +232,10 @@ const createInvoice = async () => {
   }
 };
 
+// Проверяем таймер при загрузке страницы
+onMounted(() => {
+  walletStore.startInvoiceTimer();
+});
 
 </script>
 <template>
@@ -305,13 +309,16 @@ const createInvoice = async () => {
     
     <button 
       class="btn" 
-      :class="{ loading: isCreatingInvoice || isDisabled }"
-      :disabled="isCreatingInvoice || isDisabled"
+      :class="{ loading: isCreatingInvoice || isDisabled, 'rate-limited': walletStore.remainingInvoiceTime > 0 }"
+      :disabled="isCreatingInvoice || isDisabled || walletStore.remainingInvoiceTime > 0"
       @click="createInvoice()"
     >
       <div class="btn-content">
         <div class="loader" v-if="isCreatingInvoice || isDisabled"></div>
-        <span v-if="!isCreatingInvoice && !isDisabled">{{ t("continue") }}</span>
+        <span v-if="walletStore.remainingInvoiceTime > 0" class="timer-text">
+          Подождите {{ walletStore.remainingInvoiceTime }}с
+        </span>
+        <span v-else-if="!isCreatingInvoice && !isDisabled">{{ t("continue") }}</span>
         <span v-else-if="isCreatingInvoice">Создание платежа...</span>
         <span v-else>{{ t("processing") }}</span>
       </div>
@@ -523,6 +530,20 @@ h1 {
 
 .btn.loading {
   background: linear-gradient(135deg, #d4d926 0%, #c9d93d 100%);
+}
+
+.btn.rate-limited {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  color: #64748b;
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.timer-text {
+  font-weight: 600;
+  color: #64748b;
+  font-size: 14px;
 }
 
 .btn-content {

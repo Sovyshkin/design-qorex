@@ -61,6 +61,11 @@ export const useWalletStore = defineStore("wallet", () => {
         stack: error.stack
       });
       
+      // Проверяем статус код 333 для технических работ
+      if (error.response?.status === 333) {
+        showMessage('Ведутся технические работы. Попробуйте позже.', 'warning');
+      }
+      
       // Добавляем флаг для определения типа ошибки
       if (error.response) {
         // Ошибка с ответом от сервера - это не сетевая ошибка
@@ -105,6 +110,8 @@ export const useWalletStore = defineStore("wallet", () => {
   const pinVerificationTime = ref(0); // Время последней верификации
   const referalId = ref(""); // Добавляем переменную для реферального ID
   const isCreatingUser = ref(false); // Флаг для предотвращения повторного создания пользователя
+  const lastInvoiceTime = ref(0); // Время последнего создания инвойса
+  const remainingInvoiceTime = ref(0); // Оставшееся время до следующего инвойса в секундах
   const userWallet = ref(""); // Номер кошелька пользователя для переводов
   const has2FA = ref(false); // Статус 2FA пользователя
 
@@ -664,9 +671,47 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  // Функция для запуска таймера обратного отсчета
+  const startInvoiceTimer = () => {
+    const now = Date.now();
+    const timeSinceLastInvoice = now - lastInvoiceTime.value;
+    const oneMinute = 60 * 1000;
+    
+    if (timeSinceLastInvoice < oneMinute) {
+      remainingInvoiceTime.value = Math.ceil((oneMinute - timeSinceLastInvoice) / 1000);
+      
+      const timer = setInterval(() => {
+        const currentTime = Date.now();
+        const currentTimeSince = currentTime - lastInvoiceTime.value;
+        
+        if (currentTimeSince >= oneMinute) {
+          remainingInvoiceTime.value = 0;
+          clearInterval(timer);
+        } else {
+          remainingInvoiceTime.value = Math.ceil((oneMinute - currentTimeSince) / 1000);
+        }
+      }, 1000);
+    } else {
+      remainingInvoiceTime.value = 0;
+    }
+  };
+
   const createInvoice = async (cryptocurrency = "USDT_TRC20") => {
     try {
       clearAllMessages();
+      
+      // Проверка ограничения по времени - только раз в минуту
+      const now = Date.now();
+      const timeSinceLastInvoice = now - lastInvoiceTime.value;
+      const oneMinute = 60 * 1000; // 60 секунд в миллисекундах
+      
+      if (timeSinceLastInvoice < oneMinute) {
+        const remainingSeconds = Math.ceil((oneMinute - timeSinceLastInvoice) / 1000);
+        showMessage(`Подождите ${remainingSeconds} секунд перед созданием нового счета`, 'warning');
+        startInvoiceTimer(); // Запускаем таймер для отображения оставшегося времени
+        throw new Error('Rate limit exceeded');
+      }
+      
       // НЕ устанавливаем глобальный isLoading для createInvoice
       // isLoading.value = true;
       // Убеждаемся что используем правильный tg_id
@@ -699,6 +744,10 @@ export const useWalletStore = defineStore("wallet", () => {
         pay_link.value = response.data.result.link;
         working_invoice = response.data.result.uuid;
         await creatingInvoceDb();
+        
+        // Обновляем время последнего создания инвойса
+        lastInvoiceTime.value = Date.now();
+        
         console.log('Pay link set:', pay_link.value);
         console.log('Pay link type:', typeof pay_link.value);
         console.log('Response data:', response.data.result);
@@ -1472,5 +1521,8 @@ export const useWalletStore = defineStore("wallet", () => {
     has2FA,
     isPinRequired,
     initializeStore,
+    lastInvoiceTime,
+    remainingInvoiceTime,
+    startInvoiceTimer,
   };
 });
