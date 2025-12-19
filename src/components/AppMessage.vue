@@ -206,18 +206,23 @@ body.dark-theme .info:hover {
   color: #854d0e;
 }
 body.dark-theme .warning {
-  background-color: #422006;
-  border-color: #b45309;
-  color: #fefce8;
+  background-color: #deec51;
+  border-color: #f9f871;
+  color: #000000;
+  box-shadow: 0 4px 12px rgba(222, 236, 81, 0.5);
 }
 .warning .icon {
   color: #d97706;
+}
+body.dark-theme .warning .icon {
+  color: #000000;
 }
 .warning:hover {
   background-color: #fef08a;
 }
 body.dark-theme .warning:hover {
-  background-color: #713f12;
+  background-color: #f9f871;
+  box-shadow: 0 6px 16px rgba(222, 236, 81, 0.6);
 }
 
 /* Error */
