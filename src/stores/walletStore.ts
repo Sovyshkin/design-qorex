@@ -743,7 +743,7 @@ export const useWalletStore = defineStore("wallet", () => {
       if (response.data.result) {
         pay_link.value = response.data.result.link;
         working_invoice = response.data.result.uuid;
-        await creatingInvoceDb();
+        // await creatingInvoceDb(); // Убираем запрос на creating_invoce_db
         
         // Обновляем время последнего создания инвойса
         lastInvoiceTime.value = Date.now();
@@ -794,7 +794,14 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error creating invoice in DB:', err);
-      // Не показываем ошибку пользователю, так как это внутренняя операция
+      
+      // Пробрасываем ошибку 400 с сообщением "транзакция уже есть"
+      if (err.response?.status === 400 && 
+          err.response?.data?.detail === "транзакция уже есть") {
+        throw err; // Пробрасываем ошибку дальше для обработки в deposit.vue
+      }
+      
+      // Для других ошибок не показываем пользователю, так как это внутренняя операция
       // но логируем для отладки
     }
   };
