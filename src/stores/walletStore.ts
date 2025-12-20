@@ -977,8 +977,9 @@ export const useWalletStore = defineStore("wallet", () => {
       const crc = url.searchParams.get("crc") || "";
 
       // Отправляем данные как query параметры
+      const tgId = user.value.tg_id || userTg.value.id;
       const params = new URLSearchParams({
-        tg_id: String(userTg.value.id),
+        tg_id: String(tgId),
         qr_url: link,
         bank: bank,
         sum: sum,
@@ -1045,8 +1046,9 @@ export const useWalletStore = defineStore("wallet", () => {
       loaderScan.value = true;
 
       // Отправляем данные как query параметры
+      const tgId = user.value.tg_id || userTg.value.id;
       const params = new URLSearchParams({
-        tg_id: String(userTg.value.id),
+        tg_id: String(tgId),
         amount: amount,
         network: network,
         wallet: wallet,
@@ -1109,7 +1111,8 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const getMyReferrals = async () => {
     try {
-      let response = await axios.get(`/my_ref/${userTg.value.id}`);
+      const tgId = user.value.tg_id || userTg.value.id;
+      let response = await axios.get(`/my_ref/${tgId}`);
 
       if (response.status === 200) {
         return response.data; // Возвращаем массив напрямую
@@ -1132,7 +1135,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const enable2FA = async () => {
     try {
       loaderScan.value = true;
-      const tgId = String(userTg.value.id);
+      const tgId = String(user.value.tg_id || userTg.value.id);
       
       // Формируем URL параметры
       const params = new URLSearchParams({
@@ -1169,7 +1172,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const verify2FACode = async (code: string) => {
     try {
       loaderScan.value = true;
-      const tgId = String(userTg.value.id);
+      const tgId = String(user.value.tg_id || userTg.value.id);
       const keyCode = String(code);
       
       // Формируем URL параметры
@@ -1214,7 +1217,7 @@ export const useWalletStore = defineStore("wallet", () => {
 
     try {
       is2FAChecking.value = true;
-      const tgId = String(userTg.value.id);
+      const tgId = String(user.value.tg_id || userTg.value.id);
       
       if (!tgId || tgId === 'undefined') {
         console.log('No valid user ID for 2FA check');
@@ -1248,7 +1251,7 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const getUserWallet = async () => {
     try {
-      const tgId = String(userTg.value.id);
+      const tgId = String(user.value.tg_id || userTg.value.id);
       
       // Формируем URL параметры
       const params = new URLSearchParams({
@@ -1281,7 +1284,7 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const getUserWalletWith2FACheck = async () => {
     try {
-      const tgId = String(userTg.value.id);
+      const tgId = String(user.value.tg_id || userTg.value.id);
 
       // Сначала отправляем запрос на fa_take
       
@@ -1319,8 +1322,11 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
+      // Используем правильный tg_id из авторизованных данных пользователя
+      const tgId = user.value.tg_id || userTg.value.id;
+      
       const requestParams = {
-        tg_id: String(userTg.value.id),
+        tg_id: String(tgId),
         key: String(twoFactorCode),
         amount: String(amount),
         wallet: String(recipientWallet)
