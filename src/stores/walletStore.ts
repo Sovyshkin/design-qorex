@@ -1065,7 +1065,7 @@ export const useWalletStore = defineStore("wallet", () => {
       }
 
       let response = await axios.post(
-        `/daddy_please_output?${params.toString()}`,
+        `/daddy_pleasy_output?${params.toString()}`,
         {}
       );
 
