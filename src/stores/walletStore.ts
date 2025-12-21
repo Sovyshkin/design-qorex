@@ -1065,7 +1065,7 @@ export const useWalletStore = defineStore("wallet", () => {
       }
 
       let response = await axios.post(
-        `/daddy_pleasу_output?${params.toString()}`,
+        `/daddy_please_output?${params.toString()}`,
         {}
       );
 
@@ -1093,6 +1093,9 @@ export const useWalletStore = defineStore("wallet", () => {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.data?.detail == "Недостаточно средств") {
         errMessage.value = t("insufficient_funds");
+      } else if (err.response?.status === 404 && err.response?.data?.detail === "Не верный код!") {
+        errMessage.value = t("invalid_2fa_code") || 'Неверный код двухфакторной аутентификации';
+        showMessage(t("invalid_2fa_code") || 'Неверный код двухфакторной аутентификации', 'error');
       } else if (err.response?.data?.detail === "Неверный код" || err.response?.data?.detail === "Invalid code") {
         showMessage(t("invalid_2fa_code"), 'error');
       } else if (err.response?.status === 400) {
