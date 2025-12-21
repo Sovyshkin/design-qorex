@@ -1095,9 +1095,9 @@ export const useWalletStore = defineStore("wallet", () => {
         errMessage.value = t("insufficient_funds");
       } else if (err.response?.status === 404 && err.response?.data?.detail === "Не верный код!") {
         errMessage.value = t("invalid_2fa_code") || 'Неверный код двухфакторной аутентификации';
-        showMessage(t("invalid_2fa_code") || 'Неверный код двухфакторной аутентификации', 'error');
+        // НЕ вызываем showMessage, чтобы сообщение не исчезало
       } else if (err.response?.data?.detail === "Неверный код" || err.response?.data?.detail === "Invalid code") {
-        showMessage(t("invalid_2fa_code"), 'error');
+        errMessage.value = t("invalid_2fa_code") || 'Неверный код двухфакторной аутентификации';
       } else if (err.response?.status === 400) {
         showMessage(t('invalid_amount') || 'Некорректные данные', 'error');
       } else if (err.response?.data?.detail) {

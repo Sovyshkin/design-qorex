@@ -29,7 +29,7 @@ const { t } = useI18n();
     <div class="container">
         <img src="@/assets/error.svg" alt="">
         <h2>{{ t('failed_payment') }}</h2>
-        <p>{{walletStore.transactionErrorMessage}}</p>
+        <p>{{ walletStore.transactionErrorMessage || walletStore.errMessage }}</p>
     </div>
     </div>
 </template>
