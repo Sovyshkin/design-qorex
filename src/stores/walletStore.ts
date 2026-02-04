@@ -603,7 +603,7 @@ export const useWalletStore = defineStore("wallet", () => {
         return;
       }
       
-      let response = await axios.get(`/user_test/${userTg.value.id}`);
+      let response = await axios.get(`/user/${userTg.value.id}`);
 
       console.log('Received user data from server:', response.data);
       user.value = response.data;
