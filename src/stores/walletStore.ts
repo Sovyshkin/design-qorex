@@ -608,10 +608,7 @@ export const useWalletStore = defineStore("wallet", () => {
       // Получаем telegram_data для защиты запроса
       const telegramData = window.Telegram?.WebApp?.initData || '';
       
-      let response = await axios.post(`/get_user_by_tgid_test`, {
-        tg_id: userTg.value.id,
-        telegram_data: telegramData
-      });
+      let response = await axios.get(`/get_user_by_tgid_test?tg_id=${userTg.value.id}&telegram_data=${encodeURIComponent(telegramData)}`);
 
       console.log('Received user data from server:', response.data);
       user.value = response.data;
