@@ -267,7 +267,7 @@ onMounted(async () => {
       <!-- Информация о комиссиях -->
       <div class="fees-info">
         <div class="fees-header">
-          <img src="../assets/info.svg" alt="info" class="info-icon" />
+          <img src="/assets/info.svg" alt="info" class="info-icon" />
           <h4>Информация о комиссиях</h4>
         </div>
         <div class="fees-content">
