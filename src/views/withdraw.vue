@@ -263,6 +263,25 @@ onMounted(async () => {
           pattern="[0-9]*"
         />
       </div>
+
+      <!-- Информация о комиссиях -->
+      <div class="fees-info">
+        <div class="fees-header">
+          <img src="../assets/info.svg" alt="info" class="info-icon" />
+          <h4>Информация о комиссиях</h4>
+        </div>
+        <div class="fees-content">
+          <div class="fee-item">
+            <span class="fee-label">Комиссия сервиса:</span>
+            <span class="fee-value">1%</span>
+          </div>
+          <div class="fee-item">
+            <span class="fee-label">Сетевая комиссия:</span>
+            <span class="fee-value">Зависит от сети</span>
+          </div>
+        </div>
+        <p class="fees-note">Сетевая комиссия списывается блокчейном автоматически</p>
+      </div>
     </div>
     
     <button 
@@ -696,6 +715,102 @@ select:disabled {
   color: #a5a5a5 !important;
 }
 
+/* Стили для блока информации о комиссиях */
+.fees-info {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 8px;
+  box-shadow: 
+    0 8px 24px rgba(245, 158, 11, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.fees-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+  border-radius: 20px 20px 0 0;
+}
+
+.fees-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.info-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) saturate(100%) invert(44%) sepia(82%) saturate(2106%) hue-rotate(18deg) brightness(94%) contrast(98%);
+}
+
+.fees-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0;
+}
+
+.fees-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fee-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+}
+
+.fee-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #92400e;
+}
+
+.fee-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  padding: 4px 12px;
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.fees-note {
+  font-size: 12px;
+  color: #a16207;
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Анимации для модального окна */
 .modal-enter-active,
 .modal-leave-active {
@@ -705,5 +820,132 @@ select:disabled {
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+  h1 {
+    color: #ffffff;
+  }
+
+  .container {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  }
+
+  .form-container {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(45, 45, 45, 0.9) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  .network-selector h3 {
+    color: #ffffff;
+  }
+
+  .network-item {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+
+  .network-item:hover {
+    background: linear-gradient(135deg, rgba(55, 55, 55, 0.95) 0%, rgba(65, 65, 65, 0.9) 100%);
+    border-color: #deec51;
+  }
+
+  .network-item.active {
+    background: linear-gradient(135deg, rgba(60, 50, 20, 0.9) 0%, rgba(70, 60, 30, 0.85) 100%);
+    border: 2px solid #deec51;
+  }
+
+  .network-name {
+    color: #ffffff;
+  }
+
+  input,
+  textarea,
+  select {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    background: rgba(55, 55, 55, 0.95);
+    border-color: #deec51;
+  }
+
+  input::placeholder,
+  textarea::placeholder,
+  select::placeholder {
+    color: #888888;
+  }
+
+  .balance-info {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+
+  .balance-value {
+    color: #ffffff;
+  }
+
+  .code-input-section h4 {
+    color: #ffffff;
+  }
+
+  .code-input {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+
+  .code-input:focus {
+    background: rgba(55, 55, 55, 0.95) !important;
+    border-color: #deec51 !important;
+  }
+
+  .code-input::placeholder {
+    color: #888888 !important;
+  }
+
+  .memo-note {
+    color: #ff8a8a;
+  }
+
+  /* Стили для блока комиссий в темной теме */
+  .fees-info {
+    background: linear-gradient(135deg, rgba(60, 45, 20, 0.9) 0%, rgba(70, 55, 30, 0.85) 100%);
+    border: 2px solid rgba(245, 158, 11, 0.6);
+  }
+
+  .fees-info::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+  }
+
+  .info-icon {
+    filter: brightness(0) saturate(100%) invert(68%) sepia(82%) saturate(1106%) hue-rotate(18deg) brightness(104%) contrast(98%);
+  }
+
+  .fees-header h4 {
+    color: #fbbf24;
+  }
+
+  .fee-label {
+    color: #fde68a;
+  }
+
+  .fee-value {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+  }
+
+  .fees-note {
+    color: #fde68a;
+  }
 }
 </style>
