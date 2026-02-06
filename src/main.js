@@ -10,7 +10,6 @@ import './assets/theme.css'; // Подключаем стили темы
 import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
 axios.defaults.baseURL = "https://back.gardawallet.com";
-// axios.defaults.baseURL = "http://45.12.238.27:3030/";
 
 // Функция для получения Telegram initData
 const getTelegramInitData = () => {
