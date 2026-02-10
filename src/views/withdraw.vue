@@ -127,23 +127,30 @@ const checkTwoFactorAccess = async () => {
 
 const preventNegativeAmount = (event) => {
   let value = event.target.value;
+  
+  // Если значение пустое, не обрабатываем
+  if (!value) return;
+  
   const numValue = parseFloat(value);
   
+  // Проверяем на отрицательные значения
   if (numValue < 0) {
     amount.value = '';
     return;
   }
   
+  // Проверяем превышение баланса
   if (numValue > walletStore.balance) {
-    amount.value = walletStore.balance.toFixed(2);
+    amount.value = walletStore.balance.toString();
     return;
   }
   
-  // Ограничиваем до 2 знаков после запятой
+  // Ограничиваем до 2 знаков после запятой только если пользователь ввел больше
   if (value.includes('.')) {
     const parts = value.split('.');
     if (parts[1] && parts[1].length > 2) {
-      amount.value = parseFloat(value).toFixed(2);
+      // Обрезаем только лишние символы, не форматируем
+      amount.value = parts[0] + '.' + parts[1].substring(0, 2);
     }
   }
 };
@@ -190,18 +197,13 @@ onMounted(async () => {
         <div class="group">
           <input 
             type="number" 
-            :placeholder="t('select_amount')" 
+            placeholder="min 5 USDT" 
             id="amount" 
             v-model="amount" 
             :disabled="isWithdrawing"
             @input="preventNegativeAmount"
           />
           <span class="group-item">USDT</span>
-        </div>
-        
-        <!-- Сообщение о минимальной сумме -->
-        <div class="min-amount-info">
-          <span class="min-amount-text">Минимальная сумма вывода: 5 USDT</span>
         </div>
         
         <!-- Отображение доступного баланса -->
@@ -620,25 +622,6 @@ select::placeholder {
   left: 6px;
 }
 
-/* Стили для сообщения о минимальной сумме */
-.min-amount-info {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
-  border: 1px solid #0288d1;
-  border-radius: 12px;
-  margin: -8px 0 8px 0;
-}
-
-.min-amount-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: #0277bd;
-  text-align: center;
-  flex: 1;
-}
-
 /* Стили для заблокированных элементов */
 input:disabled,
 textarea:disabled,
@@ -938,16 +921,6 @@ select:disabled {
 
   .memo-note {
     color: #ff8a8a;
-  }
-
-  /* Стили для сообщения о минимальной сумме в темной теме */
-  .min-amount-info {
-    background: linear-gradient(135deg, rgba(30, 58, 80, 0.9) 0%, rgba(40, 70, 95, 0.85) 100%);
-    border: 1px solid rgba(2, 136, 209, 0.6);
-  }
-
-  .min-amount-text {
-    color: #81d4fa;
   }
 
   /* Стили для блока комиссий в темной теме */
