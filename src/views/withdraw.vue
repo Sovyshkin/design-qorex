@@ -126,11 +126,24 @@ const checkTwoFactorAccess = async () => {
 };
 
 const preventNegativeAmount = (event) => {
-  // Просто не даем вводить отрицательные значения через клавиатуру
-  if (event.target.value.startsWith('-')) {
-    event.target.value = event.target.value.replace('-', '');
-    amount.value = event.target.value;
+  let value = event.target.value;
+  
+  // Не даем вводить отрицательные значения
+  if (value.startsWith('-')) {
+    value = value.replace('-', '');
   }
+  
+  // Ограничиваем до 2 знаков после точки
+  if (value.includes('.')) {
+    const parts = value.split('.');
+    if (parts[1] && parts[1].length > 2) {
+      value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+  }
+  
+  // Обновляем значение в поле и в модели
+  event.target.value = value;
+  amount.value = value;
 };
 
 const closeSuccessModal = () => {
