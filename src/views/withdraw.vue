@@ -136,14 +136,13 @@ const preventNegativeAmount = (event) => {
   // Ограничиваем до 2 знаков после точки
   if (value.includes('.')) {
     const parts = value.split('.');
-    if (parts[1] && parts[1].length > 2) {
+    // Проверяем что есть дробная часть и она больше 2 символов
+    if (parts.length === 2 && parts[1].length > 2) {
       value = parts[0] + '.' + parts[1].substring(0, 2);
+      event.target.value = value;
+      amount.value = value;
     }
   }
-  
-  // Обновляем значение в поле и в модели
-  event.target.value = value;
-  amount.value = value;
 };
 
 const closeSuccessModal = () => {
