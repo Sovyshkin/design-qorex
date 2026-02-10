@@ -126,32 +126,10 @@ const checkTwoFactorAccess = async () => {
 };
 
 const preventNegativeAmount = (event) => {
-  let value = event.target.value;
-  
-  // Если значение пустое, не обрабатываем
-  if (!value) return;
-  
-  const numValue = parseFloat(value);
-  
-  // Проверяем на отрицательные значения
-  if (numValue < 0) {
-    amount.value = '';
-    return;
-  }
-  
-  // Проверяем превышение баланса
-  if (numValue > walletStore.balance) {
-    amount.value = walletStore.balance.toString();
-    return;
-  }
-  
-  // Ограничиваем до 2 знаков после запятой только если пользователь ввел больше
-  if (value.includes('.')) {
-    const parts = value.split('.');
-    if (parts[1] && parts[1].length > 2) {
-      // Обрезаем только лишние символы, не форматируем
-      amount.value = parts[0] + '.' + parts[1].substring(0, 2);
-    }
+  // Просто не даем вводить отрицательные значения через клавиатуру
+  if (event.target.value.startsWith('-')) {
+    event.target.value = event.target.value.replace('-', '');
+    amount.value = event.target.value;
   }
 };
 
@@ -197,7 +175,7 @@ onMounted(async () => {
         <div class="group">
           <input 
             type="number" 
-            placeholder="min 5 USDT" 
+            placeholder="min 5" 
             id="amount" 
             v-model="amount" 
             :disabled="isWithdrawing"
