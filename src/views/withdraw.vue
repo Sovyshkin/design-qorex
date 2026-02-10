@@ -38,7 +38,7 @@ const isFormValid = computed(() => {
   return amount.value &&
          walletAddress.value &&
          selectedNetwork.value &&
-         amountNum > 0 &&
+         amountNum >= 5 &&
          amountNum <= walletStore.balance &&
          code.length === 6 &&
          !isWithdrawing.value;
@@ -197,6 +197,11 @@ onMounted(async () => {
             @input="preventNegativeAmount"
           />
           <span class="group-item">USDT</span>
+        </div>
+        
+        <!-- Сообщение о минимальной сумме -->
+        <div class="min-amount-info">
+          <span class="min-amount-text">Минимальная сумма вывода: 5 USDT</span>
         </div>
         
         <!-- Отображение доступного баланса -->
@@ -615,6 +620,25 @@ select::placeholder {
   left: 6px;
 }
 
+/* Стили для сообщения о минимальной сумме */
+.min-amount-info {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+  border: 1px solid #0288d1;
+  border-radius: 12px;
+  margin: -8px 0 8px 0;
+}
+
+.min-amount-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0277bd;
+  text-align: center;
+  flex: 1;
+}
+
 /* Стили для заблокированных элементов */
 input:disabled,
 textarea:disabled,
@@ -914,6 +938,16 @@ select:disabled {
 
   .memo-note {
     color: #ff8a8a;
+  }
+
+  /* Стили для сообщения о минимальной сумме в темной теме */
+  .min-amount-info {
+    background: linear-gradient(135deg, rgba(30, 58, 80, 0.9) 0%, rgba(40, 70, 95, 0.85) 100%);
+    border: 1px solid rgba(2, 136, 209, 0.6);
+  }
+
+  .min-amount-text {
+    color: #81d4fa;
   }
 
   /* Стили для блока комиссий в темной теме */
