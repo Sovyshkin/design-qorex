@@ -321,7 +321,7 @@ onMounted(async () => {
 }
 
 h1 {
-  color: #141414;
+  color: var(--text-primary);
 }
 
 .container {
@@ -330,7 +330,7 @@ h1 {
   gap: 32px;
   padding: 0 0 120px 0;
   overflow-y: auto;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--bg-primary);
   min-height: calc(100vh - 80px);
 }
 
@@ -339,14 +339,11 @@ h1 {
   flex-direction: column;
   gap: 24px;
   padding: 32px 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-  border: 2px solid transparent;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-primary);
   background-clip: padding-box;
   border-radius: 0;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -433,37 +430,34 @@ input,
 textarea,
 select {
   width: 100%;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-primary);
   border-radius: 16px;
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--bg-secondary);
   outline: none;
   font-size: 16px;
   font-weight: 500;
-  color: #1e293b;
-  caret-color: #000000;
+  color: var(--text-primary);
+  caret-color: var(--text-primary);
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-sm);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #deec51;
-  background: #ffffff;
+  border-color: var(--border-focus);
+  background: var(--bg-secondary);
   box-shadow: 
-    0 0 0 4px rgba(222, 236, 81, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 0 0 4px var(--bg-accent-light),
+    var(--shadow-md);
   transform: translateY(-2px);
 }
 
 input::placeholder,
 textarea::placeholder,
 select::placeholder {
-  color: #a5a5a5;
+  color: var(--text-secondary);
   font-weight: 400;
   font-size: 14px;
   line-height: 19.12px;
@@ -502,7 +496,7 @@ select::placeholder {
   margin-bottom: 20px;
   font-size: 18px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   text-align: center;
 }
 
@@ -517,16 +511,15 @@ select::placeholder {
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-primary);
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
 }
 
 .network-item::before {
@@ -584,7 +577,7 @@ select::placeholder {
 .network-name {
   font-size: 14px;
   font-weight: 400;
-  color: #141414;
+  color: var(--text-primary);
 }
 
 .network-check {
@@ -639,12 +632,13 @@ select:disabled {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  border: 1px solid #cbd5e1;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   border-radius: 16px;
   font-size: 15px;
   position: relative;
   overflow: hidden;
+  color: var(--text-primary);
 }
 
 .balance-info::before {
@@ -659,7 +653,7 @@ select:disabled {
 
 .balance-value {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   font-size: 16px;
 }
 
@@ -672,44 +666,41 @@ select:disabled {
 .code-input-section h4 {
   font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0;
   text-align: center;
 }
 
 .code-input {
   width: 100%;
-  border: 2px solid #e2e8f0 !important;
+  border: 2px solid var(--border-primary) !important;
   border-radius: 16px !important;
   padding: 20px !important;
   font-size: 16px !important;
   text-align: center;
   letter-spacing: 4px;
   font-weight: 500;
-  color: #1e293b;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+  color: var(--text-primary) !important;
+  background: var(--bg-secondary) !important;
   outline: none;
-  caret-color: #deec51 !important;
+  caret-color: var(--border-focus) !important;
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .code-input:focus {
-  border-color: #deec51 !important;
-  background: #ffffff !important;
+  border-color: var(--border-focus) !important;
+  background: var(--bg-secondary) !important;
   box-shadow: 
-    0 0 0 4px rgba(222, 236, 81, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    0 0 0 4px var(--bg-accent-light),
+    var(--shadow-md) !important;
   transform: translateY(-2px) !important;
 }
 
 .code-input::placeholder {
   letter-spacing: normal !important;
   font-size: 14px !important;
-  color: #a5a5a5 !important;
+  color: var(--text-secondary) !important;
 }
 
 /* Стили для блока информации о комиссиях */
@@ -817,132 +808,5 @@ select:disabled {
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-}
-
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-  h1 {
-    color: #ffffff;
-  }
-
-  .container {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  }
-
-  .form-container {
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(45, 45, 45, 0.9) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-  }
-
-  .network-selector h3 {
-    color: #ffffff;
-  }
-
-  .network-item {
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-  }
-
-  .network-item:hover {
-    background: linear-gradient(135deg, rgba(55, 55, 55, 0.95) 0%, rgba(65, 65, 65, 0.9) 100%);
-    border-color: #deec51;
-  }
-
-  .network-item.active {
-    background: linear-gradient(135deg, rgba(60, 50, 20, 0.9) 0%, rgba(70, 60, 30, 0.85) 100%);
-    border: 2px solid #deec51;
-  }
-
-  .network-name {
-    color: #ffffff;
-  }
-
-  input,
-  textarea,
-  select {
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-  }
-
-  input:focus,
-  textarea:focus,
-  select:focus {
-    background: rgba(55, 55, 55, 0.95);
-    border-color: #deec51;
-  }
-
-  input::placeholder,
-  textarea::placeholder,
-  select::placeholder {
-    color: #888888;
-  }
-
-  .balance-info {
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-  }
-
-  .balance-value {
-    color: #ffffff;
-  }
-
-  .code-input-section h4 {
-    color: #ffffff;
-  }
-
-  .code-input {
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.85) 100%) !important;
-    border: 2px solid rgba(255, 255, 255, 0.2) !important;
-    color: #ffffff !important;
-  }
-
-  .code-input:focus {
-    background: rgba(55, 55, 55, 0.95) !important;
-    border-color: #deec51 !important;
-  }
-
-  .code-input::placeholder {
-    color: #888888 !important;
-  }
-
-  .memo-note {
-    color: #ff8a8a;
-  }
-
-  /* Стили для блока комиссий в темной теме */
-  .fees-info {
-    background: linear-gradient(135deg, rgba(60, 45, 20, 0.9) 0%, rgba(70, 55, 30, 0.85) 100%);
-    border: 2px solid rgba(245, 158, 11, 0.6);
-  }
-
-  .fees-info::before {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
-  }
-
-  .info-icon {
-    filter: brightness(0) saturate(100%) invert(68%) sepia(82%) saturate(1106%) hue-rotate(18deg) brightness(104%) contrast(98%);
-  }
-
-  .fees-header h4 {
-    color: #fbbf24;
-  }
-
-  .fee-label {
-    color: #fde68a;
-  }
-
-  .fee-value {
-    color: #fbbf24;
-    background: rgba(245, 158, 11, 0.3);
-    border: 1px solid rgba(245, 158, 11, 0.5);
-  }
-
-  .fees-note {
-    color: #fde68a;
-  }
 }
 </style>
