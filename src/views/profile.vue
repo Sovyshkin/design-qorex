@@ -171,6 +171,11 @@ onMounted(async () => {
         </div>
       </div>
     </transition>
+    <transition name="donate-appear" appear>
+      <button class="btn donate-btn profile-item" @click="goRoute('donate')">
+        <span>Поддержать проект</span>
+      </button>
+    </transition>
     <transition name="about-title-appear" appear>
       <h2 class="profile-value">{{ t("aboutUs") }}</h2>
     </transition>
@@ -337,6 +342,68 @@ onMounted(async () => {
   color: #141414;
 }
 
+/* Кнопка "Поддержать проект" */
+.donate-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 
+    0 12px 32px rgba(222, 236, 81, 0.3),
+    0 6px 16px rgba(222, 236, 81, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.donate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.donate-btn:hover::before {
+  left: 100%;
+}
+
+.donate-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(222, 236, 81, 0.4),
+    0 10px 20px rgba(222, 236, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.donate-btn:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.donate-icon {
+  font-size: 20px;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  10%, 30% { transform: scale(1.15); }
+  20%, 40% { transform: scale(1); }
+}
+
 /* Анимации появления профиля */
 .user-appear-enter-active {
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -372,6 +439,15 @@ onMounted(async () => {
 .params-appear-enter-from {
   opacity: 0;
   transform: translateX(-30px);
+}
+
+.donate-appear-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.75s;
+}
+.donate-appear-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(20px);
 }
 
 .about-title-appear-enter-active {

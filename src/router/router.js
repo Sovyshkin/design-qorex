@@ -109,6 +109,11 @@ const router = createRouter({
       component: () => import("../views/payment.vue"),
       name: "payment",
     },
+    {
+      path: "/donate",
+      component: () => import("../views/donate.vue"),
+      name: "donate",
+    },
   ],
 });
 
