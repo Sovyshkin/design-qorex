@@ -2324,55 +2324,51 @@ color: white;
 <!-- Глобальные стили для темной темы (без scoped) -->
 <style>
 /* Темная тема для модальных окон сканера - максимальная специфичность */
+/* НЕ включаем paste-link-modal - оно всегда светлое */
 body.dark-theme .app-scanner-container .qr-scanner-fullscreen .amount-modal,
 body.dark-theme .app-scanner-container .qr-scanner-fullscreen .payment-modal,
-body.dark-theme .app-scanner-container .qr-scanner-fullscreen .paste-link-modal,
 body.dark-theme .qr-scanner-fullscreen .amount-modal,
 body.dark-theme .qr-scanner-fullscreen .payment-modal,
-body.dark-theme .qr-scanner-fullscreen .paste-link-modal,
 body.dark-theme .amount-modal,
-body.dark-theme .payment-modal,
-body.dark-theme .paste-link-modal {
+body.dark-theme .payment-modal {
   background: rgba(42, 42, 42, 0.98) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 body.dark-theme .app-scanner-container .qr-scanner-fullscreen .amount-modal::before,
 body.dark-theme .app-scanner-container .qr-scanner-fullscreen .payment-modal::before,
-body.dark-theme .app-scanner-container .qr-scanner-fullscreen .paste-link-modal::before,
 body.dark-theme .qr-scanner-fullscreen .amount-modal::before,
 body.dark-theme .qr-scanner-fullscreen .payment-modal::before,
-body.dark-theme .qr-scanner-fullscreen .paste-link-modal::before,
 body.dark-theme .amount-modal::before,
-body.dark-theme .payment-modal::before,
-body.dark-theme .paste-link-modal::before {
+body.dark-theme .payment-modal::before {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
 }
 
-body.dark-theme .modal-header h3,
+/* Заголовки модальных окон - только для amount-modal и payment-modal */
+body.dark-theme .amount-modal .modal-header h3,
+body.dark-theme .payment-modal .payment-header h3,
 body.dark-theme .payment-header h3 {
   color: #f5f5f5 !important;
 }
 
-body.dark-theme .modal-header p,
+body.dark-theme .amount-modal .modal-header p,
+body.dark-theme .payment-modal .payment-header p,
 body.dark-theme .payment-header p {
   color: #b0b0b0 !important;
 }
 
-body.dark-theme .amount-input,
-body.dark-theme .paste-link-input {
+/* Инпуты - только для amount-input, НЕ для paste-link-input */
+body.dark-theme .amount-input {
   background: rgba(58, 58, 58, 0.8) !important;
   border: 2px solid rgba(255, 255, 255, 0.1) !important;
   color: #f5f5f5 !important;
 }
 
-body.dark-theme .amount-input::placeholder,
-body.dark-theme .paste-link-input::placeholder {
+body.dark-theme .amount-input::placeholder {
   color: #666666 !important;
 }
 
-body.dark-theme .amount-input:focus,
-body.dark-theme .paste-link-input:focus {
+body.dark-theme .amount-input:focus {
   border-color: #deec51 !important;
   background: rgba(68, 68, 68, 0.95) !important;
   box-shadow: 
@@ -2380,8 +2376,7 @@ body.dark-theme .paste-link-input:focus {
     0 8px 25px -5px rgba(0, 0, 0, 0.3) !important;
 }
 
-body.dark-theme .amount-input.error,
-body.dark-theme .paste-link-input.error {
+body.dark-theme .amount-input.error {
   border-color: #ef4444 !important;
   background: rgba(80, 30, 30, 0.95) !important;
 }
@@ -2390,19 +2385,24 @@ body.dark-theme .currency-label {
   color: #b0b0b0 !important;
 }
 
-body.dark-theme .amount-error,
-body.dark-theme .paste-link-error {
+/* Ошибки - только amount-error, НЕ paste-link-error */
+body.dark-theme .amount-error {
   color: #f87171 !important;
 }
 
-body.dark-theme .cancel-btn,
+/* Кнопки в модальных окнах amount и payment */
+body.dark-theme .amount-modal .cancel-btn,
+body.dark-theme .payment-modal .cancel-btn,
+body.dark-theme .payment-modal .payment-cancel-btn,
 body.dark-theme .payment-cancel-btn {
   background: rgba(58, 58, 58, 0.8) !important;
   color: #b0b0b0 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-body.dark-theme .cancel-btn:hover,
+body.dark-theme .amount-modal .cancel-btn:hover,
+body.dark-theme .payment-modal .cancel-btn:hover,
+body.dark-theme .payment-modal .payment-cancel-btn:hover:not(:disabled),
 body.dark-theme .payment-cancel-btn:hover:not(:disabled) {
   background: rgba(68, 68, 68, 0.9) !important;
   color: #f5f5f5 !important;
