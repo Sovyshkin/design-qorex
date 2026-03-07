@@ -2178,7 +2178,7 @@ color: white;
 }
 
 .paste-link-modal {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(42, 42, 42, 0.98);
   border-radius: 24px;
   padding: 32px 28px;
   width: 90%;
@@ -2189,7 +2189,7 @@ color: white;
     0 20px 25px -5px rgba(0, 0, 0, 0.15),
     0 10px 10px -5px rgba(0, 0, 0, 0.08),
     0 0 0 1px rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   backdrop-filter: blur(20px);
   position: relative;
@@ -2203,7 +2203,7 @@ color: white;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   pointer-events: none;
 }
 
@@ -2215,13 +2215,13 @@ color: white;
 
 .paste-link-input {
   width: 100%;
-  background: rgba(248, 250, 252, 0.8);
-  border: 2px solid rgba(226, 232, 240, 0.8);
+  background: rgba(58, 58, 58, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 16px 20px;
   font-size: 15px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: #f5f5f5;
   transition: all 0.3s ease;
   outline: none;
   backdrop-filter: blur(10px);
@@ -2233,27 +2233,27 @@ color: white;
 }
 
 .paste-link-input::placeholder {
-  color: #94a3b8;
+  color: #666666;
   font-weight: 400;
 }
 
 .paste-link-input:focus {
-  border-color: #3b82f6;
-  background: rgba(255, 255, 255, 0.95);
+  border-color: #deec51;
+  background: rgba(68, 68, 68, 0.95);
   transform: scale(1.01);
   box-shadow: 
-    0 0 0 4px rgba(59, 130, 246, 0.1),
-    0 8px 25px -5px rgba(0, 0, 0, 0.1);
+    0 0 0 4px rgba(222, 236, 81, 0.2),
+    0 8px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .paste-link-input.error {
   border-color: #ef4444;
-  background: rgba(254, 242, 242, 0.95);
+  background: rgba(80, 30, 30, 0.95);
   animation: inputError 0.3s ease;
 }
 
 .paste-link-error {
-  color: #ef4444;
+  color: #f87171;
   font-size: 14px;
   font-weight: 500;
   text-align: center;
@@ -2434,71 +2434,24 @@ body.dark-theme .info-value {
   color: #f5f5f5 !important;
 }
 
-/* Принудительно светлая тема для окна вставки ссылки */
-body.dark-theme .paste-link-modal {
-  background: rgba(255, 255, 255, 0.98) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+/* Статично темное окно вставки ссылки - переопределяем заголовки */
+.paste-link-modal .modal-header h3 {
+  color: #f5f5f5 !important;
 }
 
-body.dark-theme .paste-link-modal::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+.paste-link-modal .modal-header p {
+  color: #b0b0b0 !important;
 }
 
-body.dark-theme .paste-link-modal .modal-header h3 {
-  color: #1a1a1a !important;
+.paste-link-modal .cancel-btn {
+  background: rgba(58, 58, 58, 0.8) !important;
+  color: #b0b0b0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-body.dark-theme .paste-link-modal .modal-header p {
-  color: #666 !important;
-}
-
-body.dark-theme .paste-link-input {
-  background: rgba(248, 250, 252, 0.8) !important;
-  border: 2px solid rgba(226, 232, 240, 0.8) !important;
-  color: #1a1a1a !important;
-}
-
-body.dark-theme .paste-link-input::placeholder {
-  color: #94a3b8 !important;
-}
-
-body.dark-theme .paste-link-input:focus {
-  border-color: #3b82f6 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 
-    0 0 0 4px rgba(59, 130, 246, 0.1),
-    0 8px 25px -5px rgba(0, 0, 0, 0.1) !important;
-}
-
-body.dark-theme .paste-link-input.error {
-  border-color: #ef4444 !important;
-  background: rgba(254, 242, 242, 0.95) !important;
-}
-
-body.dark-theme .paste-link-error {
-  color: #ef4444 !important;
-}
-
-body.dark-theme .paste-link-modal .cancel-btn {
-  background: rgba(241, 245, 249, 0.8) !important;
-  color: #64748b !important;
-  border: 1px solid transparent !important;
-}
-
-body.dark-theme .paste-link-modal .cancel-btn:hover {
-  background: rgba(226, 232, 240, 0.9) !important;
-  color: #475569 !important;
-}
-
-body.dark-theme .paste-link-modal .confirm-btn {
-  background: #deec51 !important;
-  color: #141414 !important;
-  border: 1px solid transparent !important;
-}
-
-body.dark-theme .paste-link-modal .confirm-btn:hover:not(:disabled) {
-  background: #d6e34a !important;
-  color: #141414 !important;
+.paste-link-modal .cancel-btn:hover {
+  background: rgba(68, 68, 68, 0.9) !important;
+  color: #f5f5f5 !important;
 }
 </style>
 
