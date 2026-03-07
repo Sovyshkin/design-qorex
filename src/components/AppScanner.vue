@@ -2323,7 +2323,13 @@ color: white;
 
 <!-- Глобальные стили для темной темы (без scoped) -->
 <style>
-/* Темная тема для модальных окон сканера */
+/* Темная тема для модальных окон сканера - максимальная специфичность */
+body.dark-theme .app-scanner-container .qr-scanner-fullscreen .amount-modal,
+body.dark-theme .app-scanner-container .qr-scanner-fullscreen .payment-modal,
+body.dark-theme .app-scanner-container .qr-scanner-fullscreen .paste-link-modal,
+body.dark-theme .qr-scanner-fullscreen .amount-modal,
+body.dark-theme .qr-scanner-fullscreen .payment-modal,
+body.dark-theme .qr-scanner-fullscreen .paste-link-modal,
 body.dark-theme .amount-modal,
 body.dark-theme .payment-modal,
 body.dark-theme .paste-link-modal {
@@ -2331,6 +2337,12 @@ body.dark-theme .paste-link-modal {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
+body.dark-theme .app-scanner-container .qr-scanner-fullscreen .amount-modal::before,
+body.dark-theme .app-scanner-container .qr-scanner-fullscreen .payment-modal::before,
+body.dark-theme .app-scanner-container .qr-scanner-fullscreen .paste-link-modal::before,
+body.dark-theme .qr-scanner-fullscreen .amount-modal::before,
+body.dark-theme .qr-scanner-fullscreen .payment-modal::before,
+body.dark-theme .qr-scanner-fullscreen .paste-link-modal::before,
 body.dark-theme .amount-modal::before,
 body.dark-theme .payment-modal::before,
 body.dark-theme .paste-link-modal::before {
