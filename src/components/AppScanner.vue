@@ -45,11 +45,22 @@
 
       <!-- Контролы -->
       <div class="controls">
-        <!-- Кнопка выбора файла -->
-        <label class="control-btn file-btn">
-          <input type="file" accept="image/*" @change="handleFileUpload" hidden />
-          <img src="../assets/picture.png" alt="">
-        </label>
+        <div class="controls-left">
+          <!-- Кнопка выбора файла -->
+          <label class="control-btn file-btn">
+            <input type="file" accept="image/*" @change="handleFileUpload" hidden />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 16L8.586 11.414C9.367 10.633 10.633 10.633 11.414 11.414L16 16M14 14L15.586 12.414C16.367 11.633 17.633 11.633 18.414 12.414L20 14M14 8H14.01M6 20H18C19.105 20 20 19.105 20 18V6C20 4.895 19.105 4 18 4H6C4.895 4 4 4.895 4 6V18C4 19.105 4.895 20 6 20Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </label>
+
+          <!-- Кнопка вставки ссылки -->
+          <button class="control-btn paste-btn" @click="openPasteLinkModal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
 
         <!-- Основная кнопка сканирования -->
         <button class="scan-button" @click="captureAndScanManual" :disabled="!cameraReady || isManualScanning">
@@ -58,7 +69,9 @@
 
         <!-- Кнопка фонарика -->
         <button class="control-btn torch-btn" @click="toggleTorch">
-          <img src="../assets/lamp.png" alt="">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.071 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.894-.353-1.75-.988-2.386l-.548-.547z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
       </div>
 
@@ -171,6 +184,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Модальное окно для вставки ссылки -->
+      <div v-if="showPasteLinkModal" class="paste-link-modal-overlay" @click="closePasteLinkModal">
+        <div class="paste-link-modal" @click.stop>
+          <div class="modal-header">
+            <h3>Вставить ссылку оплаты</h3>
+            <p>Вставьте ссылку из QR-кода для быстрой оплаты</p>
+          </div>
+          
+          <div class="paste-link-input-container">
+            <textarea 
+              v-model="pasteLink" 
+              placeholder="https://..."
+              class="paste-link-input"
+              :class="{ error: pasteLinkError }"
+              @keyup.enter="confirmPasteLink"
+              @input="pasteLinkError = ''"
+              rows="4"
+              autofocus
+            ></textarea>
+          </div>
+          
+          <div v-if="pasteLinkError" class="paste-link-error">
+            {{ pasteLinkError }}
+          </div>
+          
+          <div class="modal-buttons">
+            <button class="cancel-btn" @click="closePasteLinkModal">
+              Отмена
+            </button>
+            <button 
+              class="confirm-btn" 
+              @click="confirmPasteLink"
+              :disabled="!pasteLink.trim()"
+            >
+              Подтвердить
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -212,6 +265,11 @@ const showPaymentModal = ref(false);
 const paymentAmount = ref('');
 const paymentUrl = ref('');
 const isProcessingPayment = ref(false);
+
+// Состояние модального окна для вставки ссылки
+const showPasteLinkModal = ref(false);
+const pasteLink = ref('');
+const pasteLinkError = ref('');
 
 // Функция для отображения сообщений
 const showMessageWithType = (text, type = 'info', duration = 3000) => {
@@ -841,6 +899,78 @@ const confirmPayment = async () => {
   }
 };
 
+// Функции для модального окна вставки ссылки
+const openPasteLinkModal = () => {
+  // Останавливаем сканирование при открытии модального окна
+  stopContinuousScanning();
+  showPasteLinkModal.value = true;
+  pasteLink.value = '';
+  pasteLinkError.value = '';
+  
+  // Автоматическая вставка из буфера обмена (если доступно)
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText()
+      .then(text => {
+        if (text && text.trim()) {
+          pasteLink.value = text.trim();
+        }
+      })
+      .catch(() => {
+        // Буфер обмена недоступен, ничего не делаем
+      });
+  }
+};
+
+const closePasteLinkModal = () => {
+  showPasteLinkModal.value = false;
+  pasteLink.value = '';
+  pasteLinkError.value = '';
+  
+  // Перезапускаем сканирование
+  if (qrScanner.value && cameraReady.value) {
+    qrScanner.value.start();
+    startContinuousScanning();
+  }
+};
+
+const confirmPasteLink = async () => {
+  pasteLinkError.value = '';
+  
+  // Проверяем что ссылка не пустая
+  if (!pasteLink.value || pasteLink.value.trim() === '') {
+    pasteLinkError.value = 'Вставьте ссылку';
+    return;
+  }
+  
+  const link = pasteLink.value.trim();
+  
+  // Проверяем валидность ссылки
+  if (!isValidPaymentUrl(link)) {
+    pasteLinkError.value = 'Ссылка не содержит данных для оплаты';
+    return;
+  }
+  
+  try {
+    // Закрываем модальное окно вставки
+    showPasteLinkModal.value = false;
+    
+    // Показываем сообщение об успешной вставке
+    showMessageWithType('Ссылка успешно вставлена!', 'success', 1000);
+    
+    // Обрабатываем как обычный QR-код
+    setTimeout(() => {
+      handleQRDetected(link);
+    }, 500);
+    
+    // Очищаем состояние
+    pasteLink.value = '';
+    pasteLinkError.value = '';
+    
+  } catch (error) {
+    pasteLinkError.value = 'Ошибка обработки ссылки';
+  }
+};
+
 // Lifecycle hooks
 onMounted(async () => {
   // Скрываем навбар при открытии сканера
@@ -1009,6 +1139,13 @@ color: white;
   justify-content: space-between;
   padding: 0 20px;
   z-index: 200;
+  gap: 12px;
+}
+
+.controls-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .control-btn {
@@ -1021,6 +1158,17 @@ color: white;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.control-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+  transform: scale(1.05);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
 }
 
 .control-btn img {
@@ -1999,6 +2147,142 @@ color: white;
     font-size: 15px;
     min-height: 52px;
     border-radius: 18px;
+  }
+}
+
+/* Модальное окно для вставки ссылки */
+.paste-link-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: modalOverlayAppear 0.3s ease-out;
+}
+
+.paste-link-modal {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 24px;
+  padding: 32px 28px;
+  width: 90%;
+  max-width: 420px;
+  margin: 0 20px;
+  box-shadow: 
+    0 32px 64px -12px rgba(0, 0, 0, 0.25),
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.paste-link-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+}
+
+.paste-link-input-container {
+  position: relative;
+  margin-bottom: 24px;
+  z-index: 1;
+}
+
+.paste-link-input {
+  width: 100%;
+  background: rgba(248, 250, 252, 0.8);
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  transition: all 0.3s ease;
+  outline: none;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  min-height: 100px;
+}
+
+.paste-link-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.paste-link-input:focus {
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.01);
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.1),
+    0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.paste-link-input.error {
+  border-color: #ef4444;
+  background: rgba(254, 242, 242, 0.95);
+  animation: inputError 0.3s ease;
+}
+
+.paste-link-error {
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: -16px;
+  margin-bottom: 24px;
+  animation: errorAppear 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 480px) {
+  .paste-link-modal {
+    padding: 28px 24px;
+    margin: 0 16px;
+    border-radius: 20px;
+  }
+  
+  .paste-link-input {
+    font-size: 14px;
+    padding: 14px 18px;
+    min-height: 90px;
+  }
+  
+  .controls {
+    padding: 0 16px;
+    gap: 10px;
+  }
+  
+  .controls-left {
+    gap: 10px;
+  }
+  
+  .control-btn {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .scan-button-circle {
+    height: 54px;
+    width: 54px;
   }
 }
 
