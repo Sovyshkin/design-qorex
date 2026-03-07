@@ -2433,5 +2433,72 @@ body.dark-theme .info-label {
 body.dark-theme .info-value {
   color: #f5f5f5 !important;
 }
+
+/* Принудительно светлая тема для окна вставки ссылки */
+body.dark-theme .paste-link-modal {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-theme .paste-link-modal::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+}
+
+body.dark-theme .paste-link-modal .modal-header h3 {
+  color: #1a1a1a !important;
+}
+
+body.dark-theme .paste-link-modal .modal-header p {
+  color: #666 !important;
+}
+
+body.dark-theme .paste-link-input {
+  background: rgba(248, 250, 252, 0.8) !important;
+  border: 2px solid rgba(226, 232, 240, 0.8) !important;
+  color: #1a1a1a !important;
+}
+
+body.dark-theme .paste-link-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+body.dark-theme .paste-link-input:focus {
+  border-color: #3b82f6 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.1),
+    0 8px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dark-theme .paste-link-input.error {
+  border-color: #ef4444 !important;
+  background: rgba(254, 242, 242, 0.95) !important;
+}
+
+body.dark-theme .paste-link-error {
+  color: #ef4444 !important;
+}
+
+body.dark-theme .paste-link-modal .cancel-btn {
+  background: rgba(241, 245, 249, 0.8) !important;
+  color: #64748b !important;
+  border: 1px solid transparent !important;
+}
+
+body.dark-theme .paste-link-modal .cancel-btn:hover {
+  background: rgba(226, 232, 240, 0.9) !important;
+  color: #475569 !important;
+}
+
+body.dark-theme .paste-link-modal .confirm-btn {
+  background: #deec51 !important;
+  color: #141414 !important;
+  border: 1px solid transparent !important;
+}
+
+body.dark-theme .paste-link-modal .confirm-btn:hover:not(:disabled) {
+  background: #d6e34a !important;
+  color: #141414 !important;
+}
 </style>
 
