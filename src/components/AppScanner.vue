@@ -2319,5 +2319,104 @@ color: white;
   pointer-events: none !important;
   transform: translateY(100%) !important;
 }
+
+/* Темная тема для модальных окон */
+:global(.dark-theme) .amount-modal,
+:global(.dark-theme) .payment-modal,
+:global(.dark-theme) .paste-link-modal {
+  background: rgba(42, 42, 42, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:global(.dark-theme) .amount-modal::before,
+:global(.dark-theme) .payment-modal::before,
+:global(.dark-theme) .paste-link-modal::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+}
+
+:global(.dark-theme) .modal-header h3,
+:global(.dark-theme) .payment-header h3 {
+  color: #f5f5f5 !important;
+}
+
+:global(.dark-theme) .modal-header p,
+:global(.dark-theme) .payment-header p {
+  color: #b0b0b0 !important;
+}
+
+:global(.dark-theme) .amount-input,
+:global(.dark-theme) .paste-link-input {
+  background: rgba(58, 58, 58, 0.8) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f5f5f5 !important;
+}
+
+:global(.dark-theme) .amount-input::placeholder,
+:global(.dark-theme) .paste-link-input::placeholder {
+  color: #666666 !important;
+}
+
+:global(.dark-theme) .amount-input:focus,
+:global(.dark-theme) .paste-link-input:focus {
+  border-color: #deec51 !important;
+  background: rgba(68, 68, 68, 0.95) !important;
+  box-shadow: 
+    0 0 0 4px rgba(222, 236, 81, 0.2),
+    0 8px 25px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+:global(.dark-theme) .amount-input.error,
+:global(.dark-theme) .paste-link-input.error {
+  border-color: #ef4444 !important;
+  background: rgba(80, 30, 30, 0.95) !important;
+}
+
+:global(.dark-theme) .currency-label {
+  color: #b0b0b0 !important;
+}
+
+:global(.dark-theme) .amount-error,
+:global(.dark-theme) .paste-link-error {
+  color: #f87171 !important;
+}
+
+:global(.dark-theme) .cancel-btn,
+:global(.dark-theme) .payment-cancel-btn {
+  background: rgba(58, 58, 58, 0.8) !important;
+  color: #b0b0b0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:global(.dark-theme) .cancel-btn:hover,
+:global(.dark-theme) .payment-cancel-btn:hover:not(:disabled) {
+  background: rgba(68, 68, 68, 0.9) !important;
+  color: #f5f5f5 !important;
+}
+
+:global(.dark-theme) .amount-display {
+  background: linear-gradient(135deg, rgba(222, 236, 81, 0.15) 0%, rgba(214, 227, 74, 0.08) 100%) !important;
+  border: 2px solid rgba(222, 236, 81, 0.3) !important;
+}
+
+:global(.dark-theme) .amount-label {
+  color: #b0b0b0 !important;
+}
+
+:global(.dark-theme) .amount-number {
+  color: #f5f5f5 !important;
+}
+
+:global(.dark-theme) .info-item {
+  background: rgba(58, 58, 58, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:global(.dark-theme) .info-label {
+  color: #b0b0b0 !important;
+}
+
+:global(.dark-theme) .info-value {
+  color: #f5f5f5 !important;
+}
 </style>
 
