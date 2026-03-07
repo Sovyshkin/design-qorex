@@ -45,6 +45,7 @@
 
       <!-- Контролы -->
       <div class="controls">
+        <!-- Левые кнопки -->
         <div class="controls-left">
           <!-- Кнопка выбора файла -->
           <label class="control-btn file-btn">
@@ -62,18 +63,21 @@
           </button>
         </div>
 
-        <!-- Основная кнопка сканирования -->
-        <button class="scan-button" @click="captureAndScanManual" :disabled="!cameraReady || isManualScanning">
-          <div class="scan-button-circle" :class="{ scanning: isManualScanning }"></div>
-        </button>
-
-        <!-- Кнопка фонарика -->
-        <button class="control-btn torch-btn" @click="toggleTorch">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.071 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.894-.353-1.75-.988-2.386l-.548-.547z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <!-- Правая кнопка -->
+        <div class="controls-right">
+          <!-- Кнопка фонарика -->
+          <button class="control-btn torch-btn" @click="toggleTorch">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.071 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.894-.353-1.75-.988-2.386l-.548-.547z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
+
+      <!-- Основная кнопка сканирования (центрированная) -->
+      <button class="scan-button" @click="captureAndScanManual" :disabled="!cameraReady || isManualScanning">
+        <div class="scan-button-circle" :class="{ scanning: isManualScanning }"></div>
+      </button>
 
       <!-- Красивое сообщение для пользователя -->
       <div v-if="showMessage" class="message-overlay" @click="hideMessage">
@@ -1130,7 +1134,6 @@ color: white;
 /* Контролы */
 .controls {
   position: absolute;
-  margin: 0 auto;
   bottom: 30px;
   left: 0;
   width: 100%;
@@ -1139,13 +1142,15 @@ color: white;
   justify-content: space-between;
   padding: 0 20px;
   z-index: 200;
-  gap: 12px;
+  pointer-events: none;
 }
 
-.controls-left {
+.controls-left,
+.controls-right {
   display: flex;
   gap: 12px;
   align-items: center;
+  pointer-events: auto;
 }
 
 .control-btn {
@@ -1175,13 +1180,19 @@ color: white;
   height: 24px;
 }
 
+/* Основная кнопка сканирования - всегда по центру */
 .scan-button {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   border: 2px solid #fff;
   border-radius: 100%;
   cursor: pointer;
   padding: 5px;
   background: transparent;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 201;
 }
 
 .scan-button-circle {
@@ -2268,16 +2279,20 @@ color: white;
   
   .controls {
     padding: 0 16px;
-    gap: 10px;
   }
   
-  .controls-left {
+  .controls-left,
+  .controls-right {
     gap: 10px;
   }
   
   .control-btn {
     width: 50px;
     height: 50px;
+  }
+  
+  .scan-button {
+    bottom: 30px;
   }
   
   .scan-button-circle {
