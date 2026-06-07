@@ -163,7 +163,11 @@ onMounted(async () => {
 
 <template>
   <header class="header">
-    <button class="arrow" type="button" @click="goBack()">‹</button>
+    <button class="arrow" type="button" @click="goBack()" aria-label="Back">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 5 8 12l7 7" />
+      </svg>
+    </button>
     <h1>{{ t("two_factor_auth") }}</h1>
     <div class="emp"></div>
   </header>
@@ -348,11 +352,20 @@ onMounted(async () => {
   border: 1px solid #e2e8f0;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   color: #0f172a;
-  font-size: 34px;
-  line-height: 1;
-  font-weight: 500;
+  display: grid;
+  place-items: center;
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.arrow svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .arrow:active {
