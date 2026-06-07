@@ -114,6 +114,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const remainingInvoiceTime = ref(0); // Оставшееся время до следующего инвойса в секундах
   const userWallet = ref(""); // Номер кошелька пользователя для переводов
   const has2FA = ref(false); // Статус 2FA пользователя
+  let messageTimer: ReturnType<typeof setTimeout> | null = null;
 
   const history = ref([]);
 
@@ -152,19 +153,18 @@ export const useWalletStore = defineStore("wallet", () => {
         pincode: pinCode.value,
       });
       if (response.status == 200) {
-        message_status.value = "success";
         codePasswordActive.value = true;
         pinVerified.value = true; // Автоматически верифицируем после установки
         pinVerificationTime.value = Date.now();
+        showMessage(t("pincode_set_success") || "PIN-код успешно установлен", "success", 2500);
         // Синхронизируем localStorage после успешного обновления
         syncSettingsWithLocalStorage();
         setTimeout(() => {
-          message_status.value = "";
           router.push({ name: "safety" });
         }, 2500);
       }
     } catch (error) {
-      message_status.value = "error";
+      showMessage(t("pincode_set_failed") || "Не удалось установить PIN-код", "error", 3000);
     }
   };
 
@@ -178,16 +178,10 @@ export const useWalletStore = defineStore("wallet", () => {
         clearAllPinData();
         // Синхронизируем localStorage после успешного обновления
         syncSettingsWithLocalStorage();
-        message_status.value = "success";
-        setTimeout(() => {
-          message_status.value = "";
-        }, 2500);
+        showMessage(t("pincode_disabled_success") || "PIN-код отключен", "success", 2500);
       }
     } catch (error) {
-      message_status.value = "error";
-      setTimeout(() => {
-        message_status.value = "";
-      }, 2500);
+      showMessage(t("pincode_disable_failed") || "Не удалось отключить PIN-код", "error", 3000);
     }
   };
 
@@ -284,6 +278,10 @@ export const useWalletStore = defineStore("wallet", () => {
     errMessage.value = "";
     message_status.value = "";
     transactionErrorMessage.value = "";
+    if (messageTimer) {
+      clearTimeout(messageTimer);
+      messageTimer = null;
+    }
   };
 
   const showMessage = (
@@ -291,12 +289,28 @@ export const useWalletStore = defineStore("wallet", () => {
     status: string = "error",
     duration: number = 3000
   ) => {
-    errMessage.value = message;
+    if (messageTimer) {
+      clearTimeout(messageTimer);
+      messageTimer = null;
+    }
+
+    const safeMessage = typeof message === "string" ? message.trim() : "";
+    const fallbackMessage =
+      status === "success"
+        ? t("success") || "Успешно"
+        : status === "warning"
+          ? "Обратите внимание"
+          : status === "info"
+            ? "Информация"
+            : t("error_occurred") || "Произошла ошибка";
+
+    errMessage.value = safeMessage || fallbackMessage;
     message_status.value = status;
 
-    setTimeout(() => {
+    messageTimer = setTimeout(() => {
       errMessage.value = "";
       message_status.value = "";
+      messageTimer = null;
     }, duration);
   };
 

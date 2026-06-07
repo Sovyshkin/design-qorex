@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useWalletStore } from "../../stores/walletStore.ts";
@@ -7,26 +8,26 @@ const { t } = useI18n();
 const router = useRouter();
 const walletStore = useWalletStore();
 
-const documents = [
+const documents = computed(() => [
   {
     name: "AML",
     slug: "aml",
     icon: "shield",
-    subtitle: "Как PeekPay снижает риски подозрительных операций",
+    subtitle: t("info_aml_subtitle"),
   },
   {
     name: t("terms_of_use"),
     slug: "terms_of_use",
     icon: "file",
-    subtitle: "Правила использования кошелька, переводов и сервисов",
+    subtitle: t("info_terms_subtitle"),
   },
   {
     name: t("privacy_policy"),
     slug: "privacy_policy",
     icon: "lock",
-    subtitle: "Какие данные используются и как мы защищаем приватность",
+    subtitle: t("info_privacy_subtitle"),
   },
-];
+]);
 
 const iconPaths = {
   shield: '<path d="M12 4.25 18.25 7v4.8c0 3.2-2.55 5.9-6.25 7.95-3.7-2.05-6.25-4.75-6.25-7.95V7z"/><path d="m9.25 12.2 1.8 1.8 3.95-4.2"/>',
@@ -41,15 +42,15 @@ const iconPaths = {
       <button class="back-btn" type="button" @click="walletStore.goBack()">‹</button>
       <div>
         <h1>{{ t("info") }}</h1>
-        <p>Документы и правила</p>
+        <p>{{ t("info_header_subtitle") }}</p>
       </div>
       <div class="header-spacer"></div>
     </header>
 
     <section class="hero-card">
       <div class="hero-icon">i</div>
-      <h2>Важная информация</h2>
-      <p>Документы и правила, которые помогают безопасно пользоваться кошельком, пополнениями и переводами.</p>
+      <h2>{{ t("info_hero_title") }}</h2>
+      <p>{{ t("info_hero_text") }}</p>
     </section>
 
     <section class="document-list" aria-label="Documents">

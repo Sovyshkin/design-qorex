@@ -1,40 +1,41 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import AutoScrollPills from "@/components/ui/AutoScrollPills.vue";
 
 const { t } = useI18n();
 const router = useRouter();
 const active = ref(0);
 
-const faq = [
+const faq = computed(() => [
   {
-    question: "Как пополнить кошелёк?",
-    answer: "Откройте раздел пополнения, выберите валюту и сеть, затем отправьте средства строго на показанный адрес. Важно выбирать ту же сеть, что указана в приложении.",
+    question: t("faq_deposit_question"),
+    answer: t("faq_deposit_answer"),
   },
   {
-    question: "Почему баланс обновляется не сразу?",
-    answer: "Скорость зависит от блокчейн-сети и количества подтверждений. Обычно операция появляется после обработки сетью, но при высокой нагрузке это может занять больше времени.",
+    question: t("faq_balance_question"),
+    answer: t("faq_balance_answer"),
   },
   {
-    question: "Что делать, если выбрал не ту сеть?",
-    answer: "Не отправляйте средства, если сеть отличается. Если перевод уже выполнен, сохраните хэш транзакции и обратитесь в поддержку. Возможность восстановления зависит от сети и типа операции.",
+    question: t("faq_network_question"),
+    answer: t("faq_network_answer"),
   },
   {
-    question: "Как защитить аккаунт?",
-    answer: "Включите PIN-код и 2FA, не передавайте доступ к Telegram, проверяйте адреса переводов и не переходите по подозрительным ссылкам от имени поддержки.",
+    question: t("faq_security_question"),
+    answer: t("faq_security_answer"),
   },
   {
-    question: "Где посмотреть историю операций?",
-    answer: "История доступна в нижней навигации. Там отображаются пополнения, переводы и статусы операций, если данные уже получены от сервера.",
+    question: t("faq_history_question"),
+    answer: t("faq_history_answer"),
   },
   {
-    question: "Как связаться с поддержкой?",
-    answer: "Используйте официальный бот поддержки PeekPay. Опишите проблему, укажите валюту, сеть, сумму и хэш транзакции, если вопрос связан с переводом.",
+    question: t("faq_support_question"),
+    answer: t("faq_support_answer"),
   },
-];
+]);
 
-const quickTips = ["Проверяйте сеть", "Сохраняйте tx hash", "Включите 2FA"];
+const quickTips = computed(() => [t("faq_tip_network"), t("faq_tip_hash"), t("faq_tip_2fa")]);
 
 const openSupport = () => {
   window.location.href = "https://t.me/PeekPay_Support_bot";
@@ -54,15 +55,15 @@ const openSupport = () => {
 
     <section class="hero-card">
       <div class="hero-copy">
-        <span>PeekPay support</span>
-        <h2>Ответы на частые вопросы</h2>
-        <p>Коротко о пополнениях, переводах, сетях и безопасности в Telegram Mini App.</p>
+        <span>{{ t("faq_hero_label") }}</span>
+        <h2>{{ t("faq_hero_title") }}</h2>
+        <p>{{ t("faq_hero_text") }}</p>
       </div>
       <div class="hero-badge">?</div>
     </section>
 
     <section class="tips">
-      <span v-for="tip in quickTips" :key="tip">{{ tip }}</span>
+      <AutoScrollPills :items="quickTips" :duration="20" />
     </section>
 
     <section class="faq-list" aria-label="FAQ">
@@ -83,7 +84,7 @@ const openSupport = () => {
     </section>
 
     <button class="support-btn" type="button" @click="openSupport">
-      Написать в поддержку
+      {{ t("faq_support_button") }}
     </button>
   </main>
 </template>
@@ -103,9 +104,6 @@ h1 { margin: 2px 0 0; color: #0f172a; font-size: 20px; line-height: 24px; font-w
 .hero-copy h2 { margin: 8px 0 6px; font-size: 22px; line-height: 26px; font-weight: 750; }
 .hero-copy p { margin: 0; color: rgba(255,255,255,.82); font-size: 14px; line-height: 20px; font-weight: 500; }
 .hero-badge { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 22px; display: grid; place-items: center; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); font-size: 34px; line-height: 1; font-weight: 850; }
-.tips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
-.tips::-webkit-scrollbar { display: none; }
-.tips span { flex: 0 0 auto; border: 1px solid #bfdbfe; border-radius: 999px; padding: 9px 12px; color: #1e40af; background: #eff6ff; font-size: 12px; line-height: 14px; font-weight: 750; }
 .faq-list { display: grid; gap: 10px; }
 .faq-item { width: 100%; border: 1px solid #e2e8f0; border-radius: 20px; background: rgba(255,255,255,.94); box-shadow: 0 10px 24px rgba(15,23,42,.06); padding: 16px; text-align: left; transition: border-color .18s ease, transform .18s ease; }
 .faq-item:active { transform: scale(.99); }

@@ -1,74 +1,77 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
+import AutoScrollPills from "@/components/ui/AutoScrollPills.vue";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
-const pages = {
+const pages = computed(() => ({
   aml: {
-    eyebrow: "Документ",
-    title: "AML и безопасность операций",
-    lead: "PeekPay использует риск-ориентированный подход, чтобы платежи и переводы оставались безопасными для пользователей.",
-    highlights: ["Мониторинг подозрительных операций", "Проверка источников риска", "Защита пользователей от блокировок"],
+    eyebrow: t("info_document_label"),
+    title: t("info_aml_title"),
+    lead: t("info_aml_lead"),
+    highlights: [t("info_aml_highlight_1"), t("info_aml_highlight_2"), t("info_aml_highlight_3")],
     sections: [
       {
-        title: "Что такое AML",
-        text: "AML означает меры против отмывания средств. Для криптокошелька это набор правил, которые помогают выявлять операции с повышенным риском и защищать пользователей от небезопасных переводов.",
+        title: t("info_aml_section_1_title"),
+        text: t("info_aml_section_1_text"),
       },
       {
-        title: "Когда может потребоваться проверка",
-        text: "Дополнительная проверка может понадобиться при необычной активности, крупных суммах, частых переводах или признаках связи адреса с рискованными источниками.",
+        title: t("info_aml_section_2_title"),
+        text: t("info_aml_section_2_text"),
       },
       {
-        title: "Как действовать пользователю",
-        text: "Проверяйте сеть и адрес перед отправкой, не принимайте средства от неизвестных отправителей и обращайтесь в поддержку, если операция выглядит подозрительно.",
+        title: t("info_aml_section_3_title"),
+        text: t("info_aml_section_3_text"),
       },
     ],
   },
   terms_of_use: {
-    eyebrow: "Документ",
-    title: "Условия использования",
-    lead: "Эти правила описывают базовые условия работы с PeekPay: кошельком, пополнениями, переводами и функциями безопасности.",
-    highlights: ["Ответственное использование сервиса", "Проверка реквизитов перед переводом", "Соблюдение лимитов и требований безопасности"],
+    eyebrow: t("info_document_label"),
+    title: t("terms_of_use"),
+    lead: t("info_terms_lead"),
+    highlights: [t("info_terms_highlight_1"), t("info_terms_highlight_2"), t("info_terms_highlight_3")],
     sections: [
       {
-        title: "Назначение сервиса",
-        text: "PeekPay предоставляет интерфейс для хранения, пополнения и перевода цифровых активов в Telegram Mini App. Пользователь отвечает за корректность введённых адресов, сетей и сумм.",
+        title: t("info_terms_section_1_title"),
+        text: t("info_terms_section_1_text"),
       },
       {
-        title: "Операции и комиссии",
-        text: "Перед подтверждением операции важно проверить сумму, валюту, сеть и адрес получателя. Комиссии и сроки обработки могут зависеть от выбранной сети и состояния блокчейна.",
+        title: t("info_terms_section_2_title"),
+        text: t("info_terms_section_2_text"),
       },
       {
-        title: "Ограничения",
-        text: "Сервис нельзя использовать для незаконных операций, обхода требований безопасности, мошенничества или действий, которые могут нарушать права других пользователей.",
+        title: t("info_terms_section_3_title"),
+        text: t("info_terms_section_3_text"),
       },
     ],
   },
   privacy_policy: {
-    eyebrow: "Документ",
-    title: "Политика конфиденциальности",
-    lead: "PeekPay стремится использовать только необходимые данные и защищать их на уровне, ожидаемом от финансового продукта.",
-    highlights: ["Минимум необходимых данных", "Защита доступа к аккаунту", "Прозрачность использования информации"],
+    eyebrow: t("info_document_label"),
+    title: t("privacy_policy"),
+    lead: t("info_privacy_lead"),
+    highlights: [t("info_privacy_highlight_1"), t("info_privacy_highlight_2"), t("info_privacy_highlight_3")],
     sections: [
       {
-        title: "Какие данные используются",
-        text: "Для работы кошелька могут использоваться Telegram-идентификатор, имя пользователя, данные аккаунта, история операций и техническая информация, необходимая для безопасности.",
+        title: t("info_privacy_section_1_title"),
+        text: t("info_privacy_section_1_text"),
       },
       {
-        title: "Зачем это нужно",
-        text: "Данные помогают авторизовать пользователя, показывать баланс и историю, выполнять операции, защищать аккаунт и улучшать стабильность Mini App.",
+        title: t("info_privacy_section_2_title"),
+        text: t("info_privacy_section_2_text"),
       },
       {
-        title: "Как повысить безопасность",
-        text: "Используйте PIN-код и 2FA, не передавайте доступ к Telegram, проверяйте адреса переводов и обращайтесь в поддержку при подозрительной активности.",
+        title: t("info_privacy_section_3_title"),
+        text: t("info_privacy_section_3_text"),
       },
     ],
   },
-};
+}));
 
-const currentPage = computed(() => pages[route.params.slug] || pages.aml);
+const currentPage = computed(() => pages.value[route.params.slug] || pages.value.aml);
 </script>
 
 <template>
@@ -76,16 +79,14 @@ const currentPage = computed(() => pages[route.params.slug] || pages.aml);
     <header class="page-header">
       <button class="back-btn" type="button" @click="router.back()">‹</button>
       <div>
-        <span>{{ currentPage.eyebrow }}</span>
         <h1>{{ currentPage.title }}</h1>
+        <span>{{ currentPage.eyebrow }}</span>
       </div>
     </header>
 
     <section class="intro-card">
       <p>{{ currentPage.lead }}</p>
-      <div class="chips">
-        <span v-for="item in currentPage.highlights" :key="item">{{ item }}</span>
-      </div>
+      <AutoScrollPills :items="currentPage.highlights" variant="white" :duration="22" />
     </section>
 
     <section class="content-card" v-for="section in currentPage.sections" :key="section.title">
@@ -94,8 +95,8 @@ const currentPage = computed(() => pages[route.params.slug] || pages.aml);
     </section>
 
     <section class="notice-card">
-      <strong>Важно</strong>
-      <p>Информация в приложении носит справочный характер. Если вопрос связан с конкретной операцией, лучше обратиться в поддержку PeekPay.</p>
+      <strong>{{ t("important") }}</strong>
+      <p>{{ t("info_notice_text") }}</p>
     </section>
   </main>
 </template>
@@ -106,13 +107,10 @@ const currentPage = computed(() => pages[route.params.slug] || pages.aml);
 .back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
 .page-header div { min-width: 0; }
 .page-header span { color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
-h1 { margin: 3px 0 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight: 750; }
+h1 { margin: 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight: 750; }
 .intro-card { border-radius: 24px; padding: 18px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.22); display: grid; gap: 14px; }
 .intro-card * { color: #fff; }
 .intro-card p { margin: 0; color: rgba(255,255,255,.88); font-size: 15px; line-height: 22px; font-weight: 500; }
-.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-.chips::-webkit-scrollbar { display: none; }
-.chips span { flex: 0 0 auto; border-radius: 999px; padding: 8px 10px; background: rgba(255,255,255,.14); color: #fff; font-size: 12px; line-height: 14px; font-weight: 650; }
 .content-card, .notice-card { border-radius: 22px; background: rgba(255,255,255,.94); border: 1px solid #e2e8f0; box-shadow: 0 10px 24px rgba(15,23,42,.06); padding: 16px; }
 .content-card h2 { margin: 0 0 8px; color: #0f172a; font-size: 17px; line-height: 22px; font-weight: 750; }
 .content-card p, .notice-card p { margin: 0; color: #64748b; font-size: 14px; line-height: 21px; font-weight: 500; }

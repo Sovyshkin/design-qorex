@@ -11,7 +11,7 @@ const clearMessage = () => {
 <template>
   <transition name="toast">
     <div
-      v-if="walletStore.message_status"
+      v-if="walletStore.message_status && walletStore.errMessage"
       class="alert"
       :class="walletStore.message_status"
       role="alert"
@@ -34,16 +34,21 @@ const clearMessage = () => {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
   font-size: 14px;
   font-weight: 600;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #0f172a;
 }
 
 .alert p {
   margin: 0;
+  line-height: 1.35;
+  color: inherit;
 }
 
 .dot {
@@ -54,7 +59,9 @@ const clearMessage = () => {
 }
 
 .success {
-  color: #065f46;
+  border-color: #bbf7d0;
+  background: linear-gradient(135deg, rgba(240,253,244,.98), rgba(220,252,231,.98));
+  color: #14532d;
 }
 
 .success .dot {
@@ -62,7 +69,9 @@ const clearMessage = () => {
 }
 
 .info {
-  color: #1e40af;
+  border-color: #bfdbfe;
+  background: linear-gradient(135deg, rgba(239,246,255,.98), rgba(219,234,254,.98));
+  color: #1e3a8a;
 }
 
 .info .dot {
@@ -70,6 +79,8 @@ const clearMessage = () => {
 }
 
 .warning {
+  border-color: #fde68a;
+  background: linear-gradient(135deg, rgba(255,251,235,.98), rgba(254,243,199,.98));
   color: #92400e;
 }
 
@@ -78,6 +89,8 @@ const clearMessage = () => {
 }
 
 .error {
+  border-color: #fecaca;
+  background: linear-gradient(135deg, rgba(254,242,242,.98), rgba(254,226,226,.98));
   color: #991b1b;
 }
 
