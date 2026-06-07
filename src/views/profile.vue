@@ -26,6 +26,8 @@ const referal = computed(() => [
   { name: t("referal"), route: "referal", show: true },
 ]);
 
+const visibleReferal = computed(() => referal.value.filter((item) => item.show));
+
 const goRoute = (route) => {
   if (route === "faq") window.location.href = "https://peekpay.com";
   else if (route === "support") window.location.href = "https://t.me/PeekPay_Support_bot";
@@ -52,7 +54,7 @@ onMounted(async () => {
     </section>
 
     <section class="profile-list">
-      <button class="profile-row" v-for="(item, i) in referal" :key="i" v-if="item.show" @click="goRoute(item.route)"><span>{{ item.name }}</span><b>›</b></button>
+      <button class="profile-row" v-for="(item, i) in visibleReferal" :key="i" @click="goRoute(item.route)"><span>{{ item.name }}</span><b>›</b></button>
     </section>
 
     <section class="profile-list">
