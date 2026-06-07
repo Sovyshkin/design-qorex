@@ -162,7 +162,7 @@ onMounted(async () => {
 }
 
 h1 {
-  color: #141414;
+  color: #0F172A;
 }
 .safety {
   display: flex;
@@ -181,7 +181,7 @@ h1 {
 }
 
 .profile-value {
-  color: #141414;
+  color: #0F172A;
   font-weight: 300;
 }
 
@@ -207,7 +207,7 @@ h1 {
 }
 
 .wrap-img {
-  background-color: #deec51;
+  background-color: #2563EB;
   padding: 8px;
   border-radius: 12px;
   display: flex;

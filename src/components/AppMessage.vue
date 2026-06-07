@@ -1,248 +1,98 @@
 <script setup>
-import { useI18n } from "vue-i18n";
 import { useWalletStore } from "../stores/walletStore.ts";
 
-const { t } = useI18n();
 const walletStore = useWalletStore();
 
 const clearMessage = () => {
-  try {
-    walletStore.message_status = "";
-  } catch (err) {
-    
-  }
+  walletStore.message_status = "";
 };
 </script>
+
 <template>
-  <!-- Success Alert -->
-  <div
-    role="alert"
-    @click="clearMessage()"
-    class="alert success"
-    v-if="walletStore.message_status == 'success'"
-  >
-    <svg
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      fill="none"
-      class="icon"
-      xmlns="http://www.w3.org/2000/svg"
+  <transition name="toast">
+    <div
+      v-if="walletStore.message_status"
+      class="alert"
+      :class="walletStore.message_status"
+      role="alert"
+      @click="clearMessage"
     >
-      <path
-        d="M13 16h-1v-4h1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        stroke-width="2"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      ></path>
-    </svg>
-    <p class="text-xs font-semibold">{{ walletStore.errMessage }}</p>
-  </div>
-
-  <!-- Info Alert -->
-  <div
-    @click="clearMessage()"
-    role="alert"
-    class="alert info"
-    v-if="walletStore.message_status == 'info'"
-  >
-    <svg
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      fill="none"
-      class="icon"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M13 16h-1v-4h1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        stroke-width="2"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      ></path>
-    </svg>
-    <p class="text-xs font-semibold">
-      {{ walletStore.errMessage }}
-    </p>
-  </div>
-
-  <!-- Warning Alert -->
-  <div
-    @click="clearMessage()"
-    role="alert"
-    class="alert warning"
-    v-if="walletStore.message_status == 'warning'"
-  >
-    <svg
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      fill="none"
-      class="icon"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M13 16h-1v-4h1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        stroke-width="2"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      ></path>
-    </svg>
-    <p class="text-xs font-semibold">
-      {{ walletStore.errMessage }}
-    </p>
-  </div>
-
-  <!-- Error Alert -->
-  <div
-    @click="clearMessage()"
-    role="alert"
-    class="alert error"
-    v-if="walletStore.message_status == 'error'"
-  >
-    <svg
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      fill="none"
-      class="icon"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M13 16h-1v-4h1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        stroke-width="2"
-        stroke-linejoin="round"
-        stroke-linecap="round"
-      ></path>
-    </svg>
-    <p class="text-xs font-semibold">{{ walletStore.errMessage }}</p>
-  </div>
+      <span class="dot"></span>
+      <p>{{ walletStore.errMessage }}</p>
+    </div>
+  </transition>
 </template>
 
 <style scoped>
 .alert {
-  position: absolute;
-  top: 2%;
-  left: 50%;
-  width: 100%;
-  max-width: 300px;
-  transform: translateX(-50%);
-  border-left-width: 4px;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 1200;
   display: flex;
   align-items: center;
-  transition-property: background-color, transform;
-  transition-timing-function: ease-in-out;
-  transition-duration: 300ms;
-  z-index: 1000;
-}
-
-.alert:hover {
-  transform: scale(1.05);
-}
-
-.icon {
-  height: 1.25rem;
-  width: 1.25rem;
-  flex-shrink: 0;
-  margin-right: 0.5rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.font-semibold {
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  font-size: 14px;
   font-weight: 600;
+  background: #ffffff;
 }
 
-/* Success */
+.alert p {
+  margin: 0;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
 .success {
-  background-color: #f0fdf4;
-  border-color: #22c55e;
-  color: #14532d;
-}
-body.dark-theme .success {
-  background-color: #deec51;
-  border-color: #f9f871;
-  color: #000000;
-  box-shadow: 0 4px 12px rgba(222, 236, 81, 0.5);
-}
-.success .icon {
-  color: #16a34a;
-}
-.success:hover {
-  background-color: #dcfce7;
-}
-body.dark-theme .success:hover {
-  background-color: #f9f871;
-  box-shadow: 0 6px 16px rgba(222, 236, 81, 0.6);
-  transform: translateX(-50%) scale(1.05);
+  color: #065f46;
 }
 
-/* Info */
+.success .dot {
+  background: #10b981;
+}
+
 .info {
-  background-color: #f0f9ff;
-  border-color: #3b82f6;
   color: #1e40af;
 }
-body.dark-theme .info {
-  background-color: #172554;
-  border-color: #1d4ed8;
-  color: #f0f9ff;
-}
-.info .icon {
-  color: #2563eb;
-}
-.info:hover {
-  background-color: #e0f2fe;
-}
-body.dark-theme .info:hover {
-  background-color: #1e40af;
+
+.info .dot {
+  background: #3b82f6;
 }
 
-/* Warning */
 .warning {
-  background-color: #fefce8;
-  border-color: #f59e0b;
-  color: #854d0e;
-}
-body.dark-theme .warning {
-  background-color: #deec51;
-  border-color: #f9f871;
-  color: #000000;
-  box-shadow: 0 4px 12px rgba(222, 236, 81, 0.5);
-}
-.warning .icon {
-  color: #d97706;
-}
-body.dark-theme .warning .icon {
-  color: #000000;
-}
-.warning:hover {
-  background-color: #fef08a;
-}
-body.dark-theme .warning:hover {
-  background-color: #f9f871;
-  box-shadow: 0 6px 16px rgba(222, 236, 81, 0.6);
+  color: #92400e;
 }
 
-/* Error */
+.warning .dot {
+  background: #f59e0b;
+}
+
 .error {
-  background-color: #fee2e2;
-  border-color: #ef4444;
   color: #991b1b;
 }
-body.dark-theme .error {
-  background-color: #450a0a;
-  border-color: #b91c1c;
-  color: #fee2e2;
+
+.error .dot {
+  background: #ef4444;
 }
-.error .icon {
-  color: #dc2626;
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: 0.22s ease;
 }
-.error:hover {
-  background-color: #fecaca;
-}
-body.dark-theme .error:hover {
-  background-color: #7f1d1d;
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>

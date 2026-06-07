@@ -9,7 +9,7 @@ import { VueTelegramPlugin } from "vue-tg";
 import './assets/theme.css'; // Подключаем стили темы
 import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
-axios.defaults.baseURL = "https://back.gardawallet.com";
+axios.defaults.baseURL = "https://back.peekpay.ru";
 
 // Функция для получения Telegram initData
 const getTelegramInitData = () => {

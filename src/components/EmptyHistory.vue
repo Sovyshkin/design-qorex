@@ -1,67 +1,58 @@
 <script setup>
-import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { useWalletStore } from "../stores/walletStore.ts";
-import InputCheck from "@/components/ui/inputs/InputCheck.vue";
 
 const { t } = useI18n();
-const walletStore = useWalletStore();
-
 </script>
+
 <template>
-    <main class="container">
-        <h1>{{ t('history_tranc') }}</h1>
-        <p>{{ t('history_text') }}</p>
-        <button class="btn" @click="$router.push({ name: 'deposit' })">
-            <img src="../assets/add.png" alt="">
-            <span>{{ t('deposit_wallet') }}</span>
-        </button>
-    </main>
+  <main class="empty">
+    <div class="empty-card">
+      <h2>{{ t('history_tranc') }}</h2>
+      <p>{{ t('history_text') }}</p>
+      <button class="btn-primary" @click="$router.push({ name: 'deposit' })">
+        {{ t('deposit_wallet') }}
+      </button>
+    </div>
+  </main>
 </template>
+
 <style scoped>
-.container {
-    height: 70vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    font-size: 20px;
-    font-weight: 600s;
-    max-width: 300px;
-    width: 100%;
-    margin: 0 auto;
+.empty {
+  min-height: 55vh;
+  display: grid;
+  place-items: center;
 }
 
-h1 {
-    font-size: 24px;
-    font-weight: 600;
-    text-align: center;
+.empty-card {
+  width: 100%;
+  max-width: 340px;
+  padding: 24px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #0f172a;
+  font-weight: 600;
 }
 
 p {
-    text-align: center;
-    font-size: 16px;
-    color: rgb(36, 35, 35);
+  margin: 10px 0 20px;
+  color: #64748b;
+  font-size: 14px;
 }
 
-.btn {
-    width: 100%;
-    background-color: #DEEC51;
-    padding: 15px 0;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.btn span {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.btn img {
-    height: 20px;
+.btn-primary {
+  width: 100%;
+  height: 50px;
+  border-radius: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
 }
 </style>

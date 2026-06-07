@@ -221,7 +221,7 @@ onMounted(() => {
 .banner {
   display: flex;
   flex-direction: column;
-  background-color: #141414;
+  background-color: #0F172A;
   background-image: url("../../assets/bg.svg");
   background-position: center;
   background-repeat: no-repeat;
@@ -285,7 +285,7 @@ onMounted(() => {
 
 .stats-info h2 {
   font-weight: 300;
-  color: #141414;
+  color: #0F172A;
 }
 
 .stats-count {
@@ -296,10 +296,10 @@ onMounted(() => {
 }
 
 .stats-amount {
-  background-color: #deec51;
+  background-color: #2563EB;
   padding: 4px 8px;
   border-radius: 4px;
-  color: #141414;
+  color: #0F172A;
   font-size: 12px;
 }
 
@@ -343,10 +343,10 @@ onMounted(() => {
 }
 
 .user-amount {
-  background-color: #deec51;
+  background-color: #2563EB;
   padding: 4px 8px;
   border-radius: 4px;
-  color: #141414;
+  color: #0F172A;
   font-size: 12px;
 }
 
@@ -433,7 +433,7 @@ onMounted(() => {
 }
 
 .empty-icon {
-  background-color: #deec51;
+  background-color: #2563EB;
   padding: 8px;
   border-radius: 12px;
   display: flex;
@@ -445,7 +445,7 @@ onMounted(() => {
 .empty-title {
   font-size: 18px;
   font-weight: 500;
-  color: #141414;
+  color: #0F172A;
   margin: 0;
 }
 

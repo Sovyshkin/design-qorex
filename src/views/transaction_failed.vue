@@ -1,89 +1,49 @@
 <script setup>
 import { useI18n } from "vue-i18n";
-import { useRouter } from 'vue-router'
-import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, onMounted } from 'vue'
+import { useRouter } from "vue-router";
+import { useWalletStore } from "@/stores/walletStore.ts";
+import { ref, onMounted } from "vue";
 
 const router = useRouter();
-const walletStore = useWalletStore()
-
-// Сохраняем сообщение об ошибке локально, чтобы оно не пропадало
-const errorMessage = ref('')
+const walletStore = useWalletStore();
+const errorMessage = ref("");
 
 onMounted(() => {
-  // Сохраняем сообщение об ошибке при монтировании компонента
-  errorMessage.value = walletStore.transactionErrorMessage || walletStore.errMessage || ''
-})
+  errorMessage.value = walletStore.transactionErrorMessage || walletStore.errMessage || "";
+});
 
-const goBack = () => {
-  router.push({ name: 'main' })
-}
-
+const goBack = () => router.push({ name: "main" });
 const { t } = useI18n();
 </script>
+
 <template>
-    <div class="transaction-page">
-        <header class="header">
-      <img
-        class="arrow"
-        src="@/assets/arrow-left.svg"
-        alt=""
-        @click="goBack"
-      />
-      <h1>{{ t('failed_payment') }}</h1>
+  <div class="failed-page">
+    <header class="failed-header">
+      <img class="arrow" src="@/assets/arrow-left.svg" alt="back" @click="goBack" />
+      <h1>{{ t("failed_payment") }}</h1>
       <div class="emp"></div>
     </header>
-    <div class="container">
-        <img src="@/assets/error.svg" alt="">
-        <h2>{{ t('failed_payment') }}</h2>
+
+    <main class="failed-content">
+      <section class="failed-card">
+        <div class="failed-icon">✕</div>
+        <h2>{{ t("failed_payment") }}</h2>
         <p>{{ errorMessage }}</p>
-    </div>
-    </div>
+        <button class="cta" @click="goBack">{{ t('go_back') }}</button>
+      </section>
+    </main>
+  </div>
 </template>
+
 <style scoped>
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    font-size: 20px;
-    font-weight: 600;
-    padding: 10px 10px 120px 10px;
-    overflow-y: auto;
-}
-
-.header {
-  padding: 20px 15px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-h1 {
-  color: #141414;
-}
-
-.emp {
-  width: 32px;
-}
-
-.arrow {
-  cursor: pointer;
-}
-
-h2 {
-    color: #1C1C1C;
-    font-size: 20px;
-    font-weight: 400;
-}
-
-p {
-    color: #262626;
-    opacity: 40%;
-    font-size: 14px;
-    font-weight: 300;
-}
+.failed-page { min-height: 100vh; background: #f1f5f9; }
+.failed-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+.arrow, .emp { width: 24px; height: 24px; }
+h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
+.failed-content { padding: 8px 16px 124px; }
+.failed-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 10px 24px rgba(15,23,42,.08); padding: 22px; display: grid; gap: 10px; text-align: center; }
+.failed-icon { width: 68px; height: 68px; border-radius: 50%; margin: 0 auto; background: #fef2f2; color: #ef4444; display: grid; place-items: center; font-size: 30px; font-weight: 700; }
+h2 { margin: 2px 0 0; color: #0f172a; font-size: 22px; font-weight: 600; }
+p { margin: 0; color: #64748b; font-size: 14px; }
+.cta { margin-top: 6px; min-height: 50px; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; font-weight: 600; }
 </style>

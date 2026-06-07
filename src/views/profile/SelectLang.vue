@@ -40,7 +40,7 @@ const walletStore = useWalletStore()
 }
 
 h1 {
-  color: #141414;
+  color: #0F172A;
 }
 
 .emp {

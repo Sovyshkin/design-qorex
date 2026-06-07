@@ -1,9 +1,8 @@
 <script setup>
 import { useI18n } from "vue-i18n";
-import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, watch, nextTick, onMounted } from "vue";
-import { useRouter } from 'vue-router';
-// import PaymentChoiceModal from '@/components/PaymentChoiceModal.vue'; // Убираем, используем встроенное модальное окно
+import { useWalletStore } from "@/stores/walletStore.ts";
+import { ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -15,1327 +14,182 @@ const networks = [
   { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
   { id: "USDT_TON", name: "TON", icon: "ton" },
   { id: "USDT_ERC20", name: "ERC20 (Ethereum)", icon: "ethereum" },
-  { id: "USDT_BSC", name: "BEP20 (BSC)", icon: "bsc" }
+  { id: "USDT_BSC", name: "BEP20 (BSC)", icon: "bsc" },
 ];
 
 const isCreatingInvoice = ref(false);
 const isDisabled = ref(false);
 const showPaymentChoiceModal = ref(false);
-const currentPaymentUrl = ref('');
-const currentNetworkName = ref('');
-const showPaymentOptions = ref(false);
-const invoiceCreated = ref(false);
-const copyStatus = ref(''); // '' | 'copying' | 'copied' | 'error'
+const currentPaymentUrl = ref("");
+const currentNetworkName = ref("");
+const copyStatus = ref("");
 
-// Функция для обработки ошибок API
-const handleApiError = (error) => {
-  console.error('API Error:', error);
-  
-  // Специальная обработка для ошибки 400 с "транзакция уже есть"
-  if (error.response?.status === 400 && 
-      error.response?.data?.detail === "транзакция уже есть") {
-    walletStore.showMessage('Транзакция уже существует. Проверьте историю операций.', 'warning');
-    return;
-  }
-  
-  // Если это ошибка валидации от FastAPI
-  if (error.response?.data?.detail && Array.isArray(error.response.data.detail)) {
-    const validationErrors = error.response.data.detail;
-    
-    for (const err of validationErrors) {
-      if (err.type === 'int_parsing' && err.loc?.includes('amount')) {
-        walletStore.showMessage('Сумма должна быть целым числом. Дробные суммы не поддерживаются.', 'error');
-        return;
-      }
-      if (err.type === 'value_error' && err.loc?.includes('amount')) {
-        walletStore.showMessage('Некорректная сумма. Проверьте введенное значение.', 'error');
-        return;
-      }
-    }
-    
-    // Общая ошибка валидации
-    walletStore.showMessage('Ошибка в данных. Проверьте введенную информацию.', 'error');
-  } else if (error.response?.data?.detail && typeof error.response.data.detail === 'string') {
-    // Если detail - строка
-    walletStore.showMessage(error.response.data.detail, 'error');
-  } else if (error.message) {
-    walletStore.showMessage(error.message, 'error');
-  } else {
-    walletStore.showMessage('Произошла ошибка при создании платежа', 'error');
-  }
-};
-
-// Функция для нормализации числа (заменяет запятую на точку и очищает от лишних символов)
 const normalizeNumber = (value) => {
   if (!value) return "";
-  
-  // Заменяем запятую на точку
-  let normalized = value.toString().replace(/,/g, '.');
-  
-  // Убираем все символы кроме цифр, точки и знака минус
-  normalized = normalized.replace(/[^\d.-]/g, '');
-  
-  // Оставляем только одну точку
-  const parts = normalized.split('.');
-  if (parts.length > 2) {
-    normalized = parts[0] + '.' + parts.slice(1).join('');
-  }
-  
+  let normalized = value.toString().replace(/,/g, ".").replace(/[^\d.-]/g, "");
+  const parts = normalized.split(".");
+  if (parts.length > 2) normalized = parts[0] + "." + parts.slice(1).join("");
   return normalized;
 };
 
-// Обработчик ввода суммы
 const handleAmountInput = (event) => {
-  const value = event.target.value;
-  // Для целых чисел убираем дробную часть при нормализации
-  let normalized = normalizeNumber(value);
-  
-  // Если есть дробная часть, убираем её
-  if (normalized.includes('.')) {
-    const parts = normalized.split('.');
-    normalized = parts[0]; // Берем только целую часть
-  }
-  
+  let normalized = normalizeNumber(event.target.value);
+  if (normalized.includes(".")) normalized = normalized.split(".")[0];
   localAmount.value = normalized;
-  
-  // Обновляем значение в store только если это валидное целое число
   const numValue = parseInt(normalized);
-  if (!isNaN(numValue) && numValue > 0) {
-    walletStore.amount = normalized;
-  } else if (normalized === "") {
-    walletStore.amount = "";
-  }
+  if (!isNaN(numValue) && numValue > 0) walletStore.amount = normalized;
+  else if (normalized === "") walletStore.amount = "";
 };
 
-// Функция для быстрого выбора суммы
 const selectQuickAmount = (amount) => {
   localAmount.value = amount.toString();
   walletStore.amount = amount.toString();
 };
 
-// Функции для обработки выбора способа оплаты
 const handleCopyLink = async (url) => {
-  console.log('📋 Copy link handler called with URL:', url);
-  copyStatus.value = 'copying';
-  
+  copyStatus.value = "copying";
   try {
     await navigator.clipboard.writeText(url);
-    copyStatus.value = 'copied';
-    walletStore.showMessage('Ссылка скопирована в буфер обмена', 'success');
-    console.log('✅ Link copied successfully');
-    
-    // Сбрасываем статус через 2 секунды
-    setTimeout(() => {
-      copyStatus.value = '';
-    }, 2000);
-  } catch (error) {
-    copyStatus.value = 'error';
-    console.error('❌ Failed to copy link:', error);
-    walletStore.showMessage('Не удалось скопировать ссылку', 'error');
-    
-    // Сбрасываем статус через 2 секунды
-    setTimeout(() => {
-      copyStatus.value = '';
-    }, 2000);
+    copyStatus.value = "copied";
+    walletStore.showMessage("Ссылка скопирована в буфер обмена", "success");
+    setTimeout(() => (copyStatus.value = ""), 2000);
+  } catch (_error) {
+    copyStatus.value = "error";
+    walletStore.showMessage("Не удалось скопировать ссылку", "error");
+    setTimeout(() => (copyStatus.value = ""), 2000);
   }
-  // НЕ закрываем модальное окно
 };
 
 const handleOpenInApp = (url) => {
-  console.log('📱 Open in app handler called with URL:', url);
-  // Переходим на страницу оплаты с URL в параметрах
-  router.push({ 
-    name: 'payment', 
-    query: { url: url }
-  });
+  router.push({ name: "payment", query: { url } });
   showPaymentChoiceModal.value = false;
 };
 
 const closePaymentModal = () => {
-  console.log('❌ Close payment modal called');
-  copyStatus.value = ''; // Сбрасываем статус копирования
+  copyStatus.value = "";
   showPaymentChoiceModal.value = false;
 };
 
-// Функции для модального окна
-const copyPaymentLink = () => {
-  handleCopyLink(currentPaymentUrl.value);
-};
-
-const openPaymentInApp = () => {
-  handleOpenInApp(currentPaymentUrl.value);
-};
-
-// Добавляем watcher для отслеживания состояния модального окна
-watch(showPaymentChoiceModal, (newVal, oldVal) => {
-  console.log('🎭 Modal state changed:', { from: oldVal, to: newVal });
-});
-
 const createInvoice2 = async () => {
-  console.log('🚀 createInvoice called');
-  console.log('📊 Current state:', {
-    isDisabled: isDisabled.value,
-    localAmount: localAmount.value,
-    selectedNetwork: selectedNetwork.value,
-    showPaymentChoiceModal: showPaymentChoiceModal.value
-  });
-  
   if (isDisabled.value) return;
-
-  // Валидация суммы
-  const cleanAmount = localAmount.value.replace(/[^\d]/g, ''); // Только цифры
+  const cleanAmount = localAmount.value.replace(/[^\d]/g, "");
   const numAmount = parseInt(cleanAmount);
-  
-  if (!cleanAmount || isNaN(numAmount) || numAmount <= 0) {
-    walletStore.showMessage('Введите корректную сумму в USDT', 'error');
-    return;
-  }
-
-  // Минимальная сумма
-  if (numAmount < 1) {
-    walletStore.showMessage('Минимальная сумма для пополнения: 1 USDT', 'error');
-    return;
-  }
-
-  // Максимальная сумма для безопасности
-  if (numAmount > 10000) {
-    walletStore.showMessage('Максимальная сумма для пополнения: 10,000 USDT', 'error');
-    return;
-  }
+  if (!cleanAmount || isNaN(numAmount) || numAmount <= 0) return walletStore.showMessage("Введите корректную сумму в USDT", "error");
+  if (numAmount < 1) return walletStore.showMessage("Минимальная сумма для пополнения: 1 USDT", "error");
+  if (numAmount > 10000) return walletStore.showMessage("Максимальная сумма для пополнения: 10,000 USDT", "error");
 
   isDisabled.value = true;
   isCreatingInvoice.value = true;
-
   try {
-    // Устанавливаем целое число как строку
     walletStore.amount = Math.floor(numAmount).toString();
-    console.log('Creating invoice with amount:', walletStore.amount);
-    
     const url = await walletStore.createInvoice(selectedNetwork.value);
-    console.log('Received payment URL:', url);
-    console.log('URL type:', typeof url);
-    console.log('URL truthy:', !!url);
-    
-    // Сохраняем URL для модального окна
     if (url && url.trim()) {
-      console.log('✅ Received valid URL:', url);
       currentPaymentUrl.value = url.trim();
-      currentNetworkName.value = networks.find(n => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
-      console.log('🔄 Showing payment choice modal...');
+      currentNetworkName.value = networks.find((n) => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
       showPaymentChoiceModal.value = true;
-      console.log('✅ showPaymentChoiceModal.value:', showPaymentChoiceModal.value);
     } else {
-      console.error('Invalid URL received from createInvoice:', url);
-      walletStore.showMessage('Не удалось получить ссылку для оплаты', 'error');
+      walletStore.showMessage("Не удалось получить ссылку для оплаты", "error");
     }
   } catch (error) {
-    console.error('Error in createInvoice:', error);
-    handleApiError(error);
+    walletStore.showMessage(error?.response?.data?.detail || "Произошла ошибка при создании платежа", "error");
   } finally {
     isCreatingInvoice.value = false;
-    setTimeout(() => {
-      isDisabled.value = false;
-    }, 500);
+    setTimeout(() => (isDisabled.value = false), 500);
   }
 };
 
-// Проверяем таймер при загрузке страницы
-onMounted(() => {
-  walletStore.startInvoiceTimer();
-});
-
+watch(showPaymentChoiceModal, () => {});
+onMounted(() => walletStore.startInvoiceTimer());
 </script>
+
 <template>
-  <transition name="fade-down" appear>
+  <div class="deposit-page">
     <header class="header">
-      <img
-        class="arrow"
-        src="../assets/arrow-left.svg"
-        alt=""
-        @click="walletStore.goBack()"
-      />
+      <img class="arrow" src="../assets/arrow-left.svg" alt="back" @click="walletStore.goBack()" />
       <h1>{{ t("deposit_page") }}</h1>
       <div class="emp"></div>
     </header>
-  </transition>
-  <transition name="fade-scale" appear>
-    <main class="container deposit-page">
-    <div class="form-container">
-      <div class="input-section">
-        <div class="group">
-          <input 
-            type="text" 
-            placeholder="Введите сумму" 
-            id="amount" 
-            v-model="localAmount"
-            @input="handleAmountInput"
-            inputmode="numeric"
-          />
-          <span class="group-item">USDT</span>
-        </div>
-        
-        <div class="quick-amounts">
-          <div class="amounts-grid">
-            <button 
-              v-for="amount in [5, 10, 25, 50, 100]" 
-              :key="amount"
-              class="amount-btn"
-              :class="{ active: localAmount === amount.toString() }"
-              @click="selectQuickAmount(amount)"
-              type="button"
-            >
-              {{ amount }}
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="network-selector">
-        <h3>Выберите сеть</h3>
-        <div class="networks-list">
-          <div 
-            v-for="network in networks" 
-            :key="network.id" 
-            class="network-item" 
-            :class="{ active: selectedNetwork === network.id }"
-            @click="selectedNetwork = network.id"
-          >
-            <div class="network-icon">
-              <img :src="`/assets/${network.icon}.png`" alt="">
-            </div>
-            <div class="network-info">
-              <span class="network-name">{{ network.name }}</span>
-            </div>
-            <div class="network-check" v-if="selectedNetwork === network.id">
-              <div class="check-icon"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <button 
-      class="btn" 
-      :class="{ loading: isCreatingInvoice || isDisabled, 'rate-limited': walletStore.remainingInvoiceTime > 0 }"
-      :disabled="isCreatingInvoice || isDisabled || walletStore.remainingInvoiceTime > 0"
-      @click="createInvoice2()"
-    >
-      <div class="btn-content">
-        <div class="loader" v-if="isCreatingInvoice || isDisabled"></div>
-        <span v-if="walletStore.remainingInvoiceTime > 0" class="timer-text">
-          Подождите {{ walletStore.remainingInvoiceTime }}с
-        </span>
-        <span v-else-if="!isCreatingInvoice && !isDisabled">{{ t("continue") }}</span>
-        <span v-else-if="isCreatingInvoice">Создание платежа...</span>
-        <span v-else>{{ t("processing") }}</span>
-      </div>
-    </button>
-    </main>
-  </transition>
 
-  <!-- Модальное окно выбора способа оплаты -->
-  <div 
-    v-if="showPaymentChoiceModal" 
-    class="payment-modal-overlay"
-    @click.self="closePaymentModal"
-  >
-    <div class="payment-modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Способ оплаты</h3>
-        <p class="modal-subtitle">Выберите удобный способ оплаты счёта</p>
-      </div>
-      
-      <div class="payment-methods">
-        <button 
-          class="payment-method-btn" 
-          :class="{ 
-            'copying': copyStatus === 'copying', 
-            'copied': copyStatus === 'copied',
-            'error': copyStatus === 'error'
-          }"
-          @click="copyPaymentLink"
-          :disabled="copyStatus === 'copying'"
-        >
-          <div class="method-icon">
-            <span v-if="copyStatus === 'copying'">⏳</span>
-            <span v-else-if="copyStatus === 'copied'">✅</span>
-            <span v-else-if="copyStatus === 'error'">❌</span>
-            <span v-else>📋</span>
-          </div>
-          <div class="method-text">
-            <div class="method-title">
-              <span v-if="copyStatus === 'copying'">Копирование...</span>
-              <span v-else-if="copyStatus === 'copied'">Ссылка скопирована!</span>
-              <span v-else-if="copyStatus === 'error'">Ошибка копирования</span>
-              <span v-else>Скопировать ссылку</span>
-            </div>
-            <div class="method-description">
-              <span v-if="copyStatus === 'copied'">Ссылка сохранена в буфере обмена</span>
-              <span v-else-if="copyStatus === 'error'">Попробуйте еще раз</span>
-              <span v-else>Ссылку можно открыть в любом браузере</span>
-            </div>
-          </div>
-        </button>
-        
-        <button 
-          class="payment-method-btn" 
-          @click="openPaymentInApp"
-        >
-          <div class="method-icon">💳</div>
-          <div class="method-text">
-            <div class="method-title">Открыть в приложении</div>
-            <div class="method-description">Быстрая оплата без перехода</div>
-          </div>
-        </button>
-      </div>
-      
-      <button class="modal-close-btn" @click="closePaymentModal">
-        Отмена
+    <main class="content">
+      <section class="sheet-card">
+        <label class="field-label">Amount</label>
+        <div class="amount-input-wrap">
+          <input type="text" placeholder="0" :value="localAmount" @input="handleAmountInput" inputmode="numeric" />
+          <span>USDT</span>
+        </div>
+
+        <div class="quick-grid">
+          <button v-for="amount in [5, 10, 25, 50, 100]" :key="amount" class="quick" :class="{ active: localAmount === amount.toString() }" @click="selectQuickAmount(amount)">
+            {{ amount }}
+          </button>
+        </div>
+
+        <label class="field-label">Network</label>
+        <div class="network-list">
+          <button v-for="network in networks" :key="network.id" class="network" :class="{ active: selectedNetwork === network.id }" @click="selectedNetwork = network.id">
+            <div class="left"><img :src="`/assets/${network.icon}.png`" alt="icon" /><span>{{ network.name }}</span></div>
+            <span class="dot" v-if="selectedNetwork === network.id">●</span>
+          </button>
+        </div>
+      </section>
+
+      <button class="cta" :disabled="isCreatingInvoice || isDisabled || walletStore.remainingInvoiceTime > 0" @click="createInvoice2()">
+        <span v-if="walletStore.remainingInvoiceTime > 0">Подождите {{ walletStore.remainingInvoiceTime }}с</span>
+        <span v-else-if="isCreatingInvoice">Создание платежа...</span>
+        <span v-else>{{ t("continue") }}</span>
       </button>
+    </main>
+
+    <div v-if="showPaymentChoiceModal" class="modal-overlay" @click.self="closePaymentModal">
+      <div class="modal">
+        <h3>Способ оплаты</h3>
+        <p>{{ currentNetworkName }}</p>
+        <button class="secondary" :disabled="copyStatus === 'copying'" @click="handleCopyLink(currentPaymentUrl)">
+          <span v-if="copyStatus === 'copied'">Ссылка скопирована</span>
+          <span v-else-if="copyStatus === 'copying'">Копирование...</span>
+          <span v-else>Скопировать ссылку</span>
+        </button>
+        <button class="cta" @click="handleOpenInApp(currentPaymentUrl)">Открыть в приложении</button>
+        <button class="ghost" @click="closePaymentModal">Отмена</button>
+      </div>
     </div>
   </div>
-
 </template>
+
 <style scoped>
-.header {
-  padding: 20px 15px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.emp {
-  width: 32px;
-}
-
-h1 {
-  color: #141414;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 0 0 150px 0;
-  overflow-y: auto;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  min-height: calc(100vh - 80px);
-}
-
-/* Исправление для маленьких экранов iPhone 5/SE */
-@media (max-height: 600px) and (max-width: 400px) {
-  .container {
-    padding: 0 20px 80px 20px; /* Уменьшаем нижний padding */
-    min-height: calc(100vh - 60px);
-  }
-  
-  .form-container {
-    gap: 15px; /* Уменьшаем gap между элементами */
-    margin-bottom: 15px;
-  }
-  
-  .network-selector {
-    margin-top: 15px;
-  }
-  
-  .btn {
-    padding: 12px 16px; /* Уменьшаем padding кнопки */
-    font-size: 13px;
-  }
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 32px 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-  border: none;
-  border-radius: 0;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  position: relative;
-  overflow: hidden;
-  width: 100vw;
-  margin: 0;
-  margin-left: calc(-50vw + 50%);
-}
-
-.form-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #deec51, #d6e34a, #c9d93d);
-}
-
-.btn {
-  width: calc(100% - 40px);
-  margin: 0 20px 20px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 20px 24px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 17px;
-  color: #1a1a1a;
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
-  border: none;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 
-    0 12px 32px rgba(222, 236, 81, 0.3),
-    0 6px 16px rgba(222, 236, 81, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.6s ease;
-}
-
-.btn:hover:not(:disabled)::before {
-  left: 100%;
-}
-
-.btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 
-    0 20px 40px rgba(222, 236, 81, 0.4),
-    0 10px 20px rgba(222, 236, 81, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.btn:active:not(:disabled) {
-  transform: translateY(-1px) scale(0.99);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-  color: #64748b;
-  box-shadow: none;
-}
-
-.btn.loading {
-  background: linear-gradient(135deg, #d4d926 0%, #c9d93d 100%);
-}
-
-.btn.rate-limited {
-  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-  color: #64748b;
-  opacity: 0.7;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.timer-text {
-  font-weight: 600;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.btn-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.loader {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #1a1a1a;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  outline: none;
-  font-size: 16px;
-  font-weight: 500;
-  color: #1e293b;
-  caret-color: #000000;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #deec51;
-  background: #ffffff;
-  box-shadow: 
-    0 0 0 4px rgba(222, 236, 81, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
-}
-
-input::placeholder,
-textarea::placeholder,
-select::placeholder {
-  color: #a5a5a5;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 19.12px;
-}
-
-/* Стили для мобильной клавиатуры с десятичными числами */
-input[inputmode="decimal"] {
-  -webkit-appearance: none;
-  -moz-appearance: textfield;
-  appearance: none;
-}
-
-input[inputmode="decimal"]::-webkit-outer-spin-button,
-input[inputmode="decimal"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.input-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.group {
-  position: relative;
-}
-
-.group-item {
-  position: absolute;
-  right: 4%;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.hint {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-top: 10px;
-  border-left: 3px solid #deec51;
-}
-
-.hint span {
-  font-size: 12px;
-  color: #6c757d;
-  line-height: 1.4;
-}
-
-.quick-amounts {
-  margin-top: 12px;
-}
-
-.amounts-grid {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.amount-btn {
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 11px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-  min-width: 40px;
-  flex: 1;
-}
-
-.amount-btn:hover {
-  border-color: #deec51;
-  background-color: #f2f8d1;
-  color: #141414;
-}
-
-.amount-btn.active {
-  background-color: #deec51;
-  border-color: #deec51;
-  color: #141414;
-  font-weight: 500;
-}
-
-.network-selector {
-  margin-top: 20px;
-}
-
-.network-selector h3 {
-  margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-  text-align: center;
-}
-
-.networks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.network-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #e2e8f0;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.network-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(222, 236, 81, 0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.network-item:hover::before {
-  left: 100%;
-}
-
-.network-item:hover {
-  border-color: #deec51;
-  transform: translateY(-2px);
-  box-shadow: 
-    0 12px 32px rgba(0, 0, 0, 0.1),
-    0 6px 16px rgba(222, 236, 81, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.network-item.active {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid #deec51;
-  box-shadow: 
-    0 8px 24px rgba(222, 236, 81, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.network-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-}
-
-.icon-placeholder {
-  width: 32px;
-  height: 32px;
-  background-color: #deec51;
-  border-radius: 50%;
-}
-
-.network-info {
-  flex: 1;
-  margin-left: 10px;
-}
-
-.network-name {
-  font-size: 14px;
-  font-weight: 400;
-  color: #141414;
-}
-
-.network-check {
-  width: 24px;
-  height: 24px;
-}
-
-.check-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #deec51;
-  position: relative;
-}
-
-.check-icon:after {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 6px;
-  border-left: 2px solid #141414;
-  border-bottom: 2px solid #141414;
-  transform: rotate(-45deg);
-  top: 8px;
-  left: 6px;
-}
-
-/* Дополнительные исправления для очень маленьких экранов */
-@media (max-height: 600px) {
-  .header {
-    padding: 15px 15px; /* Уменьшаем padding header */
-  }
-  
-  .network-item {
-    padding: 12px 16px; /* Уменьшаем padding элементов сети */
-  }
-  
-  .network-icon {
-    width: 36px;
-    height: 36px;
-  }
-  
-  input {
-    padding: 12px 16px; /* Уменьшаем padding input */
-  }
-}
-
-/* Модальное окно выбора способа оплаты в стиле приложения */
-.payment-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
-  animation: modalOverlayAppear 0.3s ease-out;
-}
-
-@keyframes modalOverlayAppear {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(12px);
-  }
-}
-
-.payment-modal {
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 24px;
-  padding: 32px 28px;
-  width: 90%;
-  max-width: 400px;
-  margin: 0 20px;
-  box-shadow: 
-    0 32px 64px -12px rgba(0, 0, 0, 0.25),
-    0 20px 25px -5px rgba(0, 0, 0, 0.15),
-    0 10px 10px -5px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  animation: modalAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  backdrop-filter: blur(20px);
-  position: relative;
-  overflow: hidden;
-}
-
-.payment-modal::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  pointer-events: none;
-}
-
-@keyframes modalAppear {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(-50px);
-    filter: blur(4px);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02) translateY(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
-  }
-}
-
-.modal-header {
-  text-align: center;
-  margin-bottom: 28px;
-  position: relative;
-  z-index: 1;
-}
-
-.modal-header h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
-}
-
-.modal-header p {
-  font-size: 15px;
-  color: #6b7280;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.payment-info {
-  background: rgba(222, 236, 81, 0.1);
-  border: 1px solid rgba(222, 236, 81, 0.2);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  position: relative;
-  z-index: 1;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.info-item:not(:last-child) {
-  border-bottom: 1px solid rgba(222, 236, 81, 0.2);
-}
-
-.info-label {
-  font-size: 15px;
-  color: #374151;
-  font-weight: 600;
-}
-
-.info-value {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-  background: rgba(222, 236, 81, 0.2);
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-
-.payment-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
-  position: relative;
-  z-index: 1;
-}
-
-.payment-method {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(222, 236, 81, 0.3);
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: left;
-  width: 100%;
-  backdrop-filter: blur(10px);
-  position: relative;
-  overflow: hidden;
-}
-
-.payment-method:hover {
-  background: rgba(222, 236, 81, 0.1);
-  border-color: rgba(222, 236, 81, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(222, 236, 81, 0.2);
-}
-
-.payment-method:active {
-  transform: translateY(0);
-}
-
-.method-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(222, 236, 81, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #84cc16;
-  flex-shrink: 0;
-}
-
-.copy-method .method-icon {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.method-content {
-  flex: 1;
-}
-
-.method-title {
-  display: block;
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 2px;
-}
-
-.method-subtitle {
-  display: block;
-  font-size: 13px;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 16px;
-  position: relative;
-  z-index: 1;
-}
-
-.cancel-btn {
-  flex: 1;
-  padding: 16px 24px;
-  border-radius: 16px;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: none;
-  background: rgba(241, 245, 249, 0.8);
-  color: #64748b;
-  backdrop-filter: blur(10px);
-}
-
-.cancel-btn:hover {
-  background: rgba(226, 232, 240, 0.9);
-  color: #475569;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-/* Модальное окно выбора способа оплаты */
-.payment-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: backdropAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  padding: 20px;
-}
-
-@keyframes backdropAppear {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-}
-
-.payment-modal {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 30px;
-  min-width: 320px;
-  max-width: 400px;
-  width: 100%;
-  position: relative;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(222, 236, 81, 0.3);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.15),
-    0 1px 0 rgba(255, 255, 255, 0.8) inset;
-  animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  transform: scale(0.9) translateY(20px);
-}
-
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.modal-header {
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.modal-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #000000;
-  margin-bottom: 8px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.modal-subtitle {
-  font-size: 15px;
-  color: #666666;
-  line-height: 1.4;
-}
-
-.payment-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 25px;
-}
-
-.payment-method-btn {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
-  border: 2px solid #e0e0e0;
-  border-radius: 16px;
-  padding: 18px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #000000;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.payment-method-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.4), 
-    transparent
-  );
-  transition: left 0.6s ease;
-}
-
-.payment-method-btn:hover::before {
-  left: 100%;
-}
-
-.payment-method-btn:hover {
-  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
-  border-color: #deec51;
-  color: #000000;
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 25px rgba(222, 236, 81, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.payment-method-btn:active {
-  transform: translateY(0);
-  box-shadow: 
-    0 4px 12px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.method-icon {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #deec51, #f9f871);
-  border-radius: 8px;
-  color: #000000;
-  font-size: 14px;
-  box-shadow: 0 2px 4px rgba(222, 236, 81, 0.4);
-}
-
-.method-text {
-  flex: 1;
-  text-align: left;
-}
-
-.method-title {
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-
-.method-description {
-  font-size: 13px;
-  color: #666666;
-  font-weight: 400;
-}
-
-/* Состояния кнопки копирования */
-.payment-method-btn.copying {
-  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
-  border-color: #87ceeb;
-  cursor: not-allowed;
-}
-
-.payment-method-btn.copied {
-  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
-  border-color: #deec51;
-  animation: pulse-success 0.5s ease-out;
-}
-
-.payment-method-btn.error {
-  background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
-  border-color: #ff6b6b;
-  animation: shake 0.5s ease-out;
-}
-
-@keyframes pulse-success {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-@keyframes shake {
-  0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-}
-
-.modal-close-btn {
-  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-  border: 2px solid #d0d0d0;
-  border-radius: 16px;
-  padding: 14px 24px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  color: #000000;
-  width: 100%;
-  transition: all 0.3s ease;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.modal-close-btn:hover {
-  background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
-  border-color: #999999;
-  color: #000000;
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 480px) {
-  .payment-modal {
-    margin: 0 15px;
-    padding: 25px 20px;
-    min-width: auto;
-  }
-  
-  .modal-title {
-    font-size: 20px;
-  }
-  
-  .payment-method-btn {
-    padding: 16px;
-    font-size: 15px;
-  }
-  
-  .method-icon {
-    width: 22px;
-    height: 22px;
-  }
-}
-
-/* Специфично для iPhone SE и подобных устройств */
-@media (max-width: 375px) and (max-height: 667px) {
-  .container {
-    padding: 0 0 180px 0;
-  }
-  
-  .btn {
-    margin-bottom: 30px;
-  }
-}
-
-/* Дополнительные стили для корректного отображения на всю ширину */
-@media (max-width: 768px) {
-  .container {
-    padding-bottom: 160px;
-  }
-  
-  .form-container {
-    padding: 24px 16px;
-  }
-}
+.deposit-page { min-height: 100vh; background: #f1f5f9; }
+.header { padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+.arrow, .emp { width: 24px; height: 24px; }
+h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
+
+.content { padding: 6px 16px 124px; display: grid; gap: 16px; }
+.sheet-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); display: grid; gap: 10px; }
+.field-label { font-size: 14px; font-weight: 500; color: #64748b; }
+
+.amount-input-wrap { position: relative; }
+.amount-input-wrap input { width: 100%; height: 56px; padding: 0 16px; border-radius: 16px; border: 1px solid #dbe3ef; background: #f8fafc; color: #0f172a; font-weight: 600; }
+.amount-input-wrap span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 14px; }
+
+.quick-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 4px; }
+.quick { min-height: 38px; border-radius: 12px; background: #eff6ff; color: #1e40af; font-size: 12px; font-weight: 600; }
+.quick.active { background: #2563eb; color: #fff; }
+
+.network-list { display: grid; gap: 8px; }
+.network { min-height: 54px; border-radius: 14px; border: 1px solid #e2e8f0; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; }
+.network.active { background: #eff6ff; border-color: #3b82f6; }
+.left { display: flex; gap: 10px; align-items: center; }
+.left img { width: 24px; height: 24px; }
+.left span { color: #0f172a; font-weight: 500; }
+.dot { color: #2563eb; }
+
+.cta { min-height: 54px; border-radius: 16px; background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; font-weight: 600; box-shadow: 0 12px 26px rgba(37,99,235,.28); }
+.cta:disabled { opacity: .55; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: grid; place-items: center; z-index: 120; padding: 16px; }
+.modal { width: 100%; max-width: 380px; background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; box-shadow: 0 20px 40px rgba(15,23,42,.2); padding: 16px; display: grid; gap: 10px; }
+.modal h3 { margin: 0; color: #0f172a; font-weight: 600; }
+.modal p { margin: 0; color: #64748b; }
+.secondary, .ghost { min-height: 48px; border-radius: 14px; font-weight: 600; }
+.secondary { background: #eff6ff; color: #1e40af; }
+.ghost { background: #f8fafc; color: #64748b; }
 </style>

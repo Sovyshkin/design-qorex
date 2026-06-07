@@ -358,7 +358,7 @@ h1 {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #deec51, #d6e34a, #c9d93d);
+  background: linear-gradient(90deg, #2563EB, #3B82F6, #1E40AF);
 }
 
 .btn {
@@ -373,7 +373,7 @@ h1 {
   font-weight: 600;
   font-size: 17px;
   color: #1a1a1a;
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   border: none;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -539,7 +539,7 @@ select::placeholder {
 }
 
 .network-item:hover {
-  border-color: #deec51;
+  border-color: #2563EB;
   transform: translateY(-2px);
   box-shadow: 
     0 12px 32px rgba(0, 0, 0, 0.1),
@@ -549,7 +549,7 @@ select::placeholder {
 
 .network-item.active {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid #deec51;
+  border: 2px solid #2563EB;
   box-shadow: 
     0 8px 24px rgba(222, 236, 81, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -566,7 +566,7 @@ select::placeholder {
 .icon-placeholder {
   width: 32px;
   height: 32px;
-  background-color: #deec51;
+  background-color: #2563EB;
   border-radius: 50%;
 }
 
@@ -590,7 +590,7 @@ select::placeholder {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #deec51;
+  background-color: #2563EB;
   position: relative;
 }
 
@@ -599,8 +599,8 @@ select::placeholder {
   position: absolute;
   width: 12px;
   height: 6px;
-  border-left: 2px solid #141414;
-  border-bottom: 2px solid #141414;
+  border-left: 2px solid #0F172A;
+  border-bottom: 2px solid #0F172A;
   transform: rotate(-45deg);
   top: 8px;
   left: 6px;
@@ -625,7 +625,7 @@ select:disabled {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #F1F5F9;
 }
 
 .balance-info {
@@ -649,7 +649,7 @@ select:disabled {
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(180deg, #deec51 0%, #d6e34a 100%);
+  background: linear-gradient(180deg, #2563EB 0%, #3B82F6 100%);
 }
 
 .balance-value {

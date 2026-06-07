@@ -388,7 +388,7 @@ onMounted(() => {
 .transaction-page {
   width: 100%;
   height: 100vh;
-  color: #141414;
+  color: #0F172A;
   display: flex;
   flex-direction: column;
 }
@@ -403,7 +403,7 @@ onMounted(() => {
 }
 
 h1 {
-  color: #141414;
+  color: #0F172A;
 }
 
 .emp {
@@ -522,13 +522,13 @@ h1 {
 }
 
 .view-invoice-btn {
-  background: linear-gradient(135deg, #deec51 0%, #c4d639 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #c4d639 100%);
   border: none;
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 10px;
   font-weight: 500;
-  color: #141414;
+  color: #0F172A;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -544,7 +544,7 @@ h1 {
 }
 
 .wrap-img {
-  background-color: #deec51;
+  background-color: #2563EB;
   padding: 8px;
   border-radius: 12px;
   display: flex;
@@ -691,8 +691,8 @@ h1 {
 }
 
 .payment-method-btn:hover {
-  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
-  border-color: #deec51;
+  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
+  border-color: #2563EB;
   color: #000000;
   transform: translateY(-2px);
   box-shadow: 
@@ -733,8 +733,8 @@ h1 {
 }
 
 .payment-method-btn.copied {
-  background: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
-  border-color: #deec51;
+  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
+  border-color: #2563EB;
   animation: pulse-success 0.5s ease-out;
 }
 

@@ -10,470 +10,80 @@ const { t } = useI18n();
 const router = useRouter();
 
 const params = ref([
-  {
-    name: t("safety"),
-    icon: "safety",
-    route: "safety",
-  },
-  {
-    name: t("lang"),
-    icon: "lang",
-    route: "select_lang",
-  },
+  { name: t("safety"), route: "safety" },
+  { name: t("lang"), route: "select_lang" },
 ]);
 
 const aboutUs = ref([
-  {
-    name: t("official_accounts"),
-    icon: "telegram",
-    route: "accounts",
-  },
-  {
-    name: t("faq"),
-    icon: "faq",
-    route: "faq",
-  },
-  {
-    name: t("support"),
-    icon: "support",
-    route: "support",
-  },
-  {
-    name: t("info"),
-    icon: "info",
-    route: "info",
-  },
+  { name: t("official_accounts"), route: "accounts" },
+  { name: t("faq"), route: "faq" },
+  { name: t("support"), route: "support" },
+  { name: t("info"), route: "info" },
 ]);
 
-
-// Делаем реактивный computed для элементов профиля
 const referal = computed(() => [
-  {
-    name: t("email_add_profile"),
-    icon: "email",
-    route: "email_add",
-    show: walletStore.user.email ? false : true,
-  },
-  {
-    name: t("referal"),
-    icon: "referal",
-    route: "referal",
-    show: true,
-  },
-]);
-
-
-const support = ref([
-  {
-    name: t("support"),
-    icon: "support",
-    route: "support",
-  },
+  { name: t("email_add_profile"), route: "email_add", show: !walletStore.user.email },
+  { name: t("referal"), route: "referal", show: true },
 ]);
 
 const goRoute = (route) => {
-  try {
-    if (route == "faq") {
-      window.location.href = "https://gardawallet.com";
-    } else if (route == "support") {
-      window.location.href = "https://t.me/Gardawallet_Support_bot";
-    } else {
-      router.push({ name: route });
-    }
-  } catch (err) {
-
-  }
+  if (route === "faq") window.location.href = "https://gardawallet.com";
+  else if (route === "support") window.location.href = "https://t.me/Gardawallet_Support_bot";
+  else router.push({ name: route });
 };
 
 onMounted(async () => {
-  try {
-    // НЕ вызываем getUser() здесь - это может вызвать рекурсию!
-    // Данные пользователя должны быть уже загружены в main.vue
-    
-    // Проверяем статус 2FA только если есть данные пользователя
-    if (walletStore.user?.tg_id && !walletStore.isGettingUser) {
-      await walletStore.check2FAStatus();
-    }
-  } catch (err) {
-    console.error('Error in profile onMounted:', err);
-  }
+  if (walletStore.user?.tg_id && !walletStore.isGettingUser) await walletStore.check2FAStatus();
 });
 </script>
 
 <template>
-  <main class="profile">
-    <transition name="user-appear" appear>
-      <div class="user profile-item">
-        <div class="wrap-avatar">
-          <img v-if="walletStore.userTg.photo_url" :src="walletStore.userTg.photo_url" alt="" />
-          <div v-else class="default-avatar">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
-            </svg>
-          </div>
-        </div>
-        <span class="name">
+  <main class="profile-page">
+    <section class="profile-user">
+      <div class="avatar"><img v-if="walletStore.userTg.photo_url" :src="walletStore.userTg.photo_url" alt="avatar" /></div>
+      <div>
+        <h1>
           <span v-if="walletStore.user.username">@{{ walletStore.user.username }}</span>
           <span v-else-if="walletStore.userTg.username">@{{ walletStore.userTg.username }}</span>
           <span v-else>{{ walletStore.userTg.first_name }} {{ walletStore.userTg.last_name }}</span>
-        </span>
+        </h1>
+        <p>Premium Account</p>
       </div>
-    </transition>
-    <transition name="referal-appear" appear>
-      <div class="referal profile-item">
-        <template v-for="(item, i) in referal" :key="i">
-          <div class="list-item" v-if="item.show" @click="goRoute(item.route)">
-            <div class="info">
-              <div class="wrap-img">
-                <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
-              </div>
-              <span class="list-value">{{ item.name }}</span>
-            </div>
-            <img
-              v-if="item.isEnabled"
-              class="arrow"
-              src="../assets/check.svg"
-              alt="enabled"
-            />
-            <img
-              v-else
-              class="arrow"
-              src="../assets/arrow-right.svg"
-              alt="arrow-right"
-            />
-          </div>
-        </template>
-      </div>
-    </transition>
-    <transition name="params-title-appear" appear>
-      <h2 class="profile-value">{{ t("params") }}</h2>
-    </transition>
-    <transition name="params-appear" appear>
-      <div class="params profile-item">
-        <div
-          class="list-item"
-          v-for="(item, i) in params"
-          :key="i"
-          @click="goRoute(item.route)"
-        >
-          <div class="info">
-            <div class="wrap-img">
-              <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
-            </div>
-            <span class="list-value">{{ item.name }}</span>
-          </div>
-          <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
-        </div>
-        
-        <!-- Переключатель темы -->
-        <div class="theme-toggle-wrapper">
-          <ThemeToggle />
-        </div>
-      </div>
-    </transition>
-    <transition name="donate-appear" appear>
-      <button class="btn donate-btn profile-item" @click="goRoute('donate')">
-        <span>Поддержать проект</span>
-      </button>
-    </transition>
-    <transition name="about-title-appear" appear>
-      <h2 class="profile-value">{{ t("aboutUs") }}</h2>
-    </transition>
-    <transition name="about-appear" appear>
-      <div class="about-us profile-item">
-        <div
-          class="list-item"
-          v-for="(item, i) in aboutUs"
-          :key="i"
-          @click="goRoute(item.route)"
-        >
-          <div class="info">
-            <div class="wrap-img">
-              <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
-            </div>
-            <span class="list-value">{{ item.name }}</span>
-          </div>
-          <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
-        </div>
-      </div>
-    </transition>
-    <!-- <div class="about-us profile-item">
-      <div
-        class="list-item"
-        v-for="(item, i) in support"
-        :key="i"
-        @click="goRoute(item.route)"
-      >
-        <div class="info">
-          <div class="wrap-img">
-            <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
-          </div>
-          <span class="list-value">{{ item.name }}</span>
-        </div>
-        <img class="arrow" src="../assets/arrow-right.svg" alt="arrow-right" />
-      </div>
-    </div> -->
-    <transition name="exit-appear" appear>
-      <button class="btn exit profile-item" @click="walletStore.logOut()">
-        {{ t("exit") }}
-      </button>
-    </transition>
+    </section>
+
+    <section class="profile-list">
+      <button class="profile-row" v-for="(item, i) in referal" :key="i" v-if="item.show" @click="goRoute(item.route)"><span>{{ item.name }}</span><b>›</b></button>
+    </section>
+
+    <section class="profile-list">
+      <button class="profile-row" v-for="(item, i) in params" :key="i" @click="goRoute(item.route)"><span>{{ item.name }}</span><b>›</b></button>
+      <div class="theme-wrap"><ThemeToggle /></div>
+    </section>
+
+    <button class="support-btn" @click="goRoute('donate')">Поддержать проект</button>
+
+    <section class="profile-list">
+      <button class="profile-row" v-for="(item, i) in aboutUs" :key="i" @click="goRoute(item.route)"><span>{{ item.name }}</span><b>›</b></button>
+    </section>
+
+    <button class="logout-btn" @click="walletStore.logOut()">{{ t('exit') }}</button>
   </main>
 </template>
 
 <style scoped>
-.profile {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px 15px 100px 15px;
-}
+.profile-page { min-height: 100vh; background: #f1f5f9; padding: 16px 16px 124px; display: grid; gap: 12px; }
+.profile-user { background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; padding: 16px; box-shadow: 0 10px 24px rgba(15,23,42,.08); display: flex; align-items: center; gap: 12px; }
+.avatar { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; background: #eff6ff; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
+.profile-user p { margin: 2px 0 0; color: #2563eb; font-size: 13px; }
 
-.profile-item {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.profile-value {
-  color: #141414;
-  font-weight: 300;
-}
-
-.list-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #fff;
-  transition: all 0.3s ease;
-  padding: 16px;
-  border-radius: 16px;
-}
-
-.list-value {
-  font-size: 14px;
-}
-
-.info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.wrap-img {
-  background-color: #deec51;
-  padding: 8px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.wrap-img img {
-  height: 24px;
-  width: 24px;
-}
-
-.arrow {
-  height: 24px;
-  width: 24px;
-  transition: transform 0.3s ease;
-}
-
-.list-item:hover .arrow {
-  transform: translateX(5px);
-  transition: transform 0.3s ease;
-}
-
-/* Стили для переключателя темы */
-.theme-toggle-wrapper {
-  padding: 0 16px;
-  margin-top: 8px;
-}
-
-.exit {
-  color: rgb(244, 44, 44);
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.user {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  background-color: #fff;
-  padding: 16px;
-  border-radius: 16px;
-}
-
-.wrap-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #deec51;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.wrap-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.default-avatar {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #141414;
-  background: #deec51;
-}
-
-.name {
-  font-size: 20px;
-  color: #141414;
-}
-
-/* Кнопка "Поддержать проект" */
-.donate-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 18px 24px;
-  border-radius: 16px;
-  font-weight: 600;
-  font-size: 16px;
-  color: #1a1a1a;
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
-  border: none;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 
-    0 12px 32px rgba(222, 236, 81, 0.3),
-    0 6px 16px rgba(222, 236, 81, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.donate-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.6s ease;
-}
-
-.donate-btn:hover::before {
-  left: 100%;
-}
-
-.donate-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 
-    0 20px 40px rgba(222, 236, 81, 0.4),
-    0 10px 20px rgba(222, 236, 81, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.donate-btn:active {
-  transform: translateY(-1px) scale(0.99);
-}
-
-.donate-icon {
-  font-size: 20px;
-  animation: heartbeat 1.5s ease-in-out infinite;
-}
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  10%, 30% { transform: scale(1.15); }
-  20%, 40% { transform: scale(1); }
-}
-
-/* Анимации появления профиля */
-.user-appear-enter-active {
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.1s;
-}
-.user-appear-enter-from {
-  opacity: 0;
-  transform: scale(0.9) translateY(-20px);
-}
-
-.referal-appear-enter-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.3s;
-}
-.referal-appear-enter-from {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.params-title-appear-enter-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.5s;
-}
-.params-title-appear-enter-from {
-  opacity: 0;
-  transform: translateY(-15px);
-}
-
-.params-appear-enter-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.6s;
-}
-.params-appear-enter-from {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.donate-appear-enter-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.75s;
-}
-.donate-appear-enter-from {
-  opacity: 0;
-  transform: scale(0.95) translateY(20px);
-}
-
-.about-title-appear-enter-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.8s;
-}
-.about-title-appear-enter-from {
-  opacity: 0;
-  transform: translateY(-15px);
-}
-
-.about-appear-enter-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 0.9s;
-}
-.about-appear-enter-from {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.exit-appear-enter-active {
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: 1.1s;
-}
-.exit-appear-enter-from {
-  opacity: 0;
-  transform: scale(0.9) translateY(20px);
-}
+.profile-list { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; box-shadow: 0 8px 22px rgba(15,23,42,.07); padding: 6px; display: grid; }
+.profile-row { min-height: 50px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
+.profile-row span { color: #0f172a; font-weight: 500; }
+.profile-row b { color: #94a3b8; font-size: 18px; }
+.theme-wrap { padding: 8px 8px 2px; }
+.support-btn, .logout-btn { min-height: 52px; border-radius: 16px; font-weight: 600; }
+.support-btn { background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; box-shadow: 0 12px 24px rgba(37,99,235,.25); }
+.logout-btn { background: #fff; border: 1px solid #fecaca; color: #ef4444; }
 </style>

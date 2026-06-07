@@ -376,7 +376,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #deec51, #b8d43c, #deec51);
+  background: linear-gradient(90deg, #2563EB, #b8d43c, #2563EB);
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
 }
@@ -384,7 +384,7 @@ onMounted(async () => {
 .icon-container {
   width: 120px;
   height: 120px;
-  background: #deec51;
+  background: #2563EB;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -417,9 +417,9 @@ onMounted(async () => {
 .instructions h2 {
   font-size: 20px;
   font-weight: 600;
-  color: #141414;
+  color: #0F172A;
   margin: 0 0 12px 0;
-  background: linear-gradient(135deg, #141414, #333);
+  background: linear-gradient(135deg, #0F172A, #333);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -446,7 +446,7 @@ onMounted(async () => {
 }
 
 .instructions li::marker {
-  color: #deec51;
+  color: #2563EB;
   font-weight: bold;
 }
 
@@ -465,8 +465,8 @@ onMounted(async () => {
   border-radius: 16px;
   font-weight: 600;
   font-size: 16px;
-  color: #141414;
-  background: linear-gradient(135deg, #deec51, #b8d43c);
+  color: #0F172A;
+  background: linear-gradient(135deg, #2563EB, #b8d43c);
   border: none;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -512,8 +512,8 @@ onMounted(async () => {
   border-radius: 12px;
   font-weight: 500;
   font-size: 16px;
-  color: #141414;
-  background-color: #deec51;
+  color: #0F172A;
+  background-color: #2563EB;
   border: none;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -684,7 +684,7 @@ onMounted(async () => {
 .key-text {
   font-family: monospace;
   font-size: 14px;
-  color: #141414;
+  color: #0F172A;
   word-break: break-all;
   flex: 1;
   margin-right: 12px;
@@ -725,7 +725,7 @@ onMounted(async () => {
 
 .paste-btn:hover {
   background-color: #e9ecef;
-  border-color: #deec51;
+  border-color: #2563EB;
 }
 
 .code-input {
@@ -745,7 +745,7 @@ onMounted(async () => {
 }
 
 .code-input:focus {
-  border-color: #deec51 !important;
+  border-color: #2563EB !important;
   box-shadow: 0 0 0 4px rgba(222, 236, 81, 0.2), 0 8px 25px rgba(0, 0, 0, 0.1);
   transform: scale(1.02);
 }
@@ -773,7 +773,7 @@ onMounted(async () => {
   justify-content: center;
   gap: 16px;
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 2px solid #deec51;
+  border: 2px solid #2563EB;
   border-radius: 20px;
   padding: 24px;
   margin: 20px 0;
@@ -784,7 +784,7 @@ onMounted(async () => {
 .status-icon {
   width: 48px;
   height: 48px;
-  background: #deec51;
+  background: #2563EB;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -806,7 +806,7 @@ onMounted(async () => {
 .status-content h2 {
   font-size: 18px;
   font-weight: 600;
-  color: #141414;
+  color: #0F172A;
   margin: 0 0 8px 0;
 }
 
@@ -926,7 +926,7 @@ onMounted(async () => {
 }
 
 .key-container:hover {
-  border-color: #deec51;
+  border-color: #2563EB;
   background-color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(222, 236, 81, 0.3);
@@ -959,7 +959,7 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   border: 4px solid rgba(222, 236, 81, 0.1);
-  border-top: 4px solid #deec51;
+  border-top: 4px solid #2563EB;
   border-radius: 50%;
   animation: spin 1.5s linear infinite;
 }
@@ -967,13 +967,13 @@ onMounted(async () => {
 .spinner-ring:nth-child(2) {
   animation-delay: 0.2s;
   border-color: rgba(222, 236, 81, 0.2);
-  border-top-color: #deec51;
+  border-top-color: #2563EB;
 }
 
 .spinner-ring:nth-child(3) {
   animation-delay: 0.4s;
   border-color: rgba(222, 236, 81, 0.3);
-  border-top-color: #deec51;
+  border-top-color: #2563EB;
 }
 
 .loading-text {
@@ -1146,7 +1146,7 @@ onMounted(async () => {
   }
 
   .instructions li::marker {
-    color: #deec51;
+    color: #2563EB;
   }
 
   .qr-block {
@@ -1196,7 +1196,7 @@ onMounted(async () => {
   }
 
   .code-input:focus {
-    border-color: #deec51 !important;
+    border-color: #2563EB !important;
     background: rgba(55, 55, 55, 0.95) !important;
   }
 
@@ -1212,7 +1212,7 @@ onMounted(async () => {
 
   .paste-btn:hover {
     background: rgba(55, 55, 55, 0.95);
-    border-color: #deec51;
+    border-color: #2563EB;
     color: #ffffff;
   }
 
@@ -1229,7 +1229,7 @@ onMounted(async () => {
 
   .status-card {
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(45, 45, 45, 0.9) 100%);
-    border: 2px solid #deec51;
+    border: 2px solid #2563EB;
   }
 
   .status-content h2 {

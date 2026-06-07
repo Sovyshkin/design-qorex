@@ -283,7 +283,7 @@ onMounted(async () => {
 }
 
 h1 {
-  color: #141414;
+  color: #0F172A;
 }
 
 .container {
@@ -346,7 +346,7 @@ h1 {
 }
 
 .wallet-card:hover {
-  border-color: #deec51;
+  border-color: #2563EB;
   transform: translateY(-2px) scale(1.01);
   box-shadow: 
     0 16px 48px rgba(0, 0, 0, 0.12),
@@ -436,7 +436,7 @@ h1 {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #deec51, #d6e34a, #c9d93d);
+  background: linear-gradient(90deg, #2563EB, #3B82F6, #1E40AF);
 }
 
 .form-container h3 {
@@ -463,7 +463,7 @@ h1 {
   font-weight: 600;
   font-size: 17px;
   color: #1a1a1a;
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   border: none;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -551,7 +551,7 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #deec51;
+  border-color: #2563EB;
   background: #ffffff;
   box-shadow: 
     0 0 0 4px rgba(222, 236, 81, 0.1),
@@ -601,7 +601,7 @@ select::placeholder {
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(180deg, #deec51 0%, #d6e34a 100%);
+  background: linear-gradient(180deg, #2563EB 0%, #3B82F6 100%);
 }
 
 .balance-value {
@@ -619,7 +619,7 @@ select::placeholder {
 .code-input-section h4 {
   font-size: 14px;
   font-weight: 500;
-  color: #141414;
+  color: #0F172A;
   margin: 0;
 }
 
@@ -635,7 +635,7 @@ select::placeholder {
   color: #1e293b;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
   outline: none;
-  caret-color: #deec51 !important;
+  caret-color: #2563EB !important;
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
   box-shadow: 
     0 4px 12px rgba(0, 0, 0, 0.05),
@@ -643,7 +643,7 @@ select::placeholder {
 }
 
 .code-input:focus {
-  border-color: #deec51 !important;
+  border-color: #2563EB !important;
   background: #ffffff !important;
   box-shadow: 
     0 0 0 4px rgba(222, 236, 81, 0.1),
@@ -744,7 +744,7 @@ select::placeholder {
 .two-factor-setup h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #141414;
+  color: #0F172A;
   margin: 0 0 12px 0;
 }
 
@@ -764,7 +764,7 @@ select::placeholder {
 .key-section h4 {
   font-size: 16px;
   font-weight: 500;
-  color: #141414;
+  color: #0F172A;
   margin: 0 0 12px 0;
 }
 
@@ -782,14 +782,14 @@ select::placeholder {
 }
 
 .key-container:hover {
-  border-color: #deec51;
+  border-color: #2563EB;
   background-color: #fff;
 }
 
 .key-text {
   font-family: monospace;
   font-size: 14px;
-  color: #141414;
+  color: #0F172A;
   word-break: break-all;
   flex: 1;
   margin-right: 12px;
@@ -814,8 +814,8 @@ select::placeholder {
   border-radius: 8px;
   font-weight: 500;
   font-size: 16px;
-  color: #141414;
-  background-color: #deec51;
+  color: #0F172A;
+  background-color: #2563EB;
   border: none;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -928,7 +928,7 @@ select::placeholder {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #141414;
+  color: #0F172A;
 }
 
 .close-btn {
@@ -967,7 +967,7 @@ select::placeholder {
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
-  color: #141414;
+  color: #0F172A;
 }
 
 .modal-footer {
@@ -980,8 +980,8 @@ select::placeholder {
   border-radius: 8px;
   font-weight: 500;
   font-size: 14px;
-  color: #141414;
-  background-color: #deec51;
+  color: #0F172A;
+  background-color: #2563EB;
   border: none;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -1017,7 +1017,7 @@ select::placeholder {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #F1F5F9;
 }
 
 /* Стили для заблокированных полей */

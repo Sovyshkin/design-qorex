@@ -107,11 +107,11 @@ input[type="radio"] {
 }
 
 input[type="radio"]:checked + .theme-option svg {
-  color: #141414;
+  color: #0F172A;
 }
 
 input[type="radio"]:checked + .theme-option span {
-  color: #141414;
+  color: #0F172A;
 }
 
 .dark-theme .theme-option svg,

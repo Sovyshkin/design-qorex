@@ -215,8 +215,8 @@ onMounted(async () => {
 }
 
 .pin-dot.active {
-  background-color: #deec51;
-  border-color: #deec51;
+  background-color: #2563EB;
+  border-color: #2563EB;
 }
 
 .pin-grid {
@@ -279,7 +279,7 @@ onMounted(async () => {
 }
 
 .delete-button {
-  background-color: #f5f5f5;
+  background-color: #F1F5F9;
   color: #666;
 }
 

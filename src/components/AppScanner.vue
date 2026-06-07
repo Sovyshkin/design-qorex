@@ -1641,13 +1641,13 @@ color: white;
 }
 
 .confirm-btn {
-  background: #deec51;
-  color: #141414;
+  background: #2563EB;
+  color: #0F172A;
   box-shadow: 0 4px 14px 0 rgba(222, 236, 81, 0.3);
 }
 
 .confirm-btn:hover:not(:disabled) {
-  background: #d6e34a;
+  background: #3B82F6;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px -5px rgba(222, 236, 81, 0.4);
 }
@@ -1788,12 +1788,12 @@ color: white;
   width: 80px;
   height: 80px;
   margin: 0 auto 20px;
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #141414;
+  color: #0F172A;
   box-shadow: 
     0 16px 32px -8px rgba(222, 236, 81, 0.3),
     0 8px 16px -4px rgba(222, 236, 81, 0.2);
@@ -1950,7 +1950,7 @@ color: white;
 .amount-currency {
   font-size: 32px;
   font-weight: 700;
-  color: #deec51;
+  color: #2563EB;
   text-shadow: 0 2px 4px rgba(222, 236, 81, 0.3);
 }
 
@@ -2045,8 +2045,8 @@ color: white;
 }
 
 .payment-confirm-btn {
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
-  color: #141414;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  color: #0F172A;
   box-shadow: 
     0 8px 24px -4px rgba(222, 236, 81, 0.4),
     0 4px 12px -2px rgba(222, 236, 81, 0.3);
@@ -2069,7 +2069,7 @@ color: white;
 }
 
 .payment-confirm-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d6e34a 0%, #deec51 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   transform: translateY(-3px);
   box-shadow: 
     0 16px 40px -8px rgba(222, 236, 81, 0.5),
@@ -2094,7 +2094,7 @@ color: white;
   width: 20px;
   height: 20px;
   border: 2px solid rgba(20, 20, 20, 0.2);
-  border-top: 2px solid #141414;
+  border-top: 2px solid #0F172A;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -2238,7 +2238,7 @@ color: white;
 }
 
 .paste-link-input:focus {
-  border-color: #deec51;
+  border-color: #2563EB;
   background: rgba(68, 68, 68, 0.95);
   transform: scale(1.01);
   box-shadow: 
@@ -2369,7 +2369,7 @@ body.dark-theme .amount-input::placeholder {
 }
 
 body.dark-theme .amount-input:focus {
-  border-color: #deec51 !important;
+  border-color: #2563EB !important;
   background: rgba(68, 68, 68, 0.95) !important;
   box-shadow: 
     0 0 0 4px rgba(222, 236, 81, 0.2),

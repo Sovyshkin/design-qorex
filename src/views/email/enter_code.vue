@@ -88,7 +88,7 @@ const checkCode = async () => {
 }
 
 h1 {
-  color: #141414;
+  color: #0F172A;
   text-align: center;
   line-height: 1.4;
   padding: 2px 0;
@@ -124,7 +124,7 @@ h1 {
   font-weight: 600;
   font-size: 17px;
   color: #1a1a1a;
-  background: linear-gradient(135deg, #deec51 0%, #d6e34a 100%);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   border: none;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -193,7 +193,7 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #deec51;
+  border-color: #2563EB;
   background: #ffffff;
   box-shadow: 
     0 0 0 4px rgba(222, 236, 81, 0.1),

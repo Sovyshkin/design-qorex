@@ -1,45 +1,29 @@
+<template>
+  <div class="loader-wrap" role="status" aria-live="polite" aria-label="Loading">
+    <span class="loader"></span>
+  </div>
+</template>
+
 <style scoped>
-svg {
-  width: 3.25em;
-  transform-origin: center;
-  animation: rotate4 2s linear infinite;
+.loader-wrap {
+  width: 100%;
+  min-height: 220px;
+  display: grid;
+  place-items: center;
 }
 
-circle {
-  fill: none;
-  stroke: #1c1c1c;
-  stroke-width: 2;
-  stroke-dasharray: 1, 200;
-  stroke-dashoffset: 0;
-  stroke-linecap: round;
-  animation: dash4 1.5s ease-in-out infinite;
+.loader {
+  width: 42px;
+  height: 42px;
+  border: 3px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes rotate4 {
-  100% {
+@keyframes spin {
+  to {
     transform: rotate(360deg);
   }
 }
-
-@keyframes dash4 {
-  0% {
-    stroke-dasharray: 1, 200;
-    stroke-dashoffset: 0;
-  }
-
-  50% {
-    stroke-dasharray: 90, 200;
-    stroke-dashoffset: -35px;
-  }
-
-  100% {
-    stroke-dashoffset: -125px;
-  }
-}
 </style>
-
-<template>
-  <svg viewBox="25 25 50 50">
-    <circle r="20" cy="50" cx="50"></circle>
-  </svg>
-</template>
