@@ -7,7 +7,7 @@ const router = useRouter();
 
 const pages = {
   aml: {
-    eyebrow: "Compliance",
+    eyebrow: "Документ",
     title: "AML и безопасность операций",
     lead: "PeekPay использует риск-ориентированный подход, чтобы платежи и переводы оставались безопасными для пользователей.",
     highlights: ["Мониторинг подозрительных операций", "Проверка источников риска", "Защита пользователей от блокировок"],
@@ -27,7 +27,7 @@ const pages = {
     ],
   },
   terms_of_use: {
-    eyebrow: "Rules",
+    eyebrow: "Документ",
     title: "Условия использования",
     lead: "Эти правила описывают базовые условия работы с PeekPay: кошельком, пополнениями, переводами и функциями безопасности.",
     highlights: ["Ответственное использование сервиса", "Проверка реквизитов перед переводом", "Соблюдение лимитов и требований безопасности"],
@@ -47,7 +47,7 @@ const pages = {
     ],
   },
   privacy_policy: {
-    eyebrow: "Privacy",
+    eyebrow: "Документ",
     title: "Политика конфиденциальности",
     lead: "PeekPay стремится использовать только необходимые данные и защищать их на уровне, ожидаемом от финансового продукта.",
     highlights: ["Минимум необходимых данных", "Защита доступа к аккаунту", "Прозрачность использования информации"],
@@ -105,9 +105,10 @@ const currentPage = computed(() => pages[route.params.slug] || pages.aml);
 .page-header { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 12px; margin-bottom: 4px; }
 .back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
 .page-header div { min-width: 0; }
-.page-header span { color: #2563eb; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.page-header span { color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 h1 { margin: 3px 0 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight: 750; }
 .intro-card { border-radius: 24px; padding: 18px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.22); display: grid; gap: 14px; }
+.intro-card * { color: #fff; }
 .intro-card p { margin: 0; color: rgba(255,255,255,.88); font-size: 15px; line-height: 22px; font-weight: 500; }
 .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }

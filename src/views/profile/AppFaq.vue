@@ -46,7 +46,7 @@ const openSupport = () => {
     <header class="page-header">
       <button class="back-btn" type="button" @click="router.back()">‹</button>
       <div>
-        <span>Help center</span>
+        <span>FAQ</span>
         <h1>{{ t("faq") }}</h1>
       </div>
       <div class="header-spacer"></div>
@@ -93,7 +93,7 @@ const openSupport = () => {
 .page-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
 .back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
 .page-header div:nth-child(2) { min-width: 0; text-align: center; }
-.page-header span { color: #2563eb; font-size: 12px; line-height: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.page-header span { color: #64748b; font-size: 12px; line-height: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 h1 { margin: 2px 0 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 750; }
 .header-spacer { width: 44px; height: 44px; }
 .hero-card { position: relative; overflow: hidden; border-radius: 24px; padding: 20px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.24); display: grid; grid-template-columns: minmax(0,1fr) 70px; gap: 12px; align-items: center; }

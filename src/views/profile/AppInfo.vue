@@ -40,8 +40,8 @@ const iconPaths = {
     <header class="page-header">
       <button class="back-btn" type="button" @click="walletStore.goBack()">‹</button>
       <div>
-        <span>PeekPay</span>
         <h1>{{ t("info") }}</h1>
+        <p>Документы и правила</p>
       </div>
       <div class="header-spacer"></div>
     </header>
@@ -76,13 +76,13 @@ const iconPaths = {
 .page-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
 .back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
 .page-header div:nth-child(2) { text-align: center; min-width: 0; }
-.page-header span { color: #2563eb; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-h1 { margin: 2px 0 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 700; }
+h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 700; }
+.page-header p { margin: 4px 0 0; color: #64748b; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .02em; }
 .header-spacer { width: 44px; height: 44px; }
 .hero-card { position: relative; overflow: hidden; border-radius: 24px; padding: 20px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.24); }
 .hero-card::after { content: ""; position: absolute; width: 170px; height: 170px; right: -70px; top: -70px; border-radius: 50%; background: rgba(255,255,255,.16); }
-.hero-icon { width: 44px; height: 44px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.16); font-size: 22px; font-weight: 800; }
-.hero-card h2 { margin: 16px 0 6px; font-size: 22px; line-height: 26px; font-weight: 700; }
+.hero-icon { width: 44px; height: 44px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.16); color: #fff; font-size: 22px; font-weight: 800; }
+.hero-card h2 { margin: 16px 0 6px; color: #fff; font-size: 22px; line-height: 26px; font-weight: 700; }
 .hero-card p { margin: 0; max-width: 290px; color: rgba(255,255,255,.82); font-size: 14px; line-height: 20px; }
 .document-list { display: grid; gap: 10px; }
 .document-card { min-height: 74px; width: 100%; border: 1px solid #e2e8f0; border-radius: 22px; background: rgba(255,255,255,.94); box-shadow: 0 10px 24px rgba(15,23,42,.06); padding: 12px; display: grid; grid-template-columns: 46px minmax(0,1fr) 20px; gap: 12px; align-items: center; text-align: left; transition: transform .18s ease, background-color .18s ease; }
