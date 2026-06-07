@@ -10,20 +10,20 @@ const { t } = useI18n();
 const router = useRouter();
 
 const params = ref([
-  { name: t("safety"), route: "safety", icon: "S" },
-  { name: t("lang"), route: "select_lang", icon: "L" },
+  { name: t("safety"), route: "safety", icon: "shield" },
+  { name: t("lang"), route: "select_lang", icon: "globe" },
 ]);
 
 const aboutUs = ref([
-  { name: t("official_accounts"), route: "accounts", icon: "A" },
-  { name: t("faq"), route: "faq", icon: "?" },
-  { name: t("support"), route: "support", icon: "↗" },
-  { name: t("info"), route: "info", icon: "i" },
+  { name: t("official_accounts"), route: "accounts", icon: "sparkle" },
+  { name: t("faq"), route: "faq", icon: "question" },
+  { name: t("support"), route: "support", icon: "send" },
+  { name: t("info"), route: "info", icon: "info" },
 ]);
 
 const referal = computed(() => [
-  { name: t("email_add_profile"), route: "email_add", show: !walletStore.user.email, icon: "@" },
-  { name: t("referal"), route: "referal", show: true, icon: "R" },
+  { name: t("email_add_profile"), route: "email_add", show: !walletStore.user.email, icon: "mail" },
+  { name: t("referal"), route: "referal", show: true, icon: "referral" },
 ]);
 
 const visibleReferal = computed(() => referal.value.filter((item) => item.show));
@@ -32,6 +32,17 @@ const goRoute = (route) => {
   if (route === "faq") window.location.href = "https://peekpay.com";
   else if (route === "support") window.location.href = "https://t.me/PeekPay_Support_bot";
   else router.push({ name: route });
+};
+
+const iconPaths = {
+  mail: '<path d="M4.75 6.75h14.5v10.5H4.75z"/><path d="m5.5 7.5 6.5 5 6.5-5"/>',
+  referral: '<path d="M7 17.25v-1.1a3.4 3.4 0 0 1 3.4-3.4h3.2a3.4 3.4 0 0 1 3.4 3.4v1.1"/><circle cx="12" cy="7.75" r="3"/><path d="M18.25 8.25h2.25m-1.12-1.12v2.25"/>',
+  shield: '<path d="M12 4.25 18.25 7v4.8c0 3.2-2.55 5.9-6.25 7.95-3.7-2.05-6.25-4.75-6.25-7.95V7z"/><path d="m9.25 12.2 1.8 1.8 3.95-4.2"/>',
+  globe: '<circle cx="12" cy="12" r="7.25"/><path d="M4.75 12h14.5M12 4.75c2 2.1 3 4.5 3 7.25s-1 5.15-3 7.25c-2-2.1-3-4.5-3-7.25s1-5.15 3-7.25z"/>',
+  sparkle: '<path d="M12 4.75 13.7 9.8l5.05 1.7-5.05 1.7L12 18.25l-1.7-5.05-5.05-1.7 5.05-1.7z"/><path d="M18.5 4.5v3M20 6h-3"/>',
+  question: '<path d="M9.15 8.65a3.15 3.15 0 0 1 5.95 1.45c0 2.35-2.9 2.45-2.9 4.35"/><path d="M12.18 18h.01"/>',
+  send: '<path d="M4.75 12.7 19.25 5.5l-4.05 13-3.05-5.15-5.5-1.05z"/><path d="m12.15 13.35 3.45-3.65"/>',
+  info: '<circle cx="12" cy="12" r="7.25"/><path d="M12 11.25v4.75"/><path d="M12 8h.01"/>',
 };
 
 onMounted(async () => {
@@ -60,7 +71,7 @@ onMounted(async () => {
       <h2>{{ t("profile") }}</h2>
       <div class="profile-list">
         <button class="profile-row" v-for="(item, i) in visibleReferal" :key="i" @click="goRoute(item.route)">
-          <i>{{ item.icon }}</i><span>{{ item.name }}</span><b>›</b>
+          <i><svg viewBox="0 0 24 24" aria-hidden="true" v-html="iconPaths[item.icon]"></svg></i><span>{{ item.name }}</span><b>›</b>
         </button>
       </div>
     </section>
@@ -69,7 +80,7 @@ onMounted(async () => {
       <h2>{{ t("params") }}</h2>
       <div class="profile-list">
         <button class="profile-row" v-for="(item, i) in params" :key="i" @click="goRoute(item.route)">
-          <i>{{ item.icon }}</i><span>{{ item.name }}</span><b>›</b>
+          <i><svg viewBox="0 0 24 24" aria-hidden="true" v-html="iconPaths[item.icon]"></svg></i><span>{{ item.name }}</span><b>›</b>
         </button>
         <div class="theme-wrap"><ThemeToggle /></div>
       </div>
@@ -79,7 +90,7 @@ onMounted(async () => {
       <h2>{{ t("aboutUs") }}</h2>
       <div class="profile-list">
         <button class="profile-row" v-for="(item, i) in aboutUs" :key="i" @click="goRoute(item.route)">
-          <i>{{ item.icon }}</i><span>{{ item.name }}</span><b>›</b>
+          <i><svg viewBox="0 0 24 24" aria-hidden="true" v-html="iconPaths[item.icon]"></svg></i><span>{{ item.name }}</span><b>›</b>
         </button>
       </div>
     </section>
@@ -103,7 +114,8 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 .profile-row { width: 100%; min-height: 56px; border-radius: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr) 18px; gap: 12px; align-items: center; padding: 0 14px; text-align: left; transition: background-color .18s ease, transform .18s ease; }
 .profile-row + .profile-row { border-top: 1px solid #eef2f7; }
 .profile-row:active { background: #f8fafc; transform: scale(.995); }
-.profile-row i { width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: grid; place-items: center; font-style: normal; font-size: 14px; line-height: 1; font-weight: 800; }
+.profile-row i { width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: grid; place-items: center; font-style: normal; box-shadow: inset 0 1px 0 rgba(255,255,255,.85); }
+.profile-row svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .profile-row span { color: #0f172a; font-size: 16px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .profile-row b { color: #94a3b8; font-size: 24px; line-height: 1; font-weight: 500; }
 .theme-wrap { padding: 10px; border-top: 1px solid #eef2f7; }
