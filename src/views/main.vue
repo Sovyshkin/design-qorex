@@ -59,7 +59,7 @@ onMounted(async () => {
         <button class="asset-row" @click="goRoute('history')">
           <div class="asset-left">
             <div class="asset-icon">₮</div>
-            <div><strong>USDT</strong><small>{{ walletStore.roundToHundredths(walletStore.usdt_price) }} ₽</small></div>
+            <div class="asset-meta"><strong>USDT</strong><small>{{ walletStore.roundToHundredths(walletStore.usdt_price) }} ₽</small></div>
           </div>
           <div class="asset-right" v-if="!walletStore.hideBalanceActive">
             <strong>{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</strong>
@@ -96,17 +96,34 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 1.15; font-weight:
 .hero-balance h2 { margin: 8px 0 4px; color: #fff; font-size: 42px; line-height: 1; font-weight: 600; }
 .hero-balance small { color: #dbeafe; font-size: 14px; }
 
-.quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.quick-action { min-height: 74px; border-radius: 18px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07); display: grid; gap: 6px; place-items: center; }
-.quick-action i { width: 34px; height: 34px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: grid; place-items: center; font-style: normal; font-size: 18px; font-weight: 700; }
-.quick-action span { color: #0f172a; font-size: 13px; font-weight: 500; }
+.quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.quick-action { min-height: 58px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06); display: grid; gap: 3px; place-items: center; padding: 7px 4px; }
+.quick-action i { width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: grid; place-items: center; font-style: normal; font-size: 16px; font-weight: 700; }
+.quick-action span { color: #0f172a; font-size: 12px; line-height: 14px; font-weight: 500; }
 
 .assets-block { background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); padding: 12px; }
 .assets-head h3 { margin: 2px 6px 10px; color: #0f172a; font-size: 18px; font-weight: 600; }
-.asset-row { width: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 16px; padding: 10px; background: #f8fafc; }
-.asset-left { display: flex; align-items: center; gap: 10px; text-align: left; }
-.asset-icon { width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: #fff; display: grid; place-items: center; font-weight: 700; }
-.asset-right { text-align: right; display: grid; }
+.asset-row { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-radius: 16px; padding: 10px; background: #f8fafc; }
+.asset-left { min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left; flex: 1 1 auto; }
+.asset-icon { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #2563eb; color: #fff; display: grid; place-items: center; font-weight: 700; }
+.asset-meta { min-width: 0; display: grid; gap: 2px; }
+.asset-right { flex: 0 1 auto; min-width: 96px; text-align: right; display: grid; gap: 2px; }
 strong { color: #0f172a; font-weight: 600; font-size: 15px; }
 small { color: #64748b; font-size: 12px; }
+.asset-meta strong,
+.asset-meta small,
+.asset-right strong,
+.asset-right small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .asset-row { gap: 8px; padding: 9px; }
+  .asset-icon { width: 32px; height: 32px; flex-basis: 32px; }
+  .asset-right { min-width: 82px; }
+  strong { font-size: 14px; }
+  small { font-size: 11px; }
+}
 </style>
