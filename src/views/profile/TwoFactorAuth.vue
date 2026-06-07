@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import { useRouter } from "vue-router";
 import AppLoader from "@/components/AppLoader.vue";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -163,11 +164,7 @@ onMounted(async () => {
 
 <template>
   <header class="header">
-    <button class="arrow" type="button" @click="goBack()" aria-label="Back">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M15 5 8 12l7 7" />
-      </svg>
-    </button>
+    <BackButton @click="goBack()" />
     <h1>{{ t("two_factor_auth") }}</h1>
     <div class="emp"></div>
   </header>
@@ -327,11 +324,11 @@ onMounted(async () => {
 <style scoped>
 .header {
   width: 100%;
-  padding: 16px 16px 8px;
+  padding: 20px 16px 10px;
   display: grid;
   grid-template-columns: 44px 1fr 44px;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%);
 }
 
@@ -342,34 +339,6 @@ onMounted(async () => {
   line-height: 28px;
   font-weight: 750;
   text-align: center;
-}
-
-.arrow {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  color: #0f172a;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.arrow svg {
-  width: 24px;
-  height: 24px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.arrow:active {
-  transform: scale(0.96);
 }
 
 .emp {

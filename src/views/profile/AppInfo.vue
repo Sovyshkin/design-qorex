@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useWalletStore } from "../../stores/walletStore.ts";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -39,7 +40,7 @@ const iconPaths = {
 <template>
   <main class="info-page">
     <header class="page-header">
-      <button class="back-btn" type="button" @click="walletStore.goBack()">‹</button>
+      <BackButton @click="walletStore.goBack()" />
       <div>
         <h1>{{ t("info") }}</h1>
         <p>{{ t("info_header_subtitle") }}</p>
@@ -73,9 +74,8 @@ const iconPaths = {
 </template>
 
 <style scoped>
-.info-page { min-height: 100vh; padding: 16px 16px 124px; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 16px; }
-.page-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
-.back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
+.info-page { min-height: 100vh; padding: 20px 16px 124px; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 20px; }
+.page-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 12px; margin-bottom: 4px; }
 .page-header div:nth-child(2) { text-align: center; min-width: 0; }
 h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 700; }
 .page-header p { margin: 4px 0 0; color: #64748b; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .02em; }

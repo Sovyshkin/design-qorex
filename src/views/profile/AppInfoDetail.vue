@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import AutoScrollPills from "@/components/ui/AutoScrollPills.vue";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -77,7 +78,7 @@ const currentPage = computed(() => pages.value[route.params.slug] || pages.value
 <template>
   <main class="detail-page">
     <header class="page-header">
-      <button class="back-btn" type="button" @click="router.back()">‹</button>
+      <BackButton @click="router.back()" />
       <div>
         <h1>{{ currentPage.title }}</h1>
         <span>{{ currentPage.eyebrow }}</span>
@@ -102,9 +103,8 @@ const currentPage = computed(() => pages.value[route.params.slug] || pages.value
 </template>
 
 <style scoped>
-.detail-page { min-height: 100vh; padding: 16px 16px 124px; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 12px; }
-.page-header { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 12px; margin-bottom: 4px; }
-.back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
+.detail-page { min-height: 100vh; padding: 20px 16px 124px; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 16px; }
+.page-header { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 14px; margin-bottom: 4px; }
 .page-header div { min-width: 0; }
 .page-header span { color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 h1 { margin: 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight: 750; }
