@@ -96,12 +96,12 @@ onMounted(() => {
             class="referal-box-value"
             @click="
               copy(
-                `https://t.me/gardawallet_bot?startapp=referal_${walletStore.userTg.id}`
+                `https://t.me/peekpay_bot?startapp=referal_${walletStore.userTg.id}`
               )
             "
           >
             <span>{{
-              `https://t.me/gardawallet_bot?startapp=referal_${walletStore.userTg.id}`
+              `https://t.me/peekpay_bot?startapp=referal_${walletStore.userTg.id}`
             }}</span>
             <img src="@/assets/copy.svg" alt="copy" />
           </div>

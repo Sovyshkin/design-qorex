@@ -27,8 +27,8 @@ const referal = computed(() => [
 ]);
 
 const goRoute = (route) => {
-  if (route === "faq") window.location.href = "https://gardawallet.com";
-  else if (route === "support") window.location.href = "https://t.me/Gardawallet_Support_bot";
+  if (route === "faq") window.location.href = "https://peekpay.com";
+  else if (route === "support") window.location.href = "https://t.me/PeekPay_Support_bot";
   else router.push({ name: route });
 };
 

@@ -311,7 +311,7 @@ RATE_LIMIT_WINDOW = 3600  # окно в секундах
 from fastapi import FastAPI
 from config import BOT_TOKEN
 
-app = FastAPI(title="Garda Wallet API")
+app = FastAPI(title="PeekPay API")
 
 # Инициализация с вашим токеном
 telegram_auth = TelegramAuth(bot_token=BOT_TOKEN)

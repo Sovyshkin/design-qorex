@@ -12,19 +12,19 @@ const router = useRouter();
 const accounts = ref([
   {
     name: 'Telegram',
-    value: '@gardawallet',
+    value: '@peekpay',
     icon: 'telegram',
-    href: 'https://t.me/gardawallet'
+    href: 'https://t.me/peekpay'
   },
   {
     name: "Instagram",
-    value: '@Garda_wallet',
+    value: '@PeekPay',
     icon: 'instagram',
     route: 'terms_of_use'
   },
   {
     name: "VK",
-    value: '@Garda_wallet',
+    value: '@PeekPay',
     icon: 'vk',
     route: 'privacy_policy'
   },

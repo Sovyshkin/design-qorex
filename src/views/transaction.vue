@@ -307,7 +307,7 @@ onMounted(() => {
 
         <div class="detail-item">
           <span class="detail-label">{{ t("seller") }}:</span>
-          <span class="detail-value">Garda Wallet</span>
+          <span class="detail-value">PeekPay</span>
         </div>
 
         <!-- <div class="detail-item">

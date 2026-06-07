@@ -39,7 +39,7 @@ const auth = ref([
   <main class="safety">
     <h2>{{ t("documents") }}</h2>
     <div class="docs">
-      <a class="list-item" v-for="(item, i) in auth" :key="i" :href="`https://gardawallet.com/documents/${item.route}`" target="_blank">
+      <a class="list-item" v-for="(item, i) in auth" :key="i" :href="`https://peekpay.com/documents/${item.route}`" target="_blank">
         <span class="list-value">{{ item.name }}</span>
         <img class="arrow-right" src="../../assets/arrow-right.svg" alt="arrow-right" />
       </a>
