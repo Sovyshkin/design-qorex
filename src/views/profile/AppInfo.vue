@@ -1,144 +1,96 @@
-<
 <script setup>
-import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useWalletStore } from "../../stores/walletStore.ts";
 import { useRouter } from "vue-router";
+import { useWalletStore } from "../../stores/walletStore.ts";
 
 const { t } = useI18n();
-const walletStore = useWalletStore();
 const router = useRouter();
+const walletStore = useWalletStore();
 
-const auth = ref([
+const documents = [
   {
-    name: 'AML',
-    route: "aml"
+    name: "AML",
+    slug: "aml",
+    icon: "shield",
+    subtitle: "Как PeekPay снижает риски подозрительных операций",
   },
   {
-    name: t('terms_of_use'),
-    route: 'terms_of_use'
+    name: t("terms_of_use"),
+    slug: "terms_of_use",
+    icon: "file",
+    subtitle: "Правила использования кошелька, переводов и сервисов",
   },
   {
-    name: t('privacy_policy'),
-    route: 'privacy_policy'
+    name: t("privacy_policy"),
+    slug: "privacy_policy",
+    icon: "lock",
+    subtitle: "Какие данные используются и как мы защищаем приватность",
   },
-]);
+];
+
+const iconPaths = {
+  shield: '<path d="M12 4.25 18.25 7v4.8c0 3.2-2.55 5.9-6.25 7.95-3.7-2.05-6.25-4.75-6.25-7.95V7z"/><path d="m9.25 12.2 1.8 1.8 3.95-4.2"/>',
+  file: '<path d="M7 4.75h6.2l3.8 3.8v10.7H7z"/><path d="M13 4.9v4h4"/><path d="M9.75 12.25h4.5M9.75 15.25h3.25"/>',
+  lock: '<rect x="6.25" y="10.25" width="11.5" height="8" rx="2"/><path d="M8.75 10.25V8.5a3.25 3.25 0 0 1 6.5 0v1.75"/><path d="M12 13.4v1.7"/>',
+};
 </script>
 
 <template>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
-    <h1>{{ t("info") }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="safety">
-    <h2>{{ t("documents") }}</h2>
-    <div class="docs">
-      <a class="list-item" v-for="(item, i) in auth" :key="i" :href="`https://peekpay.com/documents/${item.route}`" target="_blank">
-        <span class="list-value">{{ item.name }}</span>
-        <img class="arrow-right" src="../../assets/arrow-right.svg" alt="arrow-right" />
-      </a>
-    </div>
+  <main class="info-page">
+    <header class="page-header">
+      <button class="back-btn" type="button" @click="walletStore.goBack()">‹</button>
+      <div>
+        <span>PeekPay</span>
+        <h1>{{ t("info") }}</h1>
+      </div>
+      <div class="header-spacer"></div>
+    </header>
+
+    <section class="hero-card">
+      <div class="hero-icon">i</div>
+      <h2>Важная информация</h2>
+      <p>Документы и правила, которые помогают безопасно пользоваться кошельком, пополнениями и переводами.</p>
+    </section>
+
+    <section class="document-list" aria-label="Documents">
+      <button
+        v-for="item in documents"
+        :key="item.slug"
+        class="document-card"
+        type="button"
+        @click="router.push({ name: 'info_detail', params: { slug: item.slug } })"
+      >
+        <i><svg viewBox="0 0 24 24" aria-hidden="true" v-html="iconPaths[item.icon]"></svg></i>
+        <span>
+          <strong>{{ item.name }}</strong>
+          <small>{{ item.subtitle }}</small>
+        </span>
+        <b>›</b>
+      </button>
+    </section>
   </main>
 </template>
 
 <style scoped>
-.header {
-  padding: 20px 15px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-h2 {
-  color: #0F172A;
-  font-weight: 300;
-}
-.safety {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 15px 120px 15px;
-  overflow-y: auto;
-}
-
-.docs {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.profile-item {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.profile-value {
-  color: #0F172A;
-  font-weight: 300;
-}
-
-.list-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #fff;
-  transition: all 0.3s ease;
-  padding: 16px;
-  border-radius: 16px;
-}
-
-.list-value {
-  font-size: 14px;
-}
-
-.info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.wrap-img {
-  background-color: #2563EB;
-  padding: 8px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.wrap-img img {
-  height: 24px;
-  width: 24px;
-}
-
-.arrow {
-  height: 32px;
-  width: 32px;
-  transition: transform 0.3s ease;
-}
-
-.arrow-right {
-  width: 24px;
-  height: 24px;
-}
-
-.list-item:hover .arrow {
-  transform: translateX(5px);
-  transition: transform 0.3s ease;
-}
-.emp {
-  width: 32px;
-}
+.info-page { min-height: 100vh; padding: 16px 16px 124px; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 16px; }
+.page-header { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+.back-btn { width: 44px; height: 44px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 32px; line-height: 1; box-shadow: 0 10px 24px rgba(15,23,42,.06); }
+.page-header div:nth-child(2) { text-align: center; min-width: 0; }
+.page-header span { color: #2563eb; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+h1 { margin: 2px 0 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 700; }
+.header-spacer { width: 44px; height: 44px; }
+.hero-card { position: relative; overflow: hidden; border-radius: 24px; padding: 20px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.24); }
+.hero-card::after { content: ""; position: absolute; width: 170px; height: 170px; right: -70px; top: -70px; border-radius: 50%; background: rgba(255,255,255,.16); }
+.hero-icon { width: 44px; height: 44px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.16); font-size: 22px; font-weight: 800; }
+.hero-card h2 { margin: 16px 0 6px; font-size: 22px; line-height: 26px; font-weight: 700; }
+.hero-card p { margin: 0; max-width: 290px; color: rgba(255,255,255,.82); font-size: 14px; line-height: 20px; }
+.document-list { display: grid; gap: 10px; }
+.document-card { min-height: 74px; width: 100%; border: 1px solid #e2e8f0; border-radius: 22px; background: rgba(255,255,255,.94); box-shadow: 0 10px 24px rgba(15,23,42,.06); padding: 12px; display: grid; grid-template-columns: 46px minmax(0,1fr) 20px; gap: 12px; align-items: center; text-align: left; transition: transform .18s ease, background-color .18s ease; }
+.document-card:active { transform: scale(.99); background: #f8fafc; }
+.document-card i { width: 46px; height: 46px; border-radius: 16px; display: grid; place-items: center; color: #2563eb; background: linear-gradient(135deg, #eff6ff, #dbeafe); box-shadow: inset 0 1px 0 rgba(255,255,255,.9); }
+.document-card svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.document-card span { min-width: 0; display: grid; gap: 4px; }
+.document-card strong { color: #0f172a; font-size: 16px; line-height: 20px; font-weight: 700; }
+.document-card small { color: #64748b; font-size: 13px; line-height: 17px; font-weight: 500; }
+.document-card b { color: #94a3b8; font-size: 26px; line-height: 1; font-weight: 500; }
 </style>

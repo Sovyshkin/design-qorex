@@ -40,6 +40,16 @@ const router = createRouter({
       name: "info",
     },
     {
+      path: "/profile/info/:slug",
+      component: () => import("../views/profile/AppInfoDetail.vue"),
+      name: "info_detail",
+    },
+    {
+      path: "/profile/faq",
+      component: () => import("../views/profile/AppFaq.vue"),
+      name: "faq",
+    },
+    {
       path: "/profile/accounts",
       component: () => import("../views/profile/OfficialAccounts.vue"),
       name: "accounts",

@@ -29,8 +29,7 @@ const referal = computed(() => [
 const visibleReferal = computed(() => referal.value.filter((item) => item.show));
 
 const goRoute = (route) => {
-  if (route === "faq") window.location.href = "https://peekpay.com";
-  else if (route === "support") window.location.href = "https://t.me/PeekPay_Support_bot";
+  if (route === "support") window.location.href = "https://t.me/PeekPay_Support_bot";
   else router.push({ name: route });
 };
 
