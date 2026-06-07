@@ -163,12 +163,7 @@ onMounted(async () => {
 
 <template>
   <header class="header">
-    <img
-      class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
-      @click="goBack()"
-    />
+    <button class="arrow" type="button" @click="goBack()">‹</button>
     <h1>{{ t("two_factor_auth") }}</h1>
     <div class="emp"></div>
   </header>
@@ -348,11 +343,14 @@ onMounted(async () => {
 .arrow {
   width: 44px;
   height: 44px;
-  padding: 12px;
   border-radius: 16px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 500;
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
