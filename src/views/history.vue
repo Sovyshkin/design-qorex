@@ -88,4 +88,37 @@ small { color: #64748b; font-size: 12px; }
 .error { color: #ef4444; }
 .in_processing { color: #2563eb; }
 .row-right { text-align: right; display: grid; }
+
+:global(.dark-theme) .history-page {
+  background:
+    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .history-header h1 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .history-group h2 {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .history-item {
+  background: rgba(30, 39, 59, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+:global(.dark-theme) .row-icon {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: #3882fa !important;
+}
+
+:global(.dark-theme) strong {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) small {
+  color: #94a3b8 !important;
+}
 </style>

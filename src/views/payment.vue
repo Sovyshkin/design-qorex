@@ -95,4 +95,34 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
 .loading-spinner { width: 38px; height: 38px; border: 3px solid #bfdbfe; border-top-color: #2563eb; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .payment-iframe { width: 100%; min-height: 72vh; border: 0; }
+
+:global(.dark-theme) .payment-page {
+  background:
+    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .payment-header h1 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .arrow {
+  filter: brightness(0) invert(1);
+  opacity: 0.94;
+}
+
+:global(.dark-theme) .payment-shell {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) .loading-container {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .loading-spinner {
+  border-color: rgba(56, 130, 250, 0.18) !important;
+  border-top-color: #3882fa !important;
+}
 </style>

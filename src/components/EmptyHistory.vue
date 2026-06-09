@@ -55,4 +55,23 @@ p {
   color: #fff;
   background: linear-gradient(135deg, #2563eb, #1e40af);
 }
+
+:global(.dark-theme) .empty-card {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) h2 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) p {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .btn-primary {
+  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
+  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
+}
 </style>

@@ -32,4 +32,46 @@ p { margin: 0 0 16px; color: #64748b; }
 .btn-primary, .btn-secondary { min-height: 50px; border-radius: 14px; font-weight: 600; }
 .btn-primary { background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; }
 .btn-secondary { background: #fff; border: 1px solid #e2e8f0; color: #1e40af; }
+
+:global(.dark-theme) .require-2fa {
+  background:
+    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+  padding-bottom: 112px;
+}
+
+:global(.dark-theme) .card {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) .icon-wrap {
+  background: rgba(37, 98, 235, 0.18) !important;
+}
+
+:global(.dark-theme) .security-icon {
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+
+:global(.dark-theme) h2 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) p {
+  color: #cbd5e1 !important;
+}
+
+:global(.dark-theme) .btn-primary {
+  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
+}
+
+:global(.dark-theme) .btn-secondary {
+  background: rgba(30, 39, 59, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
 </style>

@@ -192,4 +192,86 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
 .secondary, .ghost { min-height: 48px; border-radius: 14px; font-weight: 600; }
 .secondary { background: #eff6ff; color: #1e40af; }
 .ghost { background: #f8fafc; color: #64748b; }
+
+:global(.dark-theme) .deposit-page {
+  background:
+    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .header h1 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .arrow {
+  filter: brightness(0) invert(1);
+  opacity: 0.94;
+}
+
+:global(.dark-theme) .sheet-card,
+:global(.dark-theme) .modal {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) .field-label,
+:global(.dark-theme) .modal p {
+  color: #cbd5e1 !important;
+}
+
+:global(.dark-theme) .amount-input-wrap input {
+  background: rgba(13, 27, 42, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .amount-input-wrap span {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .quick {
+  background: rgba(241, 245, 249, 0.95) !important;
+  color: #1e40af !important;
+}
+
+:global(.dark-theme) .quick.active {
+  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .network {
+  background: rgba(13, 27, 42, 0.46) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+:global(.dark-theme) .network.active {
+  background: rgba(37, 98, 235, 0.18) !important;
+  border-color: rgba(56, 130, 250, 0.42) !important;
+}
+
+:global(.dark-theme) .left span,
+:global(.dark-theme) .modal h3 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .dot {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .cta {
+  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
+}
+
+:global(.dark-theme) .secondary {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .ghost {
+  background: rgba(13, 27, 42, 0.54) !important;
+  color: #94a3b8 !important;
+}
 </style>

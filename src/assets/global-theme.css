@@ -1710,3 +1710,168 @@ body.dark-theme .back-button {
 body.dark-theme .back-button:active {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34) !important;
 }
+
+/* Dark theme cleanup layer for route-scoped wallet screens */
+.dark-theme .home-page,
+.dark-theme .history-page,
+.dark-theme .deposit-page,
+.dark-theme .payment-page,
+.dark-theme .failed-page,
+.dark-theme .donate-page,
+.dark-theme .scanner-page,
+.dark-theme .transaction-page,
+.dark-theme .info-page,
+.dark-theme .detail-page,
+.dark-theme .faq-page,
+.dark-theme .profile-page,
+.dark-theme .require-2fa,
+.dark-theme .pin-page {
+  background:
+    radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+  color: #ffffff !important;
+}
+
+.dark-theme .sheet-card,
+.dark-theme .empty-card,
+.dark-theme .payment-shell,
+.dark-theme .failed-card,
+.dark-theme .donate-page .card,
+.dark-theme .profile-user,
+.dark-theme .profile-list,
+.dark-theme .history-item,
+.dark-theme .assets-block,
+.dark-theme .modal,
+.dark-theme .modal-content,
+.dark-theme .payment-modal,
+.dark-theme .amount-modal,
+.dark-theme .withdraw-success-modal,
+.dark-theme .document-card,
+.dark-theme .faq-item,
+.dark-theme .content-card,
+.dark-theme .notice-card,
+.dark-theme .card:not(.hero-card):not(.intro-card) {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+.dark-theme .asset-row,
+.dark-theme .network,
+.dark-theme .option,
+.dark-theme .profile-row,
+.dark-theme .detail-item,
+.dark-theme .address,
+.dark-theme .wallet-address,
+.dark-theme .info,
+.dark-theme .quick-action,
+.dark-theme .secondary,
+.dark-theme .ghost,
+.dark-theme .close {
+  background: rgba(13, 27, 42, 0.56) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.dark-theme .network.active,
+.dark-theme .option.active,
+.dark-theme .faq-item.active,
+.dark-theme .profile-row:active,
+.dark-theme .asset-row:active,
+.dark-theme .quick-action:active {
+  background: rgba(37, 98, 235, 0.18) !important;
+  border-color: rgba(56, 130, 250, 0.42) !important;
+}
+
+.dark-theme input:not([type="checkbox"]):not([type="radio"]),
+.dark-theme textarea,
+.dark-theme select,
+.dark-theme .amount-input-wrap input,
+.dark-theme .code-input,
+.dark-theme .amount-input {
+  background: rgba(13, 27, 42, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  caret-color: #3882fa !important;
+}
+
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+  color: rgba(255, 255, 255, 0.42) !important;
+}
+
+.dark-theme h1,
+.dark-theme h2,
+.dark-theme h3,
+.dark-theme h4,
+.dark-theme strong,
+.dark-theme .network-name,
+.dark-theme .left span,
+.dark-theme .profile-row span,
+.dark-theme .asset-meta strong,
+.dark-theme .asset-right strong,
+.dark-theme .method-title,
+.dark-theme .detail-value,
+.dark-theme .wallet-number,
+.dark-theme .amount-number {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.dark-theme p,
+.dark-theme small,
+.dark-theme label,
+.dark-theme .field-label,
+.dark-theme .detail-label,
+.dark-theme .wallet-label,
+.dark-theme .method-description,
+.dark-theme .modal-subtitle,
+.dark-theme .asset-meta small,
+.dark-theme .asset-right small,
+.dark-theme .home-user p,
+.dark-theme .profile-section h2,
+.dark-theme .history-group h2 {
+  color: #94a3b8 !important;
+}
+
+.dark-theme .quick,
+.dark-theme .quick:not(.active) {
+  background: rgba(241, 245, 249, 0.94) !important;
+  color: #1e40af !important;
+}
+
+.dark-theme .quick.active,
+.dark-theme .cta,
+.dark-theme .btn-primary,
+.dark-theme .modal-btn,
+.dark-theme .submit-btn,
+.dark-theme .donate-btn {
+  background: linear-gradient(135deg, #2562eb 0%, #3882fa 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
+}
+
+.dark-theme .icon-wrap,
+.dark-theme .row-icon,
+.dark-theme .asset-icon,
+.dark-theme .network-icon,
+.dark-theme .method-icon,
+.dark-theme .profile-row i,
+.dark-theme .document-card i,
+.dark-theme .quick-action i {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: #3882fa !important;
+}
+
+.dark-theme .arrow,
+.dark-theme img[src*="arrow-left"] {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.94 !important;
+}
+
+.dark-theme .qr-code,
+.dark-theme .qr-code img {
+  background: #ffffff !important;
+}

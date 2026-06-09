@@ -126,4 +126,65 @@ small { color: #64748b; font-size: 12px; }
   strong { font-size: 14px; }
   small { font-size: 11px; }
 }
+
+:global(.dark-theme) .home-page {
+  background:
+    radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .home-avatar {
+  background: rgba(30, 39, 59, 0.9) !important;
+  border-color: rgba(56, 130, 250, 0.28) !important;
+}
+
+:global(.dark-theme) .home-user h1 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .home-user p {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .quick-action {
+  background: rgba(30, 39, 59, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28) !important;
+}
+
+:global(.dark-theme) .quick-action i {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: #3882fa !important;
+}
+
+:global(.dark-theme) .quick-action span {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .assets-block {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32) !important;
+}
+
+:global(.dark-theme) .assets-head h3 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .asset-row {
+  background: rgba(13, 27, 42, 0.72) !important;
+}
+
+:global(.dark-theme) .asset-icon {
+  background: rgba(37, 98, 235, 0.18) !important;
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) strong {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) small {
+  color: #94a3b8 !important;
+}
 </style>
