@@ -125,8 +125,9 @@ const checkTwoFactorAccess = async () => {
     if (result.success && result.qrImage && result.key) {
       // В ответе есть QR и ключ - нужно настроить 2FA
       twoFactorKey.value = result.key;
-      // Не показываем форму перевода, пока 2FA не настроен
       isTwoFactorSetupComplete.value = false;
+      router.replace({ name: 'twoFactorAuth', query: { from: 'transfer' } });
+      return;
     } else if (String(result.detail || "").includes("Уже подключено")) {
       // 2FA уже подключен - устанавливаем флаг и разрешаем доступ к форме
       walletStore.has2FA = true;
