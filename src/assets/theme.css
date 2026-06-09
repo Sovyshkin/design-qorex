@@ -8,6 +8,18 @@
   --bg-accent: #deec51;
   --bg-accent-hover: #d5d946;
   --bg-accent-light: rgba(222, 236, 81, 0.1);
+  --background: #f1f5f9;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --primary-hover: #3b82f6;
+  --textPrimary: #0f172a;
+  --textSecondary: #64748b;
+  --textDisabled: rgba(15, 23, 42, 0.4);
+  --border: #e2e8f0;
+  --divider: #e2e8f0;
+  --success: #10b981;
+  --error: #ef4444;
   
   /* Текст */
   --text-primary: #141414;
@@ -48,23 +60,35 @@
 /* Темная тема */
 .dark-theme {
   /* Основные цвета */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #242424;
-  --bg-tertiary: #2d2d2d;
-  --bg-accent: #deec51;
-  --bg-accent-hover: #f0f65d;
-  --bg-accent-light: rgba(222, 236, 81, 0.15);
+  --bg-primary: #0d1b2a;
+  --bg-secondary: #1e273b;
+  --bg-tertiary: rgba(30, 39, 59, 0.8);
+  --bg-accent: #2562eb;
+  --bg-accent-hover: #3882fa;
+  --bg-accent-light: rgba(37, 98, 235, 0.16);
+  --background: #0d1b2a;
+  --surface: #1e273b;
+  --card: #1e273b;
+  --primary: #2562eb;
+  --primary-hover: #3882fa;
+  --textPrimary: #ffffff;
+  --textSecondary: #94a3b8;
+  --textDisabled: rgba(255, 255, 255, 0.4);
+  --border: rgba(255, 255, 255, 0.08);
+  --divider: rgba(255, 255, 255, 0.06);
+  --success: #22c55e;
+  --error: #ef4444;
   
   /* Текст */
-  --text-primary: #f5f5f5;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #808080;
-  --text-on-accent: #141414;
-  
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --text-on-accent: #ffffff;
+
   /* Границы */
-  --border-primary: #333333;
-  --border-secondary: #404040;
-  --border-focus: #deec51;
+  --border-primary: rgba(255, 255, 255, 0.08);
+  --border-secondary: rgba(255, 255, 255, 0.06);
+  --border-focus: #2562eb;
   
   /* Тени */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -74,13 +98,13 @@
   
   /* Статусы */
   --status-success: #22c55e;
-  --status-error: #f87171;
+  --status-error: #ef4444;
   --status-warning: #fbbf24;
   --status-info: #60a5fa;
   
   /* Градиенты */
-  --gradient-primary: linear-gradient(135deg, #deec51 0%, #f9f871 100%);
-  --gradient-card: linear-gradient(135deg, rgba(222, 236, 81, 0.08) 0%, rgba(249, 248, 113, 0.08) 100%);
+  --gradient-primary: linear-gradient(135deg, #2562eb 0%, #3882fa 100%);
+  --gradient-card: linear-gradient(135deg, rgba(37, 98, 235, 0.12) 0%, rgba(56, 130, 250, 0.08) 100%);
   
   /* Overlay */
   --overlay-bg: rgba(0, 0, 0, 0.7);

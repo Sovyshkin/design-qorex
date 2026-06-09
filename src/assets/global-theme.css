@@ -1329,3 +1329,384 @@
     color: #000000 !important;
   }
 }
+
+/* Dark theme override layer aligned with the fintech mockup */
+body.dark-theme,
+body.dark-theme #app {
+  background: linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme .wrapper,
+body.dark-theme .content-wrapper,
+body.dark-theme .pin-page,
+body.dark-theme .container,
+body.dark-theme .profile,
+body.dark-theme .page-container,
+body.dark-theme .payment-page,
+body.dark-theme .transaction-page,
+body.dark-theme .history-page,
+body.dark-theme .main-page,
+body.dark-theme .profile-page,
+body.dark-theme .donate-page,
+body.dark-theme .scanner-page {
+  background: transparent !important;
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme header,
+body.dark-theme .header,
+body.dark-theme .home-header,
+body.dark-theme .history-header,
+body.dark-theme .payment-header,
+body.dark-theme .failed-header {
+  background: transparent !important;
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6,
+body.dark-theme p,
+body.dark-theme span,
+body.dark-theme label,
+body.dark-theme li,
+body.dark-theme a,
+body.dark-theme button {
+  color: inherit;
+}
+
+body.dark-theme .card,
+body.dark-theme .list-item,
+body.dark-theme .history-item,
+body.dark-theme .transaction-item,
+body.dark-theme .coin,
+body.dark-theme .form-container,
+body.dark-theme .deposit-container,
+body.dark-theme .withdraw-container,
+body.dark-theme .transfer-container,
+body.dark-theme .input-section,
+body.dark-theme .wallet-address,
+body.dark-theme .profile-list,
+body.dark-theme .profile-user,
+body.dark-theme .sheet-card,
+body.dark-theme .failed-card,
+body.dark-theme .assets-block,
+body.dark-theme .modal,
+body.dark-theme .modal-content,
+body.dark-theme .payment-modal,
+body.dark-theme .amount-modal,
+body.dark-theme .withdraw-success-modal,
+body.dark-theme .paste-link-modal,
+body.dark-theme .form-section,
+body.dark-theme .amount-display,
+body.dark-theme .fee-info,
+body.dark-theme .fees-info,
+body.dark-theme .memo-container,
+body.dark-theme .address-container,
+body.dark-theme .network-item,
+body.dark-theme .network-option,
+body.dark-theme .payment-method-btn,
+body.dark-theme .option,
+body.dark-theme .profile-row,
+body.dark-theme .detail-item,
+body.dark-theme .detail-card,
+body.dark-theme .info-card,
+body.dark-theme .security-card,
+body.dark-theme .faq-card,
+body.dark-theme .document-card {
+  background: var(--surface, #1e273b) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+  color: var(--textPrimary, #ffffff) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-theme .form-container::before,
+body.dark-theme .payment-modal::before,
+body.dark-theme .amount-modal::before {
+  display: none !important;
+}
+
+body.dark-theme input:not([type="checkbox"]):not([type="radio"]),
+body.dark-theme textarea,
+body.dark-theme select,
+body.dark-theme .amount-input,
+body.dark-theme .code-input,
+body.dark-theme .search-input,
+body.dark-theme .wallet-input {
+  background: var(--bg-tertiary, rgba(30, 39, 59, 0.8)) !important;
+  color: var(--textPrimary, #ffffff) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+  caret-color: var(--primary, #2562eb) !important;
+  box-shadow: none !important;
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder,
+body.dark-theme .amount-input::placeholder,
+body.dark-theme .code-input::placeholder {
+  color: var(--textSecondary, #94a3b8) !important;
+}
+
+body.dark-theme input:focus,
+body.dark-theme textarea:focus,
+body.dark-theme select:focus,
+body.dark-theme .amount-input:focus,
+body.dark-theme .code-input:focus,
+body.dark-theme .search-input:focus,
+body.dark-theme .wallet-input:focus {
+  border-color: var(--primary-hover, #3882fa) !important;
+  box-shadow: 0 0 0 3px rgba(56, 130, 250, 0.16) !important;
+  background: rgba(30, 39, 59, 0.92) !important;
+  outline: none !important;
+}
+
+body.dark-theme .btn,
+body.dark-theme button.btn,
+body.dark-theme .btn-primary,
+body.dark-theme .cta,
+body.dark-theme .modal-btn,
+body.dark-theme .submit-btn,
+body.dark-theme .payment-method-btn.primary,
+body.dark-theme .donate-btn,
+body.dark-theme .deposit-page .btn,
+body.dark-theme .action-btn,
+body.dark-theme .continue-btn {
+  background: linear-gradient(135deg, var(--primary, #2562eb) 0%, var(--primary-hover, #3882fa) 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
+}
+
+body.dark-theme .btn-secondary,
+body.dark-theme .secondary,
+body.dark-theme .ghost,
+body.dark-theme .cancel-btn,
+body.dark-theme .payment-cancel-btn,
+body.dark-theme .option,
+body.dark-theme .network,
+body.dark-theme .profile-row,
+body.dark-theme .detail-item,
+body.dark-theme .btn.transfer,
+body.dark-theme .btn.pay_out,
+body.dark-theme .btn.deposit,
+body.dark-theme .theme-option,
+body.dark-theme .wrap-balance,
+body.dark-theme .quick-action {
+  background: rgba(30, 39, 59, 0.86) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+  color: var(--textPrimary, #ffffff) !important;
+  box-shadow: none !important;
+}
+
+body.dark-theme .btn.transfer span,
+body.dark-theme .btn.deposit span,
+body.dark-theme .btn.pay_out span,
+body.dark-theme .quick-action span {
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme .btn.pay_out,
+body.dark-theme .btn.pay_out span {
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme .network-item.active,
+body.dark-theme .network.active,
+body.dark-theme .option.active,
+body.dark-theme .profile-row.active,
+body.dark-theme .detail-item.active {
+  background: rgba(37, 98, 235, 0.16) !important;
+  border-color: rgba(56, 130, 250, 0.32) !important;
+}
+
+body.dark-theme .network-icon,
+body.dark-theme .wrap-img,
+body.dark-theme .icon-wrap,
+body.dark-theme .row-icon,
+body.dark-theme .method-icon,
+body.dark-theme .asset-icon,
+body.dark-theme .action-icon {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: var(--primary-hover, #3882fa) !important;
+}
+
+body.dark-theme .network-name,
+body.dark-theme .list-value,
+body.dark-theme .detail-value,
+body.dark-theme .wallet-number,
+body.dark-theme .balance-value,
+body.dark-theme .amount-number,
+body.dark-theme .method-title,
+body.dark-theme .coin-name,
+body.dark-theme .coin-balance,
+body.dark-theme .profile-value,
+body.dark-theme .name {
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme .memo-note,
+body.dark-theme .detail-label,
+body.dark-theme .wallet-label,
+body.dark-theme .fee-label,
+body.dark-theme .amount-label,
+body.dark-theme .method-description,
+body.dark-theme .modal-subtitle,
+body.dark-theme .currency-rate,
+body.dark-theme .coin-balance-name,
+body.dark-theme .section-title,
+body.dark-theme .input-label,
+body.dark-theme .label {
+  color: var(--textSecondary, #94a3b8) !important;
+}
+
+body.dark-theme .status-success,
+body.dark-theme .success {
+  color: var(--success, #22c55e) !important;
+}
+
+body.dark-theme .status-error,
+body.dark-theme .error {
+  color: var(--error, #ef4444) !important;
+}
+
+body.dark-theme .status-warning {
+  color: #fbbf24 !important;
+}
+
+body.dark-theme .status-info,
+body.dark-theme .in_processing {
+  color: var(--primary-hover, #3882fa) !important;
+}
+
+body.dark-theme .navbar,
+body.dark-theme .wallet-nav {
+  background: rgba(30, 39, 59, 0.92) !important;
+  border-color: var(--border, rgba(255, 255, 255, 0.08)) !important;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.dark-theme .navbar button:not(.active):not(.scanner) img,
+body.dark-theme .wallet-icon {
+  filter: brightness(0) invert(1) opacity(0.68);
+}
+
+body.dark-theme .navbar button.active img,
+body.dark-theme .wallet-tab.active .wallet-icon {
+  filter: brightness(0) saturate(100%) invert(43%) sepia(92%) saturate(3373%) hue-rotate(206deg) brightness(98%) contrast(103%);
+}
+
+body.dark-theme .navbar button span,
+body.dark-theme .wallet-tab span {
+  color: var(--textSecondary, #94a3b8) !important;
+}
+
+body.dark-theme .navbar button.active span,
+body.dark-theme .wallet-tab.active span:not(.active-dot) {
+  color: var(--primary-hover, #3882fa) !important;
+}
+
+body.dark-theme .navbar .scanner,
+body.dark-theme .center-scan {
+  background: linear-gradient(135deg, var(--primary, #2562eb), var(--primary-hover, #3882fa)) !important;
+  box-shadow: 0 14px 28px rgba(37, 98, 235, 0.38) !important;
+}
+
+body.dark-theme .navbar .scanner img,
+body.dark-theme .center-scan img {
+  filter: brightness(0) invert(1) !important;
+}
+
+body.dark-theme .alert,
+body.dark-theme .toast,
+body.dark-theme .message,
+body.dark-theme .notification {
+  background: rgba(30, 39, 59, 0.94) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme .alert.success,
+body.dark-theme .message.success,
+body.dark-theme .notification.success {
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.28), rgba(16, 185, 129, 0.16)) !important;
+  color: #ecfdf5 !important;
+}
+
+body.dark-theme .alert.error,
+body.dark-theme .message.error,
+body.dark-theme .notification.error {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.28), rgba(239, 68, 68, 0.16)) !important;
+  color: #fef2f2 !important;
+}
+
+body.dark-theme .alert.info,
+body.dark-theme .message.info,
+body.dark-theme .notification.info {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.34), rgba(37, 99, 235, 0.18)) !important;
+  color: #eff6ff !important;
+}
+
+body.dark-theme .alert.warning,
+body.dark-theme .message.warning,
+body.dark-theme .notification.warning {
+  background: linear-gradient(135deg, rgba(146, 64, 14, 0.28), rgba(245, 158, 11, 0.12)) !important;
+  color: #fffbeb !important;
+}
+
+body.dark-theme .qr-code,
+body.dark-theme .qr-container,
+body.dark-theme .scanner-frame,
+body.dark-theme .scan-container,
+body.dark-theme .camera-container,
+body.dark-theme .qr-video-container {
+  background: rgba(30, 39, 59, 0.86) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-theme .toggle-container {
+  background: rgba(30, 39, 59, 0.86) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+}
+
+body.dark-theme .theme-option svg,
+body.dark-theme .theme-option svg * {
+  color: var(--textSecondary, #94a3b8) !important;
+  stroke: var(--textSecondary, #94a3b8) !important;
+  fill: none !important;
+}
+
+body.dark-theme .theme-option span {
+  color: var(--textSecondary, #94a3b8) !important;
+}
+
+body.dark-theme .theme-option.active,
+body.dark-theme input[type="radio"]:checked + .theme-option {
+  background: rgba(37, 98, 235, 0.16) !important;
+}
+
+body.dark-theme .theme-option.active span,
+body.dark-theme input[type="radio"]:checked + .theme-option span {
+  color: var(--textPrimary, #ffffff) !important;
+}
+
+body.dark-theme .slider {
+  background: rgba(37, 98, 235, 0.16) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.dark-theme .back-button {
+  background: var(--surface, #1e273b) !important;
+  border-color: var(--border, rgba(255, 255, 255, 0.08)) !important;
+  color: var(--textPrimary, #ffffff) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.dark-theme .back-button:active {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34) !important;
+}

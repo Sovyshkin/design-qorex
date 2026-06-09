@@ -66,14 +66,11 @@ const toggleTheme = () => {
 .toggle-container {
   position: relative;
   display: flex;
-  background: #f5f5f5;
-  border-radius: 12px;
+  background: var(--surface, #f5f5f5);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
   padding: 4px;
   gap: 4px;
-}
-
-.dark-theme .toggle-container {
-  background: #2a2a2a;
 }
 
 input[type="radio"] {
@@ -97,45 +94,23 @@ input[type="radio"] {
 .theme-option svg {
   width: 18px;
   height: 18px;
-  color: #666;
+  color: var(--textSecondary, #64748b);
   transition: all 0.3s ease;
 }
 
 .theme-option span {
   font-size: 14px;
   font-weight: 500;
-  color: #666;
+  color: var(--textSecondary, #64748b);
   transition: all 0.3s ease;
 }
 
 input[type="radio"]:checked + .theme-option svg {
-  color: #0F172A;
+  color: var(--textPrimary, #0f172a);
 }
 
 input[type="radio"]:checked + .theme-option span {
-  color: #0F172A;
-}
-
-.dark-theme .theme-option svg,
-.dark-theme .theme-option svg * {
-  color: #cccccc !important;
-  stroke: #cccccc !important;
-  fill: none !important;
-}
-
-.dark-theme .theme-option span {
-  color: #cccccc;
-}
-
-.dark-theme input[type="radio"]:checked + .theme-option svg,
-.dark-theme input[type="radio"]:checked + .theme-option svg * {
-  color: #fff !important;
-  stroke: #fff !important;
-  fill: none !important;
-}
-
-.dark-theme input[type="radio"]:checked + .theme-option span {
-  color: #fff;
+  color: var(--textPrimary, #0f172a);
 }
 
 .slider {
@@ -144,9 +119,9 @@ input[type="radio"]:checked + .theme-option span {
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--card, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 }
@@ -155,8 +130,35 @@ input[type="radio"]:checked + .theme-option span {
   transform: translateX(calc(100% + 4px));
 }
 
-.dark-theme .slider {
-  background: #3a3a3a;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+:global(.dark-theme) .toggle-container {
+  background: var(--surface, #1e273b);
+  border-color: var(--border, rgba(255, 255, 255, 0.08));
+}
+
+:global(.dark-theme) .theme-option svg,
+:global(.dark-theme) .theme-option svg * {
+  color: var(--textSecondary, #94a3b8) !important;
+  stroke: var(--textSecondary, #94a3b8) !important;
+  fill: none !important;
+}
+
+:global(.dark-theme) .theme-option span {
+  color: var(--textSecondary, #94a3b8);
+}
+
+:global(.dark-theme) input[type="radio"]:checked + .theme-option svg,
+:global(.dark-theme) input[type="radio"]:checked + .theme-option svg * {
+  color: var(--textPrimary, #ffffff) !important;
+  stroke: var(--textPrimary, #ffffff) !important;
+  fill: none !important;
+}
+
+:global(.dark-theme) input[type="radio"]:checked + .theme-option span {
+  color: var(--textPrimary, #ffffff);
+}
+
+:global(.dark-theme) .slider {
+  background: rgba(37, 98, 235, 0.16);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
 }
 </style>

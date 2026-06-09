@@ -16,9 +16,9 @@ defineEmits(["click"]);
   height: 44px;
   flex: 0 0 44px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #0f172a;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--surface, #ffffff);
+  color: var(--textPrimary, #0f172a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,5 +43,16 @@ defineEmits(["click"]);
 .back-button:active {
   transform: scale(0.96);
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+:global(.dark-theme) .back-button {
+  background: var(--surface, #1e273b);
+  border-color: var(--border, rgba(255, 255, 255, 0.08));
+  color: var(--textPrimary, #ffffff);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+:global(.dark-theme) .back-button:active {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34);
 }
 </style>
