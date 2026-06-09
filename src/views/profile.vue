@@ -119,4 +119,70 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 .profile-row b { color: #94a3b8; font-size: 24px; line-height: 1; font-weight: 500; }
 .theme-wrap { padding: 10px; border-top: 1px solid #eef2f7; }
 .logout-btn { min-height: 52px; border-radius: 18px; background: #fff; border: 1px solid #fecaca; color: #ef4444; font-weight: 600; box-shadow: 0 8px 20px rgba(239,68,68,.06); }
+
+:global(.dark-theme) .profile-page {
+  background:
+    radial-gradient(720px 320px at 50% -16%, rgba(37, 98, 235, 0.22), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .profile-user {
+  background: linear-gradient(135deg, rgba(30, 39, 59, 0.96), rgba(17, 28, 46, 0.96)) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) .avatar {
+  background: linear-gradient(135deg, rgba(37, 98, 235, 0.24), rgba(56, 130, 250, 0.14)) !important;
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .profile-page h1,
+:global(.dark-theme) .profile-row span {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .profile-user p {
+  color: #3882fa !important;
+}
+
+:global(.dark-theme) .profile-section h2 {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .profile-list {
+  background: rgba(30, 39, 59, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28) !important;
+}
+
+:global(.dark-theme) .profile-row {
+  background: rgba(30, 39, 59, 0.72) !important;
+}
+
+:global(.dark-theme) .profile-row + .profile-row,
+:global(.dark-theme) .theme-wrap {
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+:global(.dark-theme) .profile-row:active {
+  background: rgba(37, 98, 235, 0.14) !important;
+}
+
+:global(.dark-theme) .profile-row i {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: #3882fa !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+:global(.dark-theme) .profile-row b {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .logout-btn {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.22) !important;
+  color: #ef4444 !important;
+  box-shadow: none !important;
+}
 </style>

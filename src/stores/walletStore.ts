@@ -337,10 +337,14 @@ export const useWalletStore = defineStore("wallet", () => {
 
   // Применение темы к документу
   const applyTheme = (dark: boolean) => {
+    if (typeof document === "undefined") return;
+
     if (dark) {
       document.documentElement.classList.add("dark-theme");
+      document.body.classList.add("dark-theme");
     } else {
       document.documentElement.classList.remove("dark-theme");
+      document.body.classList.remove("dark-theme");
     }
   };
 
