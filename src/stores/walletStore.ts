@@ -1167,11 +1167,12 @@ export const useWalletStore = defineStore("wallet", () => {
       if (response.status === 200 && response.data.status === "success") {
         return {
           success: true,
+          detail: response.data.detail,
           qrImage: response.data.qr_image_base64,
           key: response.data.key,
         };
       }
-      return { success: false };
+      return { success: false, detail: response.data?.detail };
     } catch (err) {
       console.error('Error enabling 2FA:', err);
       

@@ -18,6 +18,14 @@ const isTwoFactorSetupComplete = ref(false); // Новое состояние д
 const isLoading = ref(true); // Состояние загрузки для показа анимации
 const isTransferring = ref(false); // Состояние загрузки для кнопки перевода
 const walletCopied = ref(false);
+const ACCESS_TIMEOUT_MS = 9000;
+const WALLET_TIMEOUT_MS = 8000;
+
+const withTimeout = (promise, ms, fallback) =>
+  Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
 
 const isFormValid = computed(() => {
   const code = twoFactorCode.value.trim();
@@ -102,24 +110,32 @@ const verifyTwoFactorSetup = async () => {
 const checkTwoFactorAccess = async () => {
   try {
     // Делаем только один запрос на /fa_take для проверки статуса
-    const result = await walletStore.enable2FA();
+    const result = await withTimeout(
+      walletStore.enable2FA(),
+      ACCESS_TIMEOUT_MS,
+      { success: false, timeout: true }
+    );
+
+    if (result?.timeout) {
+      walletStore.showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+      isTwoFactorSetupComplete.value = false;
+      return;
+    }
     
     if (result.success && result.qrImage && result.key) {
       // В ответе есть QR и ключ - нужно настроить 2FA
       twoFactorKey.value = result.key;
       // Не показываем форму перевода, пока 2FA не настроен
-    } else if (result.detail === "Уже подключено!") {
+      isTwoFactorSetupComplete.value = false;
+    } else if (String(result.detail || "").includes("Уже подключено")) {
       // 2FA уже подключен - устанавливаем флаг и разрешаем доступ к форме
       walletStore.has2FA = true;
       isTwoFactorSetupComplete.value = true;
-      await walletStore.getUserWallet();
-      myWallet.value = walletStore.userWallet;
+      const wallet = await withTimeout(walletStore.getUserWallet(), WALLET_TIMEOUT_MS, null);
+      myWallet.value = wallet || walletStore.userWallet || "";
     } else {
-      // Другой случай - разрешаем доступ к форме
-      isTwoFactorSetupComplete.value = true;
-      // Загружаем кошелек пользователя через take_user_w
-      await walletStore.getUserWallet();
-      myWallet.value = walletStore.userWallet;
+      // Не удалось подтвердить 2FA, показываем безопасный экран настройки
+      isTwoFactorSetupComplete.value = false;
     }
   } catch (error) {
     console.error('Error checking 2FA access:', error);
