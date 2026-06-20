@@ -1904,3 +1904,54 @@ body.dark-theme .profile-row svg * {
   stroke: #dbeafe !important;
   filter: none !important;
 }
+
+/* Uniform app backgrounds: prevents route wrappers and Telegram viewport gaps from showing old accent colors while scrolling. */
+html:has(body.dark-theme),
+body.dark-theme,
+body.dark-theme #app,
+body.dark-theme main,
+body.dark-theme .content-wrapper {
+  background: #0d1b2a !important;
+  background-color: #0d1b2a !important;
+}
+
+body:not(.dark-theme),
+body:not(.dark-theme) #app,
+body:not(.dark-theme) main,
+body:not(.dark-theme) .content-wrapper {
+  background: #f1f5f9 !important;
+  background-color: #f1f5f9 !important;
+}
+
+body.dark-theme .profile-page,
+.dark-theme .profile-page,
+body.dark-theme .referal-page,
+.dark-theme .referal-page {
+  background: #0d1b2a !important;
+  background-color: #0d1b2a !important;
+}
+
+body:not(.dark-theme) .profile-page,
+body:not(.dark-theme) .referal-page {
+  background:
+    radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%),
+    #f1f5f9 !important;
+  background-color: #f1f5f9 !important;
+}
+
+body.dark-theme .profile-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: #0d1b2a;
+}
+
+body.dark-theme .profile-page .logout-btn,
+.dark-theme .profile-page .logout-btn {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22) !important;
+}
