@@ -109,6 +109,16 @@ const verifyTwoFactorSetup = async () => {
 
 const checkTwoFactorAccess = async () => {
   try {
+    if (!walletStore.user?.tg_id && walletStore.userTg?.id) {
+      await withTimeout(walletStore.getUser(), ACCESS_TIMEOUT_MS, null);
+    }
+
+    const tgId = walletStore.user?.tg_id || walletStore.userTg?.id;
+    if (!tgId) {
+      isTwoFactorSetupComplete.value = false;
+      return;
+    }
+
     // Делаем только один запрос на /fa_take для проверки статуса
     const result = await withTimeout(
       walletStore.enable2FA(),
@@ -126,7 +136,6 @@ const checkTwoFactorAccess = async () => {
       // В ответе есть QR и ключ - нужно настроить 2FA
       twoFactorKey.value = result.key;
       isTwoFactorSetupComplete.value = false;
-      router.replace({ name: 'twoFactorAuth', query: { from: 'transfer' } });
       return;
     } else if (String(result.detail || "").includes("Уже подключено")) {
       // 2FA уже подключен - устанавливаем флаг и разрешаем доступ к форме
@@ -153,8 +162,17 @@ const closeModal = () => {
 };
 
 onMounted(async () => {
+  const loadingGuard = setTimeout(() => {
+    if (isLoading.value) {
+      isLoading.value = false;
+      isTwoFactorSetupComplete.value = false;
+      walletStore.showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+    }
+  }, ACCESS_TIMEOUT_MS + WALLET_TIMEOUT_MS + 1000);
+
   // Проверяем доступ к странице перевода через 2FA
   await checkTwoFactorAccess();
+  clearTimeout(loadingGuard);
   
   // Показываем модальное окно через небольшую задержку
   setTimeout(() => {
@@ -166,7 +184,11 @@ onMounted(async () => {
 <template>
   <!-- Показываем загрузку пока проверяем статус 2FA -->
   <div v-if="isLoading" class="loading-screen">
-    <AppLoader />
+    <div class="loading-card">
+      <AppLoader />
+      <h2>{{ t('loading') }}...</h2>
+      <p>{{ t('transfer_2fa_required') || 'Проверяем доступ к переводам' }}</p>
+    </div>
   </div>
 
   <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
@@ -1030,11 +1052,42 @@ select::placeholder {
 
 /* Экран загрузки */
 .loading-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   min-height: 100vh;
+  min-height: 100dvh;
+  padding: 16px;
   background-color: #F1F5F9;
+}
+
+.loading-card {
+  width: 100%;
+  max-width: 360px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 26px 20px;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+.loading-card h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 750;
+}
+
+.loading-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 /* Стили для заблокированных полей */
@@ -1052,13 +1105,22 @@ select:disabled {
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
-:global(.dark-theme) .loading-screen :deep(.loader-wrap) {
-  min-height: 260px;
-  padding: 28px 30px;
-  border-radius: 24px;
+:global(.dark-theme) .loading-card {
   background: rgba(30, 39, 59, 0.94);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
+}
+
+:global(.dark-theme) .loading-card h2 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .loading-card p {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .loading-screen :deep(.loader-wrap) {
+  min-height: 80px;
 }
 
 :global(.dark-theme) .loading-screen :deep(.loader) {
