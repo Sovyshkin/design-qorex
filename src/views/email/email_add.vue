@@ -60,54 +60,78 @@ const sendCode = async () => {
 </template>
 <style scoped>
 .header {
-  padding: 20px 15px;
   width: 100%;
-  display: flex;
+  min-height: 64px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 8px;
+  background: #f1f5f9;
 }
 
 .emp {
-  width: 32px;
+  width: 44px;
+  height: 44px;
+}
+
+.arrow {
+  width: 44px;
+  height: 44px;
+  padding: 13px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  object-fit: contain;
 }
 
 h1 {
-  color: #0F172A;
-  line-height: 1.4;
-  padding: 2px 0;
+  margin: 0;
+  color: #0f172a;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  text-align: center;
 }
 
 .container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  min-height: calc(100vh - 64px);
+  min-height: calc(100dvh - 64px);
+  display: block;
   overflow-y: auto;
-  padding: 0 0 150px 0;
+  padding: 0 16px calc(176px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%),
+    #f1f5f9;
 }
 
 .form-container {
   width: 100%;
-  min-height: calc(100vh - 120px);
-  padding: 32px 20px 60px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  margin: 0 auto;
+  padding: 24px 18px 18px;
+  display: grid;
+  gap: 18px;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 .btn {
-  width: calc(100% - 40px);
-  margin: 0 20px 20px 20px;
+  width: 100%;
+  min-height: 56px;
+  margin: 2px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 20px 24px;
-  border-radius: 20px;
+  padding: 0 20px;
+  border-radius: 18px;
   font-weight: 600;
   font-size: 17px;
-  color: #1a1a1a;
+  color: #ffffff;
   background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   border: none;
   cursor: pointer;
@@ -156,9 +180,10 @@ input,
 textarea,
 select {
   width: 100%;
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 20px;
+  min-height: 58px;
+  border: 1px solid #dbeafe;
+  border-radius: 18px;
+  padding: 0 18px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   outline: none;
   font-size: 16px;
@@ -200,31 +225,32 @@ select::placeholder {
 
 .form-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 4px;
 }
 
 .form-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
-  padding: 2px 0;
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: 26px;
+  line-height: 31px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
 }
 
 .form-description {
-  font-size: 16px;
-  font-weight: 400;
+  max-width: 310px;
+  margin: 0 auto;
   color: #64748b;
-  margin: 0;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 500;
 }
 
 .input-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin: 0;
 }
 
 .btn-content {
@@ -237,7 +263,7 @@ select::placeholder {
 .loader {
   width: 20px;
   height: 20px;
-  border: 2px solid #1a1a1a;
+  border: 2px solid rgba(255, 255, 255, 0.52);
   border-top: 2px solid transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -250,17 +276,61 @@ select::placeholder {
 
 @media (max-width: 768px) {
   .container {
-    padding-bottom: 160px;
+    padding-bottom: calc(176px + env(safe-area-inset-bottom));
   }
   
   .form-container {
-    padding: 24px 16px;
+    padding: 24px 18px 18px;
   }
 }
 
 @media (max-width: 375px) {
-  .container {
-    padding-bottom: 180px;
+  .form-title {
+    font-size: 24px;
+    line-height: 29px;
   }
+}
+
+:global(.dark-theme) .header,
+:global(.dark-theme) .container {
+  background: #0d1b2a !important;
+}
+
+:global(.dark-theme) h1,
+:global(.dark-theme) .form-title {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .form-description {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .arrow {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  filter: brightness(0) invert(1);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28) !important;
+}
+
+:global(.dark-theme) .form-container {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) input,
+:global(.dark-theme) textarea,
+:global(.dark-theme) select {
+  background: rgba(13, 27, 42, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  caret-color: #3882fa !important;
+  box-shadow: none !important;
+}
+
+:global(.dark-theme) input::placeholder,
+:global(.dark-theme) textarea::placeholder,
+:global(.dark-theme) select::placeholder {
+  color: rgba(255, 255, 255, 0.42) !important;
 }
 </style>
