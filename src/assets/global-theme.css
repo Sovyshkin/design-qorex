@@ -1875,3 +1875,32 @@ body.dark-theme .back-button:active {
 .dark-theme .qr-code img {
   background: #ffffff !important;
 }
+
+/* Final profile/navbar guard: keeps the floating nav anchored and prevents legacy yellow SVG overrides from leaking into profile icons. */
+.wallet-nav-wrap {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  z-index: 5000 !important;
+  pointer-events: none;
+}
+
+.wallet-nav-wrap .wallet-nav {
+  pointer-events: auto;
+}
+
+.profile-page {
+  min-height: 100dvh !important;
+  padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important;
+}
+
+.dark-theme .profile-row svg,
+.dark-theme .profile-row svg *,
+body.dark-theme .profile-row svg,
+body.dark-theme .profile-row svg * {
+  color: #dbeafe !important;
+  fill: none !important;
+  stroke: #dbeafe !important;
+  filter: none !important;
+}

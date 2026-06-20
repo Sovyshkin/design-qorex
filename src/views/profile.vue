@@ -99,7 +99,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.profile-page { min-height: 100vh; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); padding: 16px 16px 124px; display: grid; gap: 18px; align-content: start; }
+.profile-page { position: relative; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); padding: 16px 16px calc(180px + env(safe-area-inset-bottom)); display: grid; gap: 18px; align-content: start; }
 .profile-user { background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); border: 1px solid #e2e8f0; border-radius: 24px; padding: 18px; box-shadow: 0 12px 28px rgba(15,23,42,.08); display: flex; align-items: center; gap: 14px; }
 .avatar { width: 58px; height: 58px; flex: 0 0 58px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, #dbeafe, #eff6ff); display: grid; place-items: center; color: #2563eb; font-size: 22px; font-weight: 700; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -114,7 +114,8 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 .profile-row + .profile-row { border-top: 1px solid #eef2f7; }
 .profile-row:active { background: #f8fafc; transform: scale(.995); }
 .profile-row i { width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: grid; place-items: center; font-style: normal; box-shadow: inset 0 1px 0 rgba(255,255,255,.85); }
-.profile-row svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.profile-row svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; color: currentColor; filter: none; }
+.profile-row svg * { fill: none !important; stroke: currentColor !important; color: currentColor !important; filter: none !important; }
 .profile-row span { color: #0f172a; font-size: 16px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .profile-row b { color: #94a3b8; font-size: 24px; line-height: 1; font-weight: 500; }
 .theme-wrap { padding: 10px; border-top: 1px solid #eef2f7; }
@@ -124,6 +125,8 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
   background:
     radial-gradient(720px 320px at 50% -16%, rgba(37, 98, 235, 0.22), transparent 62%),
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+  min-height: 100dvh !important;
+  padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important;
 }
 
 :global(.dark-theme) .profile-user {
@@ -171,8 +174,17 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 
 :global(.dark-theme) .profile-row i {
   background: rgba(37, 98, 235, 0.16) !important;
-  color: #3882fa !important;
+  color: #dbeafe !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+:global(.dark-theme) .profile-row svg,
+:global(.dark-theme) .profile-row svg * {
+  color: #dbeafe !important;
+  fill: none !important;
+  stroke: #dbeafe !important;
+  filter: none !important;
 }
 
 :global(.dark-theme) .profile-row b {

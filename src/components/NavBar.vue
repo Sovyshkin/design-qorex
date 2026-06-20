@@ -47,8 +47,8 @@ const handleScannerClick = (navigate) => {
 </template>
 
 <style scoped>
-.wallet-nav-wrap { position: fixed; left: 0; right: 0; bottom: 8px; z-index: 100; padding: 0 14px max(8px, env(safe-area-inset-bottom)); }
-.wallet-nav { height: 76px; border-radius: 26px; border: 1px solid var(--border, #e2e8f0); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(15,23,42,.14); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
+.wallet-nav-wrap { position: fixed !important; left: 0; right: 0; bottom: max(8px, env(safe-area-inset-bottom)) !important; z-index: 5000 !important; padding: 0 14px; pointer-events: none; transform: translateZ(0); }
+.wallet-nav { height: 76px; border-radius: 26px; border: 1px solid var(--border, #e2e8f0); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(15,23,42,.14); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; pointer-events: auto; }
 .wallet-tab { position: relative; width: 58px; min-height: 56px; border-radius: 18px; display: grid; place-items: center; gap: 3px; color: var(--textSecondary, #64748b); transition: transform .18s ease, color .18s ease; }
 .wallet-tab span { font-size: 10px; font-weight: 500; line-height: 1; transition: font-weight .18s ease, color .18s ease; }
 .wallet-icon { width: 20px; height: 20px; opacity: .72; transition: opacity .18s ease, transform .18s ease, filter .18s ease; }
