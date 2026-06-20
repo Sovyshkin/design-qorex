@@ -66,6 +66,13 @@ const props = defineProps({
   color: #fff;
 }
 
+:global(.dark-theme) .pill.soft {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(30, 39, 59, 0.96);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
 .auto-scroll-pills:hover .track {
   animation-play-state: paused;
 }

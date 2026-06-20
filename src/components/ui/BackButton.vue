@@ -48,8 +48,14 @@ defineEmits(["click"]);
 :global(.dark-theme) .back-button {
   background: var(--surface, #1e273b);
   border-color: var(--border, rgba(255, 255, 255, 0.08));
-  color: var(--textPrimary, #ffffff);
+  color: #ffffff !important;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+}
+
+:global(.dark-theme) .back-button svg,
+:global(.dark-theme) .back-button path {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
 }
 
 :global(.dark-theme) .back-button:active {
