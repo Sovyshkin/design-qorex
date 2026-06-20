@@ -60,8 +60,21 @@ const handleCopyLink = async (url) => {
   }
 };
 
+const openPaymentUrl = (url) => {
+  if (!url) return;
+  try {
+    if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink(url, { try_instant_view: false });
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+  } catch (_error) {
+    window.location.href = url;
+  }
+};
+
 const handleOpenInApp = (url) => {
-  router.push({ name: "payment", query: { url } });
+  openPaymentUrl(url);
   showPaymentChoiceModal.value = false;
 };
 
