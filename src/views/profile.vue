@@ -52,9 +52,9 @@ onMounted(async () => {
 <template>
   <main class="profile-page">
     <section class="profile-user">
-      <div class="avatar">
+      <div class="avatar" :class="{ 'logo-avatar': !walletStore.userTg.photo_url }">
         <img v-if="walletStore.userTg.photo_url" :src="walletStore.userTg.photo_url" alt="avatar" />
-        <span v-else>{{ (walletStore.userTg.first_name || 'P').slice(0, 1) }}</span>
+        <img v-else src="/assets/peekpay-logo-150.png" alt="PeekPay" />
       </div>
       <div class="user-meta">
         <h1>
@@ -103,6 +103,7 @@ onMounted(async () => {
 .profile-user { background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); border: 1px solid #e2e8f0; border-radius: 24px; padding: 18px; box-shadow: 0 12px 28px rgba(15,23,42,.08); display: flex; align-items: center; gap: 14px; }
 .avatar { width: 58px; height: 58px; flex: 0 0 58px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, #dbeafe, #eff6ff); display: grid; place-items: center; color: #2563eb; font-size: 22px; font-weight: 700; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar.logo-avatar img { object-fit: contain; padding: 8px; }
 .user-meta { min-width: 0; }
 h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .profile-user p { margin: 3px 0 0; color: #2563eb; font-size: 13px; font-weight: 500; }

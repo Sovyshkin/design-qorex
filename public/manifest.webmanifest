@@ -1,0 +1,29 @@
+{
+  "name": "PeekPay",
+  "short_name": "PeekPay",
+  "description": "PeekPay crypto wallet",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1B2A",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/assets/peekpay-logo-150.png",
+      "sizes": "150x150",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/peekpay-logo-600.png",
+      "sizes": "600x600",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/peekpay-logo-1080.png",
+      "sizes": "1080x1080",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -90,8 +90,57 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 .document-card:active { transform: scale(.99); background: #f8fafc; }
 .document-card i { width: 46px; height: 46px; border-radius: 16px; display: grid; place-items: center; color: #2563eb; background: linear-gradient(135deg, #eff6ff, #dbeafe); box-shadow: inset 0 1px 0 rgba(255,255,255,.9); }
 .document-card svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.document-card svg * { fill: none !important; stroke: currentColor !important; }
 .document-card span { min-width: 0; display: grid; gap: 4px; }
 .document-card strong { color: #0f172a; font-size: 16px; line-height: 20px; font-weight: 700; }
 .document-card small { color: #64748b; font-size: 13px; line-height: 17px; font-weight: 500; }
 .document-card b { color: #94a3b8; font-size: 26px; line-height: 1; font-weight: 500; }
+
+:global(.dark-theme) .info-page {
+  background:
+    radial-gradient(720px 320px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .page-header h1 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .page-header p {
+  color: #94a3b8 !important;
+}
+
+:global(.dark-theme) .document-card {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+:global(.dark-theme) .document-card:active {
+  background: rgba(37, 52, 78, 0.98) !important;
+}
+
+:global(.dark-theme) .document-card i {
+  color: #dbeafe !important;
+  background: linear-gradient(135deg, rgba(37, 98, 235, 0.38), rgba(56, 130, 250, 0.22)) !important;
+  border: 1px solid rgba(219, 234, 254, 0.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 22px rgba(37, 98, 235, 0.16) !important;
+}
+
+:global(.dark-theme) .document-card svg,
+:global(.dark-theme) .document-card svg * {
+  color: #dbeafe !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  filter: none !important;
+}
+
+:global(.dark-theme) .document-card strong {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .document-card small,
+:global(.dark-theme) .document-card b {
+  color: #94a3b8 !important;
+}
 </style>

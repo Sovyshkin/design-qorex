@@ -7,7 +7,9 @@
     </header>
 
     <main class="payment-shell">
-      <div class="payment-icon">↗</div>
+      <div class="payment-icon">
+        <img src="/assets/peekpay-logo-150.png" alt="PeekPay" />
+      </div>
       <h2>Откройте страницу оплаты</h2>
       <p>
         Платежная страница откроется во внешнем окне Telegram. Если окно не открылось,
@@ -86,6 +88,7 @@ onMounted(() => {
 h1 { margin: 0; color: #0f172a; font-size: 22px; line-height: 26px; font-weight: 750; text-align: center; letter-spacing: -0.03em; }
 .payment-shell { margin: 0 16px; border-radius: 24px; border: 1px solid #e2e8f0; background: rgba(255,255,255,.96); box-shadow: 0 12px 28px rgba(15,23,42,.08); padding: 24px 18px; display: grid; justify-items: center; gap: 14px; text-align: center; }
 .payment-icon { width: 64px; height: 64px; border-radius: 22px; display: grid; place-items: center; background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; font-size: 30px; font-weight: 800; box-shadow: 0 14px 28px rgba(37,99,235,.28); }
+.payment-icon img { width: 42px; height: 42px; object-fit: contain; }
 h2 { margin: 2px 0 0; color: #0f172a; font-size: 22px; line-height: 27px; font-weight: 800; letter-spacing: -0.03em; }
 p { max-width: 320px; margin: 0; color: #64748b; font-size: 14px; line-height: 21px; font-weight: 500; }
 .cta, .secondary { width: 100%; min-height: 52px; border-radius: 16px; font-size: 15px; font-weight: 750; }

@@ -29,7 +29,9 @@ onMounted(async () => {
   <div class="home-page">
     <header class="home-header">
       <div class="home-user">
-        <div class="home-avatar"><img :src="walletStore.userTg.photo_url" alt="avatar" /></div>
+        <div class="home-avatar" :class="{ 'brand-avatar': !walletStore.userTg.photo_url }">
+          <img :src="walletStore.userTg.photo_url || '/assets/peekpay-logo-150.png'" alt="avatar" />
+        </div>
         <div>
           <h1>{{ walletStore.user.first_name || walletStore.userTg.first_name || "Пользователь" }}</h1>
           <p>Premium</p>
@@ -81,6 +83,7 @@ onMounted(async () => {
 .home-user { display: flex; align-items: center; gap: 12px; }
 .home-avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; border: 2px solid #dbeafe; background: #fff; }
 .home-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.home-avatar.brand-avatar img { object-fit: contain; padding: 7px; }
 h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 1.15; font-weight: 600; }
 .home-user p { margin: 2px 0 0; color: #2563eb; font-size: 13px; font-weight: 500; }
 
