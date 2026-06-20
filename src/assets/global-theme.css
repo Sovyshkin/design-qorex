@@ -1955,3 +1955,17 @@ body.dark-theme .profile-page .logout-btn,
   color: #ef4444 !important;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22) !important;
 }
+
+body.dark-theme .safety .info,
+.dark-theme .safety .info {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.dark-theme .safety .list-value,
+.dark-theme .safety .list-value {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
