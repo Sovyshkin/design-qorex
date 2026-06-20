@@ -75,4 +75,8 @@ h1 {
     height: 24px;
     width: 24px;
 }
+
+:global(.dark-theme) .check {
+  filter: brightness(0) invert(1) !important;
+}
 </style>
