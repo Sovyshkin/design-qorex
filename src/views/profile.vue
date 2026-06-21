@@ -100,13 +100,38 @@ onMounted(async () => {
 
 <style scoped>
 .profile-page { position: relative; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); padding: 16px 16px calc(180px + env(safe-area-inset-bottom)); display: grid; gap: 18px; align-content: start; }
-.profile-user { background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); border: 1px solid #e2e8f0; border-radius: 24px; padding: 18px; box-shadow: 0 12px 28px rgba(15,23,42,.08); display: flex; align-items: center; gap: 14px; }
+.profile-user { background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%); border: 1px solid #e2e8f0; border-radius: 24px; padding: 18px; box-shadow: 0 12px 28px rgba(15,23,42,.08); display: flex; align-items: center; gap: 14px; min-height: 96px; }
 .avatar { width: 58px; height: 58px; flex: 0 0 58px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, #dbeafe, #eff6ff); display: grid; place-items: center; color: #2563eb; font-size: 22px; font-weight: 700; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 .avatar.logo-avatar img { object-fit: contain; padding: 8px; }
-.user-meta { min-width: 0; }
+.user-meta { min-width: 0; display: grid; gap: 3px; justify-items: start; }
 h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .profile-user p { margin: 3px 0 0; color: #2563eb; font-size: 13px; font-weight: 500; }
+
+@media (min-width: 430px) {
+  .profile-user {
+    max-width: 360px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .profile-user {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 54px;
+    height: 54px;
+    flex-basis: 54px;
+  }
+
+  h1 {
+    font-size: 18px;
+    line-height: 22px;
+  }
+}
 
 .profile-section { display: grid; gap: 8px; }
 .profile-section h2 { margin: 0 2px; color: #64748b; font-size: 12px; line-height: 16px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .04em; }

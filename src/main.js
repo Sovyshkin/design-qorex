@@ -10,6 +10,7 @@ import './assets/theme.css'; // Подключаем стили темы
 import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
 axios.defaults.baseURL = "https://back.peekpay.ru";
+axios.defaults.timeout = 12000;
 
 // Функция для получения Telegram initData
 const getTelegramInitData = () => {

@@ -108,21 +108,16 @@ const handleWithdraw = async () => {
 
 const checkTwoFactorAccess = async () => {
   try {
-    if (!walletStore.user?.tg_id && walletStore.userTg?.id) {
-      await withTimeout(walletStore.getUser(), ACCESS_TIMEOUT_MS, null);
-    }
-
     const tgId = walletStore.user?.tg_id || walletStore.userTg?.id;
     if (!tgId) {
       isTwoFactorSetupComplete.value = false;
       return;
     }
 
-    // Делаем только один запрос на /fa_take для проверки статуса
     const result = await withTimeout(
-      walletStore.enable2FA(),
+      walletStore.check2FAStatus(),
       ACCESS_TIMEOUT_MS,
-      { success: false, timeout: true }
+      { timeout: true }
     );
 
     if (result?.timeout) {
@@ -130,18 +125,11 @@ const checkTwoFactorAccess = async () => {
       isTwoFactorSetupComplete.value = false;
       return;
     }
-    
-    if (result.success && result.qrImage && result.key) {
-      // В ответе есть QR и ключ - нужно настроить 2FA
-      twoFactorKey.value = result.key;
-      // Не показываем форму вывода, пока 2FA не настроен
-    } else if (String(result.detail || "").includes("Уже подключено")) {
-      // 2FA уже подключен - устанавливаем флаг и разрешаем доступ к форме
-      walletStore.has2FA = true;
+
+    if (walletStore.has2FA) {
       isTwoFactorSetupComplete.value = true;
     } else {
-      // Другой случай - разрешаем доступ к форме
-      isTwoFactorSetupComplete.value = true;
+      isTwoFactorSetupComplete.value = false;
     }
   } catch (error) {
     console.error('Error checking 2FA access:', error);

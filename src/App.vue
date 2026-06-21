@@ -98,6 +98,12 @@ const showContent = computed(() => {
   const currentRoute = router.currentRoute.value;
   return !publicRoutes.includes(currentRoute.name);
 });
+
+const shouldShowGlobalLoader = computed(() => {
+  const currentRoute = router.currentRoute.value;
+  const nonBlockingRoutes = ["deposit", "transfer", "withdraw"];
+  return walletStore.isLoading && !nonBlockingRoutes.includes(currentRoute.name);
+});
 </script>
 
 <template>
@@ -133,7 +139,7 @@ const showContent = computed(() => {
       <div v-else>
         <transition name="app-appear" appear>
           <div class="content-wrapper">
-            <div class="wrap-load" v-if="walletStore.isLoading">
+            <div class="wrap-load" v-if="shouldShowGlobalLoader">
               <AppLoader />
             </div>
             <router-view v-else v-slot="{ Component }">
