@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore";
 import { useRouter } from "vue-router";
@@ -8,6 +8,9 @@ const { t } = useI18n();
 const showCopiedNotification = ref(false);
 const walletStore = useWalletStore();
 const router = useRouter();
+const referralUserId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id || "");
+const referralLink = computed(() => `https://t.me/peekpay_bot?startapp=referal_${referralUserId.value}`);
+const hasReferals = computed(() => referals.value.length > 0);
 
 const copy = (text) => {
   navigator.clipboard.writeText(text).then(() => {
@@ -38,6 +41,7 @@ const loadReferrals = async () => {
   
   try {
     isLoadingReferrals.value = true;
+    if (!referralUserId.value) return;
     const data = await walletStore.getMyReferrals();
     if (data && Array.isArray(data)) {
       referals.value = data;
@@ -94,15 +98,9 @@ onMounted(() => {
           <h3>{{ t("referal_link") }}</h3>
           <div
             class="referal-box-value"
-            @click="
-              copy(
-                `https://t.me/peekpay_bot?startapp=referal_${walletStore.userTg.id}`
-              )
-            "
+            @click="copy(referralLink)"
           >
-            <span>{{
-              `https://t.me/peekpay_bot?startapp=referal_${walletStore.userTg.id}`
-            }}</span>
+            <span>{{ referralLink }}</span>
             <img src="@/assets/copy.svg" alt="copy" />
           </div>
         </div>
@@ -119,27 +117,28 @@ onMounted(() => {
         
         <!-- Показываем список рефералов или пустое состояние -->
         <div class="referals-list">
-          <div
-            class="referal-item"
-            v-for="(referal, index) in referals"
-            :key="index"
-            v-if="referals.length > 0"
-          >
-            <div class="user-info">
-              <div class="wrap-img">
-                <img src="@/assets/referal.svg" alt="referal">
+          <template v-if="hasReferals">
+            <div
+              class="referal-item"
+              v-for="(referal, index) in referals"
+              :key="referal.id || referal.tg_id || index"
+            >
+              <div class="user-info">
+                <div class="wrap-img">
+                  <img src="@/assets/referal.svg" alt="referal">
+                </div>
+                <div class="user-info-more">
+                    <span class="user-name">@{{ referal.username || referal.first_name || 'Пользователь' }}</span>
+                    <span class="reg-date"
+                      >{{ t("earned") }}: {{ walletStore.roundToHundredths(referal.referral_only_pay || 0) }} $</span
+                    >
+                </div>
               </div>
-              <div class="user-info-more">
-                  <span class="user-name">@{{ referal.username || referal.first_name || 'Пользователь' }}</span>
-                  <span class="reg-date"
-                    >{{ t("earned") }}: {{ walletStore.roundToHundredths(referal.referral_only_pay || 0) }} $</span
-                  >
-              </div>
+              <div class="user-amount">{{ walletStore.roundToHundredths(referal.referral_only_pay || 0) }} $</div>
             </div>
-            <div class="user-amount">{{ walletStore.roundToHundredths(referal.referral_only_pay || 0) }} $</div>
-          </div>
+          </template>
           
-          <div v-if="referals.length === 0" class="empty-referals">
+          <div v-else class="empty-referals">
             <div class="empty-icon">
               <img src="@/assets/referal.svg" alt="">
             </div>
