@@ -1969,3 +1969,37 @@ body.dark-theme .safety .list-value,
   border: 0 !important;
   box-shadow: none !important;
 }
+
+/* Final profile viewport guard: remove old red/danger bleed around the Telegram viewport. */
+html:has(body.dark-theme),
+body.dark-theme,
+body.dark-theme #app,
+body.dark-theme .content-wrapper,
+body.dark-theme .profile-page {
+  background: #0d1b2a !important;
+  background-color: #0d1b2a !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+body.dark-theme .profile-page {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  overflow-x: hidden !important;
+}
+
+body.dark-theme .profile-page::before,
+body.dark-theme .profile-page::after {
+  content: none !important;
+}
+
+body.dark-theme .profile-page .logout-btn,
+.dark-theme .profile-page .logout-btn {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f87171 !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22) !important;
+}

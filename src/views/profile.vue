@@ -193,9 +193,9 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 }
 
 :global(.dark-theme) .logout-btn {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border-color: rgba(239, 68, 68, 0.22) !important;
-  color: #ef4444 !important;
-  box-shadow: none !important;
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f87171 !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22) !important;
 }
 </style>
