@@ -101,7 +101,7 @@ const showContent = computed(() => {
 
 const shouldShowGlobalLoader = computed(() => {
   const currentRoute = router.currentRoute.value;
-  const nonBlockingRoutes = ["deposit", "transfer", "withdraw"];
+  const nonBlockingRoutes = ["deposit", "transfer", "withdraw", "safety"];
   return walletStore.isLoading && !nonBlockingRoutes.includes(currentRoute.name);
 });
 </script>

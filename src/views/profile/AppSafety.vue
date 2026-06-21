@@ -1,4 +1,3 @@
-<
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
@@ -69,12 +68,8 @@ const goBack = () => {
 // Загружаем актуальные данные пользователя при монтировании компонента
 onMounted(async () => {
   try {
-    // Проверяем есть ли уже данные пользователя
-    if (!walletStore.user?.tg_id) {
-      await walletStore.getUser();
-    }
-    // Также проверяем статус 2FA только если есть пользователь
-    if (walletStore.user?.tg_id) {
+    // Проверяем 2FA без блокировки первого рендера страницы.
+    if (walletStore.user?.tg_id || walletStore.userTg?.id) {
       await walletStore.check2FAStatus();
     }
   } catch (error) {
