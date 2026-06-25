@@ -1,7 +1,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, nextTick, onMounted, watch } from "vue";
 import AppLoader from '@/components/AppLoader.vue';
 import { useRouter } from 'vue-router';
 
@@ -17,6 +17,8 @@ const isTwoFactorSetupComplete = ref(false); // Новое состояние д
 const isLoading = ref(true); // Состояние загрузки для показа анимации
 const isTransferring = ref(false); // Состояние загрузки для кнопки перевода
 const walletCopied = ref(false);
+const requireScreenRef = ref(null);
+const requireCardRef = ref(null);
 const ACCESS_TIMEOUT_MS = 9000;
 const WALLET_TIMEOUT_MS = 8000;
 
@@ -198,6 +200,34 @@ const closeModal = () => {
   showModal.value = false;
 };
 
+const logRequire2FADomState = async (source = 'manual') => {
+  await nextTick();
+
+  const screen = requireScreenRef.value;
+  const card = requireCardRef.value;
+  const screenStyles = screen ? window.getComputedStyle(screen) : null;
+  const cardStyles = card ? window.getComputedStyle(card) : null;
+
+  console.log('[PeekPay Transfer require 2FA DOM]', {
+    source,
+    hasScreen: Boolean(screen),
+    hasCard: Boolean(card),
+    screenRect: screen?.getBoundingClientRect?.(),
+    cardRect: card?.getBoundingClientRect?.(),
+    screenDisplay: screenStyles?.display,
+    screenVisibility: screenStyles?.visibility,
+    screenOpacity: screenStyles?.opacity,
+    screenBackground: screenStyles?.background,
+    screenZIndex: screenStyles?.zIndex,
+    cardDisplay: cardStyles?.display,
+    cardVisibility: cardStyles?.visibility,
+    cardOpacity: cardStyles?.opacity,
+    cardBackground: cardStyles?.background,
+    bodyClass: document.body.className,
+    appHtml: document.querySelector('#app')?.innerHTML?.slice(0, 1200),
+  });
+};
+
 onMounted(async () => {
   console.log('[PeekPay Transfer mounted]', {
     isLoading: isLoading.value,
@@ -221,6 +251,10 @@ onMounted(async () => {
   // Проверяем доступ к странице перевода через 2FA
   await checkTwoFactorAccess();
   clearTimeout(loadingGuard);
+
+  if (!isTwoFactorSetupComplete.value) {
+    await logRequire2FADomState('after-check2FA');
+  }
   
   if (isTwoFactorSetupComplete.value) {
     setTimeout(() => {
@@ -240,6 +274,9 @@ watch(
   }),
   (state) => {
     console.log('[PeekPay Transfer render state]', state);
+    if (!state.isLoading && !state.isTwoFactorSetupComplete) {
+      logRequire2FADomState('watch-require-2fa');
+    }
   },
   { immediate: true }
 );
@@ -256,8 +293,8 @@ watch(
       </div>
     </div>
 
-    <section v-else-if="!isTwoFactorSetupComplete" class="require-2fa-screen">
-      <div class="require-2fa-card">
+    <section v-else-if="!isTwoFactorSetupComplete" ref="requireScreenRef" class="require-2fa-screen">
+      <div ref="requireCardRef" class="require-2fa-card">
         <div class="require-2fa-icon">
           <img src="/assets/safety.svg" alt="Security" />
         </div>
@@ -390,34 +427,49 @@ watch(
 
 <style scoped>
 .transfer-page {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
   background: #f1f5f9;
+  overflow-x: hidden;
 }
 
 .require-2fa-screen {
+  position: relative !important;
+  z-index: 30 !important;
+  width: 100% !important;
   min-height: 100vh;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 20px 16px calc(132px + env(safe-area-inset-bottom));
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px 16px calc(132px + env(safe-area-inset-bottom)) !important;
   background:
     radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%),
-    #f1f5f9;
+    #f1f5f9 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .require-2fa-card {
-  width: 100%;
-  max-width: 380px;
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding: 26px 20px;
-  border-radius: 24px;
-  border: 1px solid #e2e8f0;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  text-align: center;
+  position: relative !important;
+  z-index: 31 !important;
+  width: min(100%, 380px) !important;
+  max-width: 380px !important;
+  display: grid !important;
+  justify-items: center !important;
+  gap: 14px !important;
+  padding: 26px 20px !important;
+  border-radius: 24px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
 }
 
 .require-2fa-icon {
