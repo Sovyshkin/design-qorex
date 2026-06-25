@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import AppLoader from "@/components/AppLoader.vue";
+import Require2FA from "@/components/Require2FA.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import backIcon from "@/assets/arrow-left.svg";
 import copyIcon from "@/assets/copy.svg";
@@ -63,127 +64,6 @@ const transferState = computed(() => {
   if (!isTwoFactorSetupComplete.value) return "require-2fa";
   return "form";
 });
-
-const isDarkMode = computed(() => Boolean(walletStore.isDarkTheme));
-
-const fallbackSectionStyle = computed(() => `
-  all: initial;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 16px calc(132px + env(safe-area-inset-bottom));
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: ${isDarkMode.value
-    ? "radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.16), transparent 62%), linear-gradient(180deg, #07111f 0%, #0d1b2a 100%)"
-    : "radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%), #f1f5f9"} !important;
-`);
-
-const fallbackCardStyle = computed(() => `
-  all: initial;
-  box-sizing: border-box;
-  width: min(100%, 380px);
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding: 28px 22px;
-  border-radius: 24px;
-  border: 1px solid ${isDarkMode.value ? "rgba(255,255,255,0.08)" : "#e2e8f0"};
-  background: ${isDarkMode.value ? "rgba(30, 39, 59, 0.96)" : "rgba(255,255,255,0.96)"} !important;
-  box-shadow: ${isDarkMode.value ? "0 18px 34px rgba(0, 0, 0, 0.28)" : "0 16px 36px rgba(15, 23, 42, 0.08)"};
-  text-align: center;
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: ${isDarkMode.value ? "#ffffff" : "#0f172a"};
-`);
-
-const fallbackShieldStyle = computed(() => `
-  all: initial;
-  box-sizing: border-box;
-  width: 84px;
-  height: 84px;
-  display: grid;
-  place-items: center;
-  border-radius: 28px;
-  background: ${isDarkMode.value ? "rgba(37, 98, 235, 0.18)" : "linear-gradient(135deg, #dbeafe, #eff6ff)"};
-  border: ${isDarkMode.value ? "1px solid rgba(255,255,255,0.08)" : "none"};
-`);
-
-const fallbackHeadingStyle = computed(() => `
-  all: initial;
-  display: block;
-  margin: 0;
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 24px;
-  line-height: 29px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: ${isDarkMode.value ? "#ffffff" : "#0f172a"} !important;
-`);
-
-const fallbackTextStyle = computed(() => `
-  all: initial;
-  display: block;
-  max-width: 320px;
-  margin: 0;
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 600;
-  text-align: center;
-  color: ${isDarkMode.value ? "#94a3b8" : "#64748b"} !important;
-`);
-
-const fallbackActionsStyle = `
-  all: initial;
-  box-sizing: border-box;
-  width: 100%;
-  display: grid;
-  gap: 10px;
-  margin-top: 6px;
-`;
-
-const fallbackPrimaryStyle = computed(() => `
-  all: initial;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 56px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-  box-shadow: 0 18px 32px rgba(37, 99, 235, 0.24);
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;
-  line-height: 20px;
-  font-weight: 800;
-  color: #ffffff !important;
-  cursor: pointer;
-  text-align: center;
-`);
-
-const fallbackSecondaryStyle = computed(() => `
-  all: initial;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 56px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  background: ${isDarkMode.value ? "rgba(13, 27, 42, 0.58)" : "#ffffff"} !important;
-  border: 1px solid ${isDarkMode.value ? "rgba(255,255,255,0.08)" : "#dbe3ef"};
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;
-  line-height: 20px;
-  font-weight: 800;
-  color: ${isDarkMode.value ? "#ffffff" : "#1e40af"} !important;
-  cursor: pointer;
-  text-align: center;
-`);
 
 const logFallbackDomState = async (source = "manual") => {
   await nextTick();
@@ -397,42 +277,9 @@ watch(
       </div>
     </section>
 
-    <section
-      v-else-if="!isTwoFactorSetupComplete"
-      ref="fallbackRootRef"
-      class="transfer-view__state transfer-view__state--fallback"
-      :style="fallbackSectionStyle"
-    >
-      <div class="transfer-view__state-card transfer-view__state-card--fallback" :style="fallbackCardStyle">
-        <div class="transfer-view__shield" :style="fallbackShieldStyle">
-          <img
-            :src="safetyIcon"
-            alt="Security"
-            :style="`width: 42px; height: 42px; filter: ${isDarkMode ? 'brightness(0) invert(1)' : 'invert(33%) sepia(83%) saturate(1750%) hue-rotate(211deg) brightness(96%) contrast(95%)'};`"
-          />
-        </div>
-        <h2 :style="fallbackHeadingStyle">{{ t("require_2fa_title") }}</h2>
-        <p :style="fallbackTextStyle">{{ t("require_2fa_description") }}</p>
-        <div class="transfer-view__state-actions" :style="fallbackActionsStyle">
-          <button
-            class="transfer-view__primary"
-            type="button"
-            :style="fallbackPrimaryStyle"
-            @click="goToTwoFactorSetup"
-          >
-            {{ t("enable_2fa") }}
-          </button>
-          <button
-            class="transfer-view__secondary"
-            type="button"
-            :style="fallbackSecondaryStyle"
-            @click="walletStore.goBack()"
-          >
-            {{ t("go_back") }}
-          </button>
-        </div>
-      </div>
-    </section>
+    <div v-else-if="!isTwoFactorSetupComplete" ref="fallbackRootRef" class="transfer-view__require-shell">
+      <Require2FA />
+    </div>
 
     <div v-else class="transfer-view__shell">
       <header class="transfer-view__header">
@@ -579,6 +426,11 @@ watch(
   min-height: 100vh;
   min-height: 100dvh;
   padding: 18px 16px calc(132px + env(safe-area-inset-bottom));
+}
+
+.transfer-view__require-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .transfer-view__header {
