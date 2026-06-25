@@ -12,6 +12,27 @@ import './assets/global-theme.css'; // Подключаем глобальные
 axios.defaults.baseURL = "https://back.peekpay.ru";
 axios.defaults.timeout = 12000;
 
+window.addEventListener('error', (event) => {
+  console.error('[PeekPay Global Error]', {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    error: event.error,
+    stack: event.error?.stack,
+  });
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('[PeekPay Unhandled Promise]', {
+    reason: event.reason,
+    message: event.reason?.message,
+    stack: event.reason?.stack,
+    response: event.reason?.response?.data,
+    status: event.reason?.response?.status,
+  });
+});
+
 // Функция для получения Telegram initData
 const getTelegramInitData = () => {
   if (window.Telegram?.WebApp?.initData) {
@@ -49,6 +70,15 @@ const pinia = createPinia();
 pinia.use(PiniaCookiesPlugin);
 
 const app = createApp(App);
+app.config.errorHandler = (error, instance, info) => {
+  console.error('[PeekPay Vue Error]', {
+    error,
+    message: error?.message,
+    stack: error?.stack,
+    component: instance?.type?.name || instance?.type?.__name,
+    info,
+  });
+};
 app.use(pinia);
 app.use(router)
 app.use(i18n)

@@ -16,6 +16,12 @@ const publicRoutes = ["enterPin", "createPin"];
 // Упрощенный router guard - только для базовой навигации
 router.beforeEach(async (to, from, next) => {
   try {
+    console.log("[PeekPay Router beforeEach]", {
+      from: { name: from.name, path: from.fullPath },
+      to: { name: to.name, path: to.fullPath },
+      storeLoading: walletStore.isLoading,
+    });
+
     // Разрешаем навигацию к PIN маршрутам
     if (to.name === "enterPin" || to.name === "createPin") {
       walletStore.isLoading = false;
@@ -34,6 +40,10 @@ router.beforeEach(async (to, from, next) => {
     next();
   } finally {
     walletStore.isLoading = false;
+    console.log("[PeekPay Router beforeEach done]", {
+      to: { name: to.name, path: to.fullPath },
+      storeLoading: walletStore.isLoading,
+    });
   }
 });
 
@@ -104,6 +114,20 @@ const shouldShowGlobalLoader = computed(() => {
   const nonBlockingRoutes = ["deposit", "transfer", "withdraw", "safety"];
   return walletStore.isLoading && !nonBlockingRoutes.includes(currentRoute.name);
 });
+
+watch(
+  () => ({
+    routeName: router.currentRoute.value.name,
+    routePath: router.currentRoute.value.fullPath,
+    storeLoading: walletStore.isLoading,
+    showContent: showContent.value,
+    shouldShowGlobalLoader: shouldShowGlobalLoader.value,
+  }),
+  (state) => {
+    console.log("[PeekPay App Render State]", state);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>

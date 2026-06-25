@@ -20,6 +20,14 @@ const walletCopied = ref(false);
 const ACCESS_TIMEOUT_MS = 9000;
 const WALLET_TIMEOUT_MS = 8000;
 
+console.log('[PeekPay Transfer setup]', {
+  route: router.currentRoute.value.fullPath,
+  user: walletStore.user,
+  userTg: walletStore.userTg,
+  has2FA: walletStore.has2FA,
+  storeLoading: walletStore.isLoading,
+});
+
 const withTimeout = (promise, ms, fallback) =>
   Promise.race([
     promise,
@@ -107,9 +115,22 @@ const verifyTwoFactorSetup = async () => {
 };
 
 const checkTwoFactorAccess = async () => {
+  console.log('[PeekPay Transfer check2FA start]', {
+    userTgId: walletStore.userTg?.id,
+    userTg: walletStore.userTg,
+    userTgServerId: walletStore.user?.tg_id,
+    has2FABefore: walletStore.has2FA,
+    isLoading: isLoading.value,
+    storeLoading: walletStore.isLoading,
+  });
+
   try {
     const tgId = walletStore.user?.tg_id || walletStore.userTg?.id;
     if (!tgId) {
+      console.warn('[PeekPay Transfer check2FA no tgId]', {
+        user: walletStore.user,
+        userTg: walletStore.userTg,
+      });
       isTwoFactorSetupComplete.value = false;
       return;
     }
@@ -121,25 +142,55 @@ const checkTwoFactorAccess = async () => {
     );
 
     if (result?.timeout) {
+      console.warn('[PeekPay Transfer check2FA timeout]', {
+        timeoutMs: ACCESS_TIMEOUT_MS,
+        result,
+      });
       walletStore.showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       isTwoFactorSetupComplete.value = false;
       return;
     }
 
+    console.log('[PeekPay Transfer check2FA result]', {
+      result,
+      has2FAAfter: walletStore.has2FA,
+    });
+
     if (walletStore.has2FA) {
       isTwoFactorSetupComplete.value = true;
       const wallet = await withTimeout(walletStore.getUserWallet(), WALLET_TIMEOUT_MS, null);
       myWallet.value = wallet || walletStore.userWallet || "";
+      console.log('[PeekPay Transfer wallet result]', {
+        wallet,
+        storeWallet: walletStore.userWallet,
+        myWallet: myWallet.value,
+      });
     } else {
       isTwoFactorSetupComplete.value = false;
+      console.warn('[PeekPay Transfer requires 2FA fallback]', {
+        has2FA: walletStore.has2FA,
+        expectedBranch: 'require-2fa-screen',
+      });
     }
   } catch (error) {
-    console.error('Error checking 2FA access:', error);
+    console.error('[PeekPay Transfer check2FA error]', {
+      error,
+      message: error?.message,
+      stack: error?.stack,
+      response: error?.response?.data,
+      status: error?.response?.status,
+    });
     // Если ошибка в fa_take, значит 2FA не настроен, показываем Require2FA
     isTwoFactorSetupComplete.value = false;
   } finally {
     // Всегда завершаем загрузку
     isLoading.value = false;
+    console.log('[PeekPay Transfer check2FA final]', {
+      isLoading: isLoading.value,
+      isTwoFactorSetupComplete: isTwoFactorSetupComplete.value,
+      has2FA: walletStore.has2FA,
+      branch: isTwoFactorSetupComplete.value ? 'form' : 'require-2fa-screen',
+    });
   }
 };
 
@@ -148,8 +199,19 @@ const closeModal = () => {
 };
 
 onMounted(async () => {
+  console.log('[PeekPay Transfer mounted]', {
+    isLoading: isLoading.value,
+    isTwoFactorSetupComplete: isTwoFactorSetupComplete.value,
+    has2FA: walletStore.has2FA,
+    route: router.currentRoute.value.fullPath,
+  });
+
   const loadingGuard = setTimeout(() => {
     if (isLoading.value) {
+      console.warn('[PeekPay Transfer loading guard fired]', {
+        accessTimeoutMs: ACCESS_TIMEOUT_MS,
+        walletTimeoutMs: WALLET_TIMEOUT_MS,
+      });
       isLoading.value = false;
       isTwoFactorSetupComplete.value = false;
       walletStore.showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
@@ -166,6 +228,21 @@ onMounted(async () => {
     }, 500);
   }
 });
+
+watch(
+  () => ({
+    isLoading: isLoading.value,
+    isTwoFactorSetupComplete: isTwoFactorSetupComplete.value,
+    has2FA: walletStore.has2FA,
+    storeLoading: walletStore.isLoading,
+    showModal: showModal.value,
+    branch: isLoading.value ? 'loading' : isTwoFactorSetupComplete.value ? 'form' : 'require-2fa-screen',
+  }),
+  (state) => {
+    console.log('[PeekPay Transfer render state]', state);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
