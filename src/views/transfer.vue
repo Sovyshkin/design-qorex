@@ -2,7 +2,6 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted, watch } from "vue";
-import Require2FA from '@/components/Require2FA.vue';
 import AppLoader from '@/components/AppLoader.vue';
 import { useRouter } from 'vue-router';
 
@@ -161,41 +160,58 @@ onMounted(async () => {
   await checkTwoFactorAccess();
   clearTimeout(loadingGuard);
   
-  // Показываем модальное окно через небольшую задержку
-  setTimeout(() => {
-    showModal.value = true;
-  }, 500);
+  if (isTwoFactorSetupComplete.value) {
+    setTimeout(() => {
+      showModal.value = true;
+    }, 500);
+  }
 });
 </script>
 
 <template>
-  <!-- Показываем загрузку пока проверяем статус 2FA -->
-  <div v-if="isLoading" class="loading-screen">
-    <div class="loading-card">
-      <AppLoader />
-      <h2>{{ t('loading') }}...</h2>
-      <p>{{ t('transfer_2fa_required') || 'Проверяем доступ к переводам' }}</p>
+  <div class="transfer-page">
+    <!-- Показываем загрузку пока проверяем статус 2FA -->
+    <div v-if="isLoading" class="loading-screen">
+      <div class="loading-card">
+        <AppLoader />
+        <h2>{{ t('loading') }}...</h2>
+        <p>{{ t('transfer_2fa_required') || 'Проверяем доступ к переводам' }}</p>
+      </div>
     </div>
-  </div>
 
-  <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
-  <Require2FA v-else-if="!isTwoFactorSetupComplete" />
+    <section v-else-if="!isTwoFactorSetupComplete" class="require-2fa-screen">
+      <div class="require-2fa-card">
+        <div class="require-2fa-icon">
+          <img src="/assets/safety.svg" alt="Security" />
+        </div>
+        <h2>{{ t('require_2fa_title') || 'Требуется 2FA' }}</h2>
+        <p>{{ t('require_2fa_description') || 'Для использования функции переводов необходимо включить двухфакторную аутентификацию.' }}</p>
+        <div class="require-2fa-actions">
+          <button class="require-primary" type="button" @click="goToTwoFactorSetup">
+            {{ t('enable_2fa') || 'Включить 2FA' }}
+          </button>
+          <button class="require-secondary" type="button" @click="walletStore.goBack()">
+            {{ t('go_back') || 'Назад' }}
+          </button>
+        </div>
+      </div>
+    </section>
 
-  <!-- Показываем форму перевода, если 2FA успешно подключен -->
-  <div v-else-if="isTwoFactorSetupComplete">
-    <transition name="fade-down" appear>
-      <header class="header">
-        <img
-          class="arrow"
-          src="../assets/arrow-left.svg"
-          alt=""
-          @click="walletStore.goBack()"
-        />
-        <h1>{{ t("transfer_page") }}</h1>
-        <div class="emp"></div>
-      </header>
-    </transition>
-    <main class="container">
+    <!-- Показываем форму перевода, если 2FA успешно подключен -->
+    <div v-else>
+      <transition name="fade-down" appear>
+        <header class="header">
+          <img
+            class="arrow"
+            src="../assets/arrow-left.svg"
+            alt=""
+            @click="walletStore.goBack()"
+          />
+          <h1>{{ t("transfer_page") }}</h1>
+          <div class="emp"></div>
+        </header>
+      </transition>
+      <main class="container">
       <!-- Мой кошелек -->
       <div class="my-wallet-section">
         <div class="section-header">
@@ -273,21 +289,22 @@ onMounted(async () => {
         <AppLoader v-if="isTransferring" class="btn-loader" />
         <span v-else>{{ t("transfer_funds") }}</span>
       </button>
-    </main>
+      </main>
 
-    <!-- Модальное окно -->
-    <div v-if="showModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ t('transfer_modal_title') }}</h3>
-          <button class="close-btn" @click="closeModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <img src="../assets/error.svg" alt="warning" class="modal-icon" />
-          <p>{{ t('transfer_modal_text') }}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="modal-btn" @click="closeModal">{{ t('transfer_modal_button') }}</button>
+      <!-- Модальное окно -->
+      <div v-if="showModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>{{ t('transfer_modal_title') }}</h3>
+            <button class="close-btn" @click="closeModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <img src="../assets/error.svg" alt="warning" class="modal-icon" />
+            <p>{{ t('transfer_modal_text') }}</p>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn" @click="closeModal">{{ t('transfer_modal_button') }}</button>
+          </div>
         </div>
       </div>
     </div>
@@ -295,6 +312,97 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.transfer-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f1f5f9;
+}
+
+.require-2fa-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 20px 16px calc(132px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%),
+    #f1f5f9;
+}
+
+.require-2fa-card {
+  width: 100%;
+  max-width: 380px;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 26px 20px;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+.require-2fa-icon {
+  width: 82px;
+  height: 82px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+}
+
+.require-2fa-icon img {
+  width: 42px;
+  height: 42px;
+  filter: invert(34%) sepia(98%) saturate(1817%) hue-rotate(211deg) brightness(95%) contrast(95%);
+}
+
+.require-2fa-card h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 24px;
+  line-height: 29px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.require-2fa-card p {
+  max-width: 320px;
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 550;
+}
+
+.require-2fa-actions {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.require-primary,
+.require-secondary {
+  min-height: 52px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.require-primary {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.24);
+}
+
+.require-secondary {
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  color: #1e40af;
+}
+
 .header {
   padding: 20px 15px;
   width: 100%;
@@ -1119,6 +1227,48 @@ select:disabled {
   background:
     radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.16), transparent 62%),
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .transfer-page,
+:global(.dark-theme) .require-2fa-screen {
+  background:
+    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+}
+
+:global(.dark-theme) .require-2fa-card {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+:global(.dark-theme) .require-2fa-icon {
+  background: rgba(37, 98, 235, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+:global(.dark-theme) .require-2fa-icon img {
+  filter: brightness(0) invert(1) opacity(0.92) !important;
+}
+
+:global(.dark-theme) .require-2fa-card h2 {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .require-2fa-card p {
+  color: #cbd5e1 !important;
+}
+
+:global(.dark-theme) .require-primary {
+  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
+}
+
+:global(.dark-theme) .require-secondary {
+  background: rgba(13, 27, 42, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 :global(.dark-theme) .header h1,
