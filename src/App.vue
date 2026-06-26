@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "./components/NavBar.vue";
 import AppLoader from "./components/AppLoader.vue";
@@ -128,6 +128,18 @@ watch(
   },
   { immediate: true }
 );
+
+watch(
+  () => router.currentRoute.value.fullPath,
+  async () => {
+    await nextTick();
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const wrapper = document.querySelector(".content-wrapper");
+    if (wrapper) {
+      wrapper.scrollTop = 0;
+    }
+  }
+);
 </script>
 
 <template>
@@ -161,19 +173,15 @@ watch(
 
       <!-- Отображаем основной контент с навбаром -->
       <div v-else>
-        <transition name="app-appear" appear>
-          <div class="content-wrapper">
-            <div class="wrap-load" v-if="shouldShowGlobalLoader">
-              <AppLoader />
-            </div>
-            <router-view v-else v-slot="{ Component }">
-              <component :is="Component" />
-            </router-view>
+        <div class="content-wrapper">
+          <div class="wrap-load" v-if="shouldShowGlobalLoader">
+            <AppLoader />
           </div>
-        </transition>
-        <transition name="navbar-appear" appear>
-          <NavBar class="navbar-fixed" />
-        </transition>
+          <router-view v-else v-slot="{ Component }">
+            <component :is="Component" />
+          </router-view>
+        </div>
+        <NavBar class="navbar-fixed" />
       </div>
     </template>
   </main>
