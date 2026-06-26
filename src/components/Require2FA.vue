@@ -22,13 +22,30 @@
 
 <script setup>
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import safetyIcon from "@/assets/safety.svg";
+
+const props = defineProps({
+  from: {
+    type: String,
+    default: "",
+  },
+});
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 
-const goToSecurity = () => router.push({ name: "twoFactorAuth", query: { from: "transfer" } });
+const fromRoute = computed(() => {
+  if (props.from) return props.from;
+  if (typeof route.name === "string" && route.name) return route.name;
+  return "profile";
+});
+
+const goToSecurity = () =>
+  router.push({ name: "twoFactorAuth", query: { from: fromRoute.value } });
+
 const goBack = () => router.back();
 </script>
 

@@ -194,7 +194,7 @@ onMounted(async () => {
   </div>
 
   <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
-  <Require2FA v-else-if="!isTwoFactorSetupComplete" />
+  <Require2FA v-else-if="!isTwoFactorSetupComplete" from="withdraw" />
 
   <!-- Показываем форму вывода, если 2FA успешно подключен -->
   <div v-else-if="isTwoFactorSetupComplete">

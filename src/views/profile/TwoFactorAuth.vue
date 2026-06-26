@@ -34,6 +34,10 @@ const goBack = () => {
     router.push({ name: "transfer" });
     return;
   }
+  if (fromRoute.value === "withdraw") {
+    router.push({ name: "withdraw" });
+    return;
+  }
   router.push({ name: "safety" });
 };
 
@@ -117,6 +121,10 @@ const verifyCode = async () => {
     verificationCode.value = "";
     if (fromRoute.value === "transfer") {
       router.push({ name: "transfer" });
+      return;
+    }
+    if (fromRoute.value === "withdraw") {
+      router.push({ name: "withdraw" });
       return;
     }
     router.push({ name: "safety" });

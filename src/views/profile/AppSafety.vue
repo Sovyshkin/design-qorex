@@ -47,14 +47,8 @@ const toggleHideBalance = async (val) => {
   }
 };
 
-const toggleTwoFactor = (val) => {
-  if (val) {
-    // Перенаправляем на страницу настройки 2FA
-    router.push({ name: 'twoFactorAuth' });
-  } else {
-    // 2FA нельзя отключить, когда включено
-    // Просто не делаем ничего, статус остается неизменным
-  }
+const openTwoFactorSetup = () => {
+  router.push({ name: "twoFactorAuth", query: { from: "safety" } });
 };
 
 const goBack = () => {
@@ -117,18 +111,20 @@ onMounted(async () => {
         />
       </div>
 
-      <!-- <div class="list-item">
+      <button class="list-item list-item--button" type="button" @click="openTwoFactorSetup">
         <div class="info">
           <div class="wrap-img">
             <img src="/assets/safety.svg" alt="2fa" />
           </div>
-          <span class="list-value">{{ t("two_factor_auth") }}</span>
+          <div class="two-factor-copy">
+            <span class="list-value">{{ t("two_factor_auth") }}</span>
+            <small class="two-factor-status">
+              {{ twoFactorActive ? t("2fa_enabled") : t("setup_2fa") }}
+            </small>
+          </div>
         </div>
-        <InputCheck
-          :modelValue="twoFactorActive"
-          @update:modelValue="toggleTwoFactor"
-        />
-      </div> -->
+        <span class="row-arrow">›</span>
+      </button>
 
       <div class="list-item">
         <div class="info">
@@ -213,6 +209,10 @@ h1 {
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
 
+.list-item--button {
+  text-align: left;
+}
+
 .list-item:active {
   transform: scale(0.99);
   border-color: #bfdbfe;
@@ -237,6 +237,19 @@ h1 {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+}
+
+.two-factor-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.two-factor-status {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 650;
 }
 
 .wrap-img {
@@ -284,6 +297,13 @@ h1 {
   white-space: nowrap;
 }
 
+.row-arrow {
+  color: #94a3b8;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 500;
+}
+
 .emp {
   width: 44px;
   height: 44px;
@@ -300,7 +320,9 @@ h1 {
 }
 
 :global(.dark-theme) .profile-value,
-:global(.dark-theme) .tg-name {
+:global(.dark-theme) .tg-name,
+:global(.dark-theme) .two-factor-status,
+:global(.dark-theme) .row-arrow {
   color: #94a3b8 !important;
 }
 
