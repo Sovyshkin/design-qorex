@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useWalletStore } from "@/stores/walletStore.ts";
@@ -22,6 +22,12 @@ const otpauthUrl = ref("");
 const verificationCode = ref("");
 const keyCopied = ref(false);
 const fromRoute = ref(router.currentRoute?.value?.query?.from || "");
+
+const currentStep = computed(() => {
+  if (step.value === 1) return "setup";
+  if (step.value === 2) return "verify";
+  return "success";
+});
 
 const qrSrc = computed(() => {
   if (!qrImage.value) return "";
@@ -46,6 +52,7 @@ const parseSecretFromUrl = (url) => {
     if (!url || !url.startsWith("otpauth://")) {
       return url;
     }
+
     const urlObj = new URL(url);
     return urlObj.searchParams.get("secret") || url;
   } catch (parseError) {
@@ -85,12 +92,16 @@ const initialize2FA = async () => {
 const copyKey = async () => {
   if (!authKey.value) return;
 
-  await navigator.clipboard.writeText(authKey.value);
-  keyCopied.value = true;
-  walletStore.showMessage(t("copied"), "success", 1500);
-  setTimeout(() => {
-    keyCopied.value = false;
-  }, 1500);
+  try {
+    await navigator.clipboard.writeText(authKey.value);
+    keyCopied.value = true;
+    walletStore.showMessage(t("copied"), "success", 1500);
+    setTimeout(() => {
+      keyCopied.value = false;
+    }, 1500);
+  } catch (copyError) {
+    console.error("TwoFactorAuth copyKey error:", copyError);
+  }
 };
 
 const openAuthenticatorApp = () => {
@@ -131,12 +142,6 @@ const verifyCode = async () => {
   }, 1500);
 };
 
-const pasteKeyToInput = () => {
-  if (authKey.value) {
-    verificationCode.value = authKey.value;
-  }
-};
-
 onMounted(async () => {
   console.log("TwoFactorAuth onMounted: START");
   try {
@@ -150,6 +155,7 @@ onMounted(async () => {
     loading.value = false;
     console.log("TwoFactorAuth onMounted: final", {
       step: step.value,
+      currentStep: currentStep.value,
       loading: loading.value,
       qrImage: Boolean(qrImage.value),
       authKey: Boolean(authKey.value),
@@ -157,6 +163,21 @@ onMounted(async () => {
     });
   }
 });
+
+watch(
+  () => ({
+    step: step.value,
+    currentStep: currentStep.value,
+    loading: loading.value,
+    error: error.value,
+    qrImage: Boolean(qrImage.value),
+    authKey: Boolean(authKey.value),
+  }),
+  (state) => {
+    console.log("TwoFactorAuth render state:", state);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -167,14 +188,14 @@ onMounted(async () => {
       <div class="tfa-page__spacer"></div>
     </header>
 
-    <section v-if="loading" class="tfa-page__state">
+    <section v-if="loading" class="tfa-page__surface">
       <div class="tfa-page__state-card">
         <AppLoader />
         <p class="tfa-page__state-text">{{ t("loading") }}...</p>
       </div>
     </section>
 
-    <section v-else-if="error" class="tfa-page__state">
+    <section v-else-if="error" class="tfa-page__surface">
       <div class="tfa-page__card tfa-page__card--error">
         <img :src="errorIcon" alt="Error" class="tfa-page__error-icon" />
         <h2 class="tfa-page__card-title">{{ t("error") }}</h2>
@@ -185,8 +206,8 @@ onMounted(async () => {
       </div>
     </section>
 
-    <main v-else class="tfa-page__content">
-      <div v-if="step === 1" class="tfa-page__stack">
+    <section v-else-if="currentStep === 'setup'" class="tfa-page__surface">
+      <div class="tfa-page__stack">
         <section class="tfa-page__card">
           <h2 class="tfa-page__card-title">{{ t("setup_2fa") }}</h2>
           <p class="tfa-page__card-text">{{ t("2fa_instruction_1") }}</p>
@@ -231,8 +252,10 @@ onMounted(async () => {
           {{ t("continue") }}
         </button>
       </div>
+    </section>
 
-      <div v-else-if="step === 2" class="tfa-page__stack">
+    <section v-else-if="currentStep === 'verify'" class="tfa-page__surface">
+      <div class="tfa-page__stack">
         <section class="tfa-page__card">
           <h2 class="tfa-page__card-title">{{ t("verify_2fa") }}</h2>
           <p class="tfa-page__card-text">{{ t("enter_code_from_app") }}</p>
@@ -249,9 +272,6 @@ onMounted(async () => {
               :placeholder="t('enter_6_digit_code')"
               class="tfa-page__input"
             />
-            <button v-if="authKey" class="tfa-page__button tfa-page__button--secondary" @click="pasteKeyToInput">
-              {{ t("paste_key") || "Вставить ключ" }}
-            </button>
           </div>
         </section>
 
@@ -276,8 +296,10 @@ onMounted(async () => {
           {{ t("back_to_qr") }}
         </button>
       </div>
+    </section>
 
-      <div v-else class="tfa-page__stack">
+    <section v-else class="tfa-page__surface">
+      <div class="tfa-page__stack">
         <section class="tfa-page__card tfa-page__card--success">
           <div class="tfa-page__status-icon">
             <img :src="checkIcon" alt="Enabled" class="tfa-page__status-image" />
@@ -300,7 +322,7 @@ onMounted(async () => {
           {{ t("back_to_profile") }}
         </button>
       </div>
-    </main>
+    </section>
   </div>
 </template>
 
@@ -335,16 +357,10 @@ onMounted(async () => {
   height: 44px;
 }
 
-.tfa-page__state,
-.tfa-page__content {
+.tfa-page__surface {
   min-height: calc(100vh - 80px);
   min-height: calc(100dvh - 80px);
   padding: 8px 16px 124px;
-}
-
-.tfa-page__state {
-  display: grid;
-  place-items: center;
 }
 
 .tfa-page__state-card,
