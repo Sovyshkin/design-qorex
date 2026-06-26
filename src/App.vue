@@ -109,6 +109,13 @@ const showContent = computed(() => {
   return !publicRoutes.includes(currentRoute.name);
 });
 
+const shelllessRoutes = ["enterPin", "createPin", "twoFactorAuth"];
+
+const showMainShell = computed(() => {
+  const currentRoute = router.currentRoute.value;
+  return !shelllessRoutes.includes(currentRoute.name);
+});
+
 const shouldShowGlobalLoader = computed(() => {
   const currentRoute = router.currentRoute.value;
   const nonBlockingRoutes = ["deposit", "transfer", "withdraw", "safety"];
@@ -123,6 +130,7 @@ watch(
     routePath: router.currentRoute.value.fullPath,
     storeLoading: walletStore.isLoading,
     showContent: showContent.value,
+    showMainShell: showMainShell.value,
     shouldShowGlobalLoader: shouldShowGlobalLoader.value,
   }),
   (state) => {
@@ -161,14 +169,14 @@ watch(
     </div>
 
     <template v-else>
-      <!-- Отображаем страницы PIN-кода без навбара -->
-      <div v-if="!showContent" class="pin-page">
+      <!-- Отображаем страницы PIN/2FA без общей оболочки и нижнего навбара -->
+      <div v-if="!showMainShell" class="pin-page pin-page--standalone">
         <div class="wrap-load" v-if="walletStore.isLoading">
           <AppLoader />
         </div>
         <router-view v-else v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <component :is="Component" />
+            <component :is="Component" :key="currentRouteKey" />
           </transition>
         </router-view>
       </div>
