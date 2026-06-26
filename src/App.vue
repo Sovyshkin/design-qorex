@@ -115,6 +115,8 @@ const shouldShowGlobalLoader = computed(() => {
   return walletStore.isLoading && !nonBlockingRoutes.includes(currentRoute.name);
 });
 
+const currentRouteKey = computed(() => router.currentRoute.value.fullPath);
+
 watch(
   () => ({
     routeName: router.currentRoute.value.name,
@@ -173,12 +175,12 @@ watch(
 
       <!-- Отображаем основной контент с навбаром -->
       <div v-else>
-        <div class="content-wrapper">
+        <div class="content-wrapper" :key="`shell-${currentRouteKey}`">
           <div class="wrap-load" v-if="shouldShowGlobalLoader">
             <AppLoader />
           </div>
           <router-view v-else v-slot="{ Component }">
-            <component :is="Component" />
+            <component :is="Component" :key="currentRouteKey" />
           </router-view>
         </div>
         <NavBar class="navbar-fixed" />
