@@ -3,11 +3,9 @@ import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import AppLoader from "@/components/AppLoader.vue";
-import Require2FA from "@/components/Require2FA.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import backIcon from "@/assets/arrow-left.svg";
 import copyIcon from "@/assets/copy.svg";
-import safetyIcon from "@/assets/safety.svg";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -22,7 +20,7 @@ const isLoading = ref(true);
 const isTransferring = ref(false);
 const showNotice = ref(false);
 const walletCopied = ref(false);
-const fallbackRootRef = ref(null);
+const isRedirectingTo2FA = ref(false);
 
 const ACCESS_TIMEOUT_MS = 9000;
 const WALLET_TIMEOUT_MS = 8000;
@@ -61,29 +59,10 @@ const isFormValid = computed(() => {
 
 const transferState = computed(() => {
   if (isLoading.value) return "loading";
+  if (isRedirectingTo2FA.value) return "redirect-2fa";
   if (!isTwoFactorSetupComplete.value) return "require-2fa";
   return "form";
 });
-
-const logFallbackDomState = async (source = "manual") => {
-  await nextTick();
-
-  const root = fallbackRootRef.value;
-  const styles = root ? window.getComputedStyle(root) : null;
-
-  console.log("[PeekPay Transfer fallback DOM]", {
-    source,
-    hasRoot: Boolean(root),
-    rect: root?.getBoundingClientRect?.(),
-    display: styles?.display,
-    visibility: styles?.visibility,
-    opacity: styles?.opacity,
-    position: styles?.position,
-    zIndex: styles?.zIndex,
-    background: styles?.background,
-    bodyClass: document.body.className,
-  });
-};
 
 const clampAmount = (event) => {
   const value = Number(event.target.value);
@@ -113,7 +92,7 @@ const copyWallet = async () => {
 };
 
 const goToTwoFactorSetup = () => {
-  router.push({ name: "twoFactorAuth", query: { from: "transfer" } });
+  return router.replace({ name: "twoFactorAuth", query: { from: "transfer" } });
 };
 
 const closeNotice = () => {
@@ -195,9 +174,11 @@ const checkTwoFactorAccess = async () => {
 
     isTwoFactorSetupComplete.value = false;
     console.warn("[PeekPay Transfer requires 2FA fallback]", {
-      expectedBranch: "require-2fa",
+      expectedBranch: "redirect-2fa",
       has2FA: walletStore.has2FA,
     });
+    isRedirectingTo2FA.value = true;
+    await goToTwoFactorSetup();
   } catch (error) {
     console.error("[PeekPay Transfer check2FA error]", {
       error,
@@ -238,10 +219,7 @@ onMounted(async () => {
 
   await checkTwoFactorAccess();
   clearTimeout(loadingGuard);
-
-  if (!isTwoFactorSetupComplete.value) {
-    await logFallbackDomState("after-check2FA");
-  } else {
+  if (isTwoFactorSetupComplete.value) {
     setTimeout(() => {
       showNotice.value = true;
     }, 400);
@@ -252,16 +230,14 @@ watch(
   () => ({
     state: transferState.value,
     isLoading: isLoading.value,
+    isRedirectingTo2FA: isRedirectingTo2FA.value,
     isTwoFactorSetupComplete: isTwoFactorSetupComplete.value,
     has2FA: walletStore.has2FA,
     storeLoading: walletStore.isLoading,
     showNotice: showNotice.value,
   }),
-  async (state) => {
+  (state) => {
     console.log("[PeekPay Transfer render state]", state);
-    if (state.state === "require-2fa") {
-      await logFallbackDomState("watch-require-2fa");
-    }
   },
   { immediate: true }
 );
@@ -277,9 +253,21 @@ watch(
       </div>
     </section>
 
-    <div v-else-if="!isTwoFactorSetupComplete" ref="fallbackRootRef" class="transfer-view__require-shell">
-      <Require2FA />
-    </div>
+    <section v-else-if="isRedirectingTo2FA" class="transfer-view__state transfer-view__state--loading">
+      <div class="transfer-view__state-card">
+        <AppLoader />
+        <h2>{{ t("loading") }}...</h2>
+        <p>{{ t("require_2fa_title") }}</p>
+      </div>
+    </section>
+
+    <section v-else-if="!isTwoFactorSetupComplete" class="transfer-view__state transfer-view__state--loading">
+      <div class="transfer-view__state-card">
+        <AppLoader />
+        <h2>{{ t("loading") }}...</h2>
+        <p>{{ t("require_2fa_title") }}</p>
+      </div>
+    </section>
 
     <div v-else class="transfer-view__shell">
       <header class="transfer-view__header">
@@ -426,11 +414,6 @@ watch(
   min-height: 100vh;
   min-height: 100dvh;
   padding: 18px 16px calc(132px + env(safe-area-inset-bottom));
-}
-
-.transfer-view__require-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 .transfer-view__header {
