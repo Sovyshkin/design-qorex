@@ -175,9 +175,7 @@ watch(
           <AppLoader />
         </div>
         <router-view v-else v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" :key="currentRouteKey" />
-          </transition>
+          <component :is="Component" :key="currentRouteKey" />
         </router-view>
       </div>
 

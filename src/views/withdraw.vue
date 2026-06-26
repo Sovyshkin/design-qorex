@@ -3,20 +3,17 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref, computed, onMounted } from "vue";
 import AppLoader from '@/components/AppLoader.vue';
-import Require2FA from '@/components/Require2FA.vue';
+import TwoFactorSetupFlow from '@/components/TwoFactorSetupFlow.vue';
 import WithdrawSuccess from '@/components/WithdrawSuccess.vue';
-import { useRouter } from 'vue-router';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
-const router = useRouter();
 const amount = ref("");
 const walletAddress = ref("");
 const memo = ref("");
 const selectedNetwork = ref("USDT_TRC20");
 const isWithdrawing = ref(false); // Состояние загрузки для кнопки вывода
 const twoFactorCode = ref("");
-const twoFactorKey = ref("");
 const isTwoFactorSetupComplete = ref(false);
 const isLoading = ref(true);
 const ACCESS_TIMEOUT_MS = 9000;
@@ -133,12 +130,16 @@ const checkTwoFactorAccess = async () => {
     }
   } catch (error) {
     console.error('Error checking 2FA access:', error);
-    // Если ошибка в fa_take, значит 2FA не настроен, показываем Require2FA
     isTwoFactorSetupComplete.value = false;
   } finally {
     // Всегда завершаем загрузку
     isLoading.value = false;
   }
+};
+
+const handleTwoFactorCompleted = async () => {
+  isLoading.value = true;
+  await checkTwoFactorAccess();
 };
 
 const preventNegativeAmount = (event) => {
@@ -193,8 +194,11 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- Показываем компонент Require2FA, если нужно настроить 2FA -->
-  <Require2FA v-else-if="!isTwoFactorSetupComplete" from="withdraw" />
+  <TwoFactorSetupFlow
+    v-else-if="!isTwoFactorSetupComplete"
+    @back="walletStore.goBack()"
+    @completed="handleTwoFactorCompleted"
+  />
 
   <!-- Показываем форму вывода, если 2FA успешно подключен -->
   <div v-else-if="isTwoFactorSetupComplete">
