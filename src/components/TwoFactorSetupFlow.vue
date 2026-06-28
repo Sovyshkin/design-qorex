@@ -49,8 +49,12 @@ const parseSecretFromUrl = (url) => {
       return url;
     }
 
-    const urlObj = new URL(url);
-    return urlObj.searchParams.get("secret") || url;
+    const secretMatch = url.match(/[?&]secret=([^&]+)/i);
+    if (!secretMatch?.[1]) {
+      return url;
+    }
+
+    return decodeURIComponent(secretMatch[1]);
   } catch (parseError) {
     console.error("TwoFactorSetupFlow parseSecretFromUrl error:", parseError);
     return url;
@@ -134,6 +138,14 @@ onMounted(async () => {
     await initialize2FA();
   } finally {
     loading.value = false;
+    console.log("TwoFactorSetupFlow mounted final:", {
+      step: step.value,
+      loading: loading.value,
+      error: error.value,
+      qrImage: Boolean(qrImage.value),
+      authKey: Boolean(authKey.value),
+      currentStep: currentStep.value,
+    });
   }
 });
 </script>
