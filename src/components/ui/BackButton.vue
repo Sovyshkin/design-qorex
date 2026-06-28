@@ -25,7 +25,6 @@ defineEmits(["click"]);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .back-button svg {
@@ -38,11 +37,6 @@ defineEmits(["click"]);
   stroke-linecap: round;
   stroke-linejoin: round;
   transform: translateX(-1px);
-}
-
-.back-button:active {
-  transform: scale(0.96);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 :global(.dark-theme) .back-button {
@@ -58,7 +52,4 @@ defineEmits(["click"]);
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .back-button:active {
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34);
-}
 </style>

@@ -454,6 +454,29 @@ h1 {
   background-color: var(--background, #f1f5f9);
 }
 
+.pin-page--standalone,
+.pin-page--standalone *,
+.pin-page--standalone *::before,
+.pin-page--standalone *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.pin-page--standalone .tfa-flow,
+.pin-page--standalone .tfa-flow__surface,
+.pin-page--standalone .tfa-flow__stack,
+.pin-page--standalone .tfa-flow__card,
+.pin-page--standalone .tfa-flow__state-card,
+.pin-page--standalone .tfa-flow__header,
+.pin-page--standalone .tfa-flow__qr-shell,
+.pin-page--standalone .tfa-flow__button,
+.pin-page--standalone .back-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  filter: none !important;
+}
+
 /* Фиксированный навбар */
 .navbar-fixed {
   position: fixed;

@@ -264,6 +264,9 @@ onMounted(async () => {
 <style scoped>
 .tfa-flow {
   width: 100%;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
 .tfa-flow--standalone {
@@ -298,6 +301,9 @@ onMounted(async () => {
 
 .tfa-flow__surface {
   padding: 8px 16px 24px;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
 .tfa-flow--standalone .tfa-flow__surface {
@@ -339,6 +345,9 @@ onMounted(async () => {
   margin: 0 auto;
   display: grid;
   gap: 14px;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
 .tfa-flow__card {
@@ -495,6 +504,8 @@ onMounted(async () => {
   font-size: 15px;
   font-weight: 750;
   cursor: pointer;
+  transition: none;
+  animation: none;
 }
 
 .tfa-flow__button:disabled {
