@@ -96,6 +96,8 @@ const initializeApp = async () => {
   } catch (err) {
     console.error("Ошибка инициализации приложения:", err);
     walletStore.isLoading = false; // Завершаем загрузку при ошибке
+  } finally {
+    isAppInitialized.value = true;
   }
 };
 
@@ -119,7 +121,11 @@ const showMainShell = computed(() => {
 const shouldShowGlobalLoader = computed(() => {
   const currentRoute = router.currentRoute.value;
   const nonBlockingRoutes = ["deposit", "transfer", "withdraw", "safety"];
-  return walletStore.isLoading && !nonBlockingRoutes.includes(currentRoute.name);
+  return (
+    !isAppInitialized.value &&
+    walletStore.isLoading &&
+    !nonBlockingRoutes.includes(currentRoute.name)
+  );
 });
 
 const currentRouteKey = computed(() => router.currentRoute.value.fullPath);
