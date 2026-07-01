@@ -25,6 +25,37 @@ const formatDateForTransaction = (date = new Date()) => {
   return `${day}.${month}.${year}-${hours}:${minutes}:${seconds}`;
 };
 
+const extractQrParam = (rawLink: string, key: string) => {
+  if (!rawLink || typeof rawLink !== "string") {
+    return "";
+  }
+
+  try {
+    const normalizedLink = /^[a-z][a-z0-9+.-]*:/i.test(rawLink)
+      ? rawLink
+      : rawLink.includes("?")
+      ? `https://peekpay.local/${rawLink.replace(/^\/+/, "")}`
+      : `https://peekpay.local/?${rawLink.replace(/^[?&]+/, "")}`;
+
+    const parsedUrl = new URL(normalizedLink);
+    return parsedUrl.searchParams.get(key) || "";
+  } catch (_error) {
+    const match = rawLink.match(
+      new RegExp(`(?:[?&]|^)${key}=([^&#]*)`, "i")
+    );
+
+    if (!match) {
+      return "";
+    }
+
+    try {
+      return decodeURIComponent(match[1].replace(/\+/g, " "));
+    } catch (_decodeError) {
+      return match[1];
+    }
+  }
+};
+
 export const useWalletStore = defineStore("wallet", () => {
   const balance = ref(0);
   const balance_rub = ref(0);
@@ -990,18 +1021,26 @@ export const useWalletStore = defineStore("wallet", () => {
       clearAllMessages();
       loaderScan.value = true;
 
-      // Парсим URL и извлекаем параметры
-      const url = new URL(link);
-      const bank = url.searchParams.get("bank") || "";
-      const sum = url.searchParams.get("sum") || "";
-      const cur = url.searchParams.get("cur") || "";
-      const crc = url.searchParams.get("crc") || "";
+      const rawLink = String(link || "").trim();
+
+      if (!rawLink) {
+        transactionErrorMessage.value =
+          t("invalid_qr_code") || "Некорректный QR-код";
+        router.push({ name: "transaction_failed" });
+        return;
+      }
+
+      // Некоторые QR приходят не абсолютным URL, поэтому извлекаем параметры безопасно.
+      const bank = extractQrParam(rawLink, "bank");
+      const sum = extractQrParam(rawLink, "sum");
+      const cur = extractQrParam(rawLink, "cur");
+      const crc = extractQrParam(rawLink, "crc");
 
       // Отправляем данные как query параметры
       const tgId = user.value.tg_id || userTg.value.id;
       const params = new URLSearchParams({
         tg_id: String(tgId),
-        qr_url: link,
+        qr_url: rawLink,
         bank: bank,
         sum: sum,
         cur: cur,
