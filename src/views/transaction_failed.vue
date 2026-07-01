@@ -8,6 +8,13 @@ const router = useRouter();
 const walletStore = useWalletStore();
 const { t } = useI18n();
 
+const isDark = computed(() => {
+  if (typeof document !== "undefined") {
+    return document.body.classList.contains("dark-theme");
+  }
+  return !!walletStore.isDarkTheme;
+});
+
 const errorMessage = computed(
   () =>
     walletStore.transactionErrorMessage ||
@@ -36,6 +43,52 @@ const errorHint = computed(() => {
 const goHome = () => router.push({ name: "main" });
 const goHistory = () => router.push({ name: "history" });
 
+const pageStyle = computed(() => ({
+  minHeight: "100vh",
+  background: isDark.value
+    ? "radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%), linear-gradient(180deg, #07111f 0%, #0d1b2a 100%)"
+    : "radial-gradient(560px 220px at 50% -16%, rgba(59, 130, 246, 0.18), transparent 70%), #f1f5f9",
+}));
+
+const backButtonStyle = computed(() => ({
+  border: isDark.value
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid #e2e8f0",
+  borderRadius: "14px",
+  background: isDark.value ? "rgba(30, 39, 59, 0.94)" : "#ffffff",
+  boxShadow: isDark.value
+    ? "0 14px 28px rgba(0,0,0,0.32)"
+    : "0 10px 24px rgba(15, 23, 42, 0.08)",
+  display: "grid",
+  placeItems: "center",
+}));
+
+const surfaceStyle = computed(() => ({
+  background: isDark.value ? "rgba(30, 39, 59, 0.96)" : "#ffffff",
+  border: isDark.value
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid #e2e8f0",
+  boxShadow: isDark.value
+    ? "0 14px 28px rgba(0,0,0,0.32)"
+    : "0 14px 28px rgba(15,23,42,0.08)",
+}));
+
+const primaryTextStyle = computed(() => ({
+  color: isDark.value ? "#ffffff" : "#0f172a",
+}));
+
+const secondaryTextStyle = computed(() => ({
+  color: isDark.value ? "#94a3b8" : "#64748b",
+}));
+
+const secondaryButtonStyle = computed(() => ({
+  background: isDark.value ? "rgba(37, 98, 235, 0.12)" : "#eff6ff",
+  color: isDark.value ? "#ffffff" : "#2563eb",
+  border: isDark.value
+    ? "1px solid rgba(255,255,255,0.08)"
+    : "1px solid #dbeafe",
+}));
+
 onMounted(() => {
   if (!walletStore.transactionErrorMessage && !walletStore.errMessage) {
     walletStore.transactionErrorMessage = t("failed_text");
@@ -44,32 +97,37 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="failed-page">
+  <div class="failed-page" :style="pageStyle">
     <header class="failed-header">
-      <button class="back-button" type="button" @click="goHome">
-        <img class="arrow" src="@/assets/arrow-left.svg" alt="back" />
+      <button class="back-button" type="button" :style="backButtonStyle" @click="goHome">
+        <img
+          class="arrow"
+          src="@/assets/arrow-left.svg"
+          alt="back"
+          :style="{ filter: isDark ? 'brightness(0) invert(1)' : 'none' }"
+        />
       </button>
-      <h1>{{ t("failed_payment") }}</h1>
+      <h1 :style="primaryTextStyle">{{ t("failed_payment") }}</h1>
       <div class="header-spacer"></div>
     </header>
 
     <main class="failed-content">
-      <section class="failed-hero">
+      <section class="failed-hero" :style="surfaceStyle">
         <div class="failed-hero__icon">!</div>
         <div class="failed-hero__text">
           <span class="failed-hero__eyebrow">{{ t("error") }}</span>
-          <h2>{{ t("failed_payment") }}</h2>
-          <p>{{ errorHint }}</p>
+          <h2 :style="primaryTextStyle">{{ t("failed_payment") }}</h2>
+          <p :style="secondaryTextStyle">{{ errorHint }}</p>
         </div>
       </section>
 
-      <section class="failed-card">
+      <section class="failed-card" :style="surfaceStyle">
         <div class="failed-card__row">
-          <span class="failed-card__label">{{ t("error") }}</span>
-          <strong>{{ errorMessage }}</strong>
+          <span class="failed-card__label" :style="secondaryTextStyle">{{ t("error") }}</span>
+          <strong :style="primaryTextStyle">{{ errorMessage }}</strong>
         </div>
 
-        <p class="failed-card__description">
+        <p class="failed-card__description" :style="secondaryTextStyle">
           {{ t("failed_text") }}
         </p>
 
@@ -77,7 +135,12 @@ onMounted(() => {
           <button class="cta cta-primary" type="button" @click="goHome">
             {{ t("go_back") }}
           </button>
-          <button class="cta cta-secondary" type="button" @click="goHistory">
+          <button
+            class="cta cta-secondary"
+            type="button"
+            :style="secondaryButtonStyle"
+            @click="goHistory"
+          >
             {{ t("history") }}
           </button>
         </div>
