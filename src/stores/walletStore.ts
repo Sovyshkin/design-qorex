@@ -1000,6 +1000,59 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  const getHistorySignature = (item: any) =>
+    [
+      item?.id ?? "",
+      item?.datatime ?? "",
+      item?.amount ?? "",
+      item?.type_trans ?? "",
+      item?.bool_suecess ?? "",
+      item?.working_invoce ?? "",
+    ].join("|");
+
+  const openLatestTransactionFromHistory = async (
+    previousSignatures: Set<string> = new Set()
+  ) => {
+    try {
+      await getUser();
+
+      if (!history.value?.length) {
+        return false;
+      }
+
+      const sortByNewest = (items: any[]) =>
+        [...items].sort((a, b) => {
+          const left = new Date(String(a?.datatime || 0)).getTime();
+          const right = new Date(String(b?.datatime || 0)).getTime();
+          return right - left;
+        });
+
+      const newItems = history.value.filter(
+        (item) => !previousSignatures.has(getHistorySignature(item))
+      );
+
+      const successItems = sortByNewest(newItems).filter(
+        (item) => normalizeTransactionStatus(item?.bool_suecess) === "success"
+      );
+
+      const fallbackSuccessItems = sortByNewest(history.value).filter(
+        (item) => normalizeTransactionStatus(item?.bool_suecess) === "success"
+      );
+
+      const targetTransaction = successItems[0] || fallbackSuccessItems[0];
+
+      if (!targetTransaction) {
+        return false;
+      }
+
+      await goTransaction(targetTransaction);
+      return true;
+    } catch (openError) {
+      console.error("Error opening latest transaction from history:", openError);
+      return false;
+    }
+  };
+
   const getRub = (amount) => {
     try {
       if (!amount || !usdt_price.value) {
@@ -1020,6 +1073,9 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       clearAllMessages();
       loaderScan.value = true;
+      const previousHistorySignatures = new Set(
+        (history.value || []).map((item) => getHistorySignature(item))
+      );
 
       const rawLink = String(link || "").trim();
 
@@ -1050,8 +1106,41 @@ export const useWalletStore = defineStore("wallet", () => {
       let response = await axios.post(`/qr_take?${params.toString()}`, {});
 
       if (response.status == 200) {
+        const hasMoreDetail = !!response.data?.more_detail;
+        const { type_trans, bool_suecess } = response.data || {};
+
+        if (!hasMoreDetail) {
+          const messageText = String(response.data?.message || "").toLowerCase();
+          const statusText = String(response.data?.status || "").toLowerCase();
+          const looksSuccessful =
+            statusText === "success" ||
+            messageText.includes("processed") ||
+            messageText.includes("success");
+
+          if (looksSuccessful) {
+            const opened = await openLatestTransactionFromHistory(
+              previousHistorySignatures
+            );
+
+            if (!opened) {
+              showMessage(
+                t("payment_successful") || "Платеж успешно выполнен!",
+                "success"
+              );
+              router.push({ name: "history" });
+            }
+            return;
+          }
+
+          transactionErrorMessage.value =
+            response.data?.detail ||
+            response.data?.message ||
+            t("transaction_error");
+          router.push({ name: "transaction_failed" });
+          return;
+        }
+
         let { id, datatime } = response.data.more_detail;
-        let { type_trans, bool_suecess } = response.data;
         let amount_usdt = response.data.more_detail.amount;
 
         if (isTransactionErrorStatus(bool_suecess)) {
@@ -1083,14 +1172,20 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error processing QR code:', err);
+      const detailMessage = err.response?.data?.detail;
       
       if (isNetworkError(err)) {
         transactionErrorMessage.value =
           t('network_error') || 'Проблема с подключением к серверу';
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
-      } else if (err.response?.data?.detail == "Недостаточно средств") {
+      } else if (detailMessage == "Недостаточно средств") {
         transactionErrorMessage.value = t("insufficient_funds");
         errMessage.value = t("insufficient_funds");
+        showMessage(t("insufficient_funds"), 'error');
+      } else if (detailMessage) {
+        transactionErrorMessage.value = detailMessage;
+        errMessage.value = detailMessage;
+        showMessage(detailMessage, 'error');
       } else if (err.response?.status === 400) {
         transactionErrorMessage.value =
           t('invalid_qr_code') || 'Некорректный QR-код';
@@ -1099,9 +1194,6 @@ export const useWalletStore = defineStore("wallet", () => {
         transactionErrorMessage.value =
           t('payment_not_found') || 'Платеж не найден';
         showMessage(t('payment_not_found') || 'Платеж не найден', 'error');
-      } else if (err.response?.data?.detail) {
-        transactionErrorMessage.value = err.response.data.detail;
-        errMessage.value = err.response.data.detail;
       } else {
         transactionErrorMessage.value =
           t('qr_processing_failed') || 'Не удалось обработать QR-код';

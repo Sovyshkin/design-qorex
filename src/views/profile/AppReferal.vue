@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore";
 import { useRouter } from "vue-router";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const showCopiedNotification = ref(false);
@@ -77,18 +78,13 @@ onMounted(() => {
 
 <template>
   <div class="referal-page">
-    <header class="header">
-      <img
-        src="@/assets/arrow-left.svg"
-        :alt="t('back')"
-        class="back-arrow"
-        @click="goBack()"
-      />
-      <h1>{{ t("referal") }}</h1>
-      <div class="header-spacer"></div>
+    <header class="referal-header">
+      <BackButton @click="goBack()" />
+      <h1 class="referal-title">{{ t("referal") }}</h1>
+      <div class="referal-header-spacer"></div>
     </header>
 
-    <div class="content">
+    <div class="referal-content">
       <div class="banner">
         <h2 v-html="t('earn_up_to_15')"></h2>
       </div>
@@ -101,7 +97,7 @@ onMounted(() => {
             @click="copy(referralLink)"
           >
             <span>{{ referralLink }}</span>
-            <img src="@/assets/copy.svg" alt="copy" />
+            <img src="@/assets/copy.svg" alt="copy" class="copy-icon" />
           </div>
         </div>
       </div>
@@ -123,13 +119,13 @@ onMounted(() => {
               v-for="(referal, index) in referals"
               :key="referal.id || referal.tg_id || index"
             >
-              <div class="user-info">
-                <div class="wrap-img">
+              <div class="referal-user-info">
+                <div class="referal-icon-wrap">
                   <img src="@/assets/referal.svg" alt="referal">
                 </div>
-                <div class="user-info-more">
-                    <span class="user-name">@{{ referal.username || referal.first_name || 'Пользователь' }}</span>
-                    <span class="reg-date"
+                <div class="referal-user-meta">
+                    <span class="referal-user-name">@{{ referal.username || referal.first_name || 'Пользователь' }}</span>
+                    <span class="referal-user-date"
                       >{{ t("earned") }}: {{ walletStore.roundToHundredths(referal.referral_only_pay || 0) }} $</span
                     >
                 </div>
@@ -177,15 +173,15 @@ onMounted(() => {
   overflow-x: hidden;
 }
 
-.header {
-  min-height: 54px;
+.referal-header {
+  min-height: 58px;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.header h1 {
+.referal-title {
   margin: 0;
   color: #0f172a;
   font-size: 24px;
@@ -195,24 +191,12 @@ onMounted(() => {
   letter-spacing: -0.03em;
 }
 
-.back-arrow {
-  width: 44px;
-  height: 44px;
-  padding: 13px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-  cursor: pointer;
-  object-fit: contain;
+.referal-header-spacer {
+  width: 52px;
+  height: 52px;
 }
 
-.header-spacer {
-  width: 44px;
-  height: 44px;
-}
-
-.content {
+.referal-content {
   width: 100%;
   display: grid;
   gap: 18px;
@@ -334,14 +318,15 @@ onMounted(() => {
   word-break: break-word;
 }
 
-.referal-box-value img {
+.referal-box-value .copy-icon {
   width: 38px;
   height: 38px;
   padding: 9px;
   border-radius: 14px;
-  background: #ffffff;
-  filter: invert(34%) sepia(98%) saturate(1817%) hue-rotate(211deg) brightness(95%) contrast(95%);
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  filter: none !important;
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.14);
+  object-fit: contain;
 }
 
 .stats-section {
@@ -415,21 +400,21 @@ onMounted(() => {
   border: 1px solid #eef2f7;
 }
 
-.user-info {
+.referal-user-info {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.user-info-more {
+.referal-user-meta {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.user-name {
+.referal-user-name {
   overflow: hidden;
   color: #0f172a;
   font-size: 15px;
@@ -439,7 +424,7 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.reg-date {
+.referal-user-date {
   color: #64748b;
   font-size: 12px;
   line-height: 16px;
@@ -450,7 +435,7 @@ onMounted(() => {
   padding: 8px 10px;
 }
 
-.wrap-img,
+.referal-icon-wrap,
 .empty-icon {
   width: 48px;
   height: 48px;
@@ -463,7 +448,7 @@ onMounted(() => {
   color: #2563eb;
 }
 
-.wrap-img img,
+.referal-icon-wrap img,
 .empty-icon img {
   width: 24px;
   height: 24px;
@@ -557,9 +542,14 @@ onMounted(() => {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .header h1,
+:global(.dark-theme) .referal-box-value .copy-icon {
+  background: linear-gradient(135deg, rgba(37, 98, 235, 0.32), rgba(56, 130, 250, 0.42)) !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+:global(.dark-theme) .referal-title,
 :global(.dark-theme) .stats-info h2,
-:global(.dark-theme) .user-name,
+:global(.dark-theme) .referal-user-name,
 :global(.dark-theme) .empty-title,
 :global(.dark-theme) .referal-box-value span {
   color: #ffffff !important;
@@ -588,19 +578,19 @@ onMounted(() => {
 
 :global(.dark-theme) .referal-section h3,
 :global(.dark-theme) .stats-count,
-:global(.dark-theme) .reg-date,
+:global(.dark-theme) .referal-user-date,
 :global(.dark-theme) .empty-description {
   color: #94a3b8 !important;
 }
 
-:global(.dark-theme) .wrap-img,
+:global(.dark-theme) .referal-icon-wrap,
 :global(.dark-theme) .empty-icon,
 :global(.dark-theme) .referal-box-value img {
   background: rgba(37, 98, 235, 0.18) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-:global(.dark-theme) .wrap-img img,
+:global(.dark-theme) .referal-icon-wrap img,
 :global(.dark-theme) .empty-icon img,
 :global(.dark-theme) .referal-box-value img {
   filter: brightness(0) invert(1) opacity(0.92) !important;
@@ -611,7 +601,7 @@ onMounted(() => {
     padding-inline: 12px;
   }
 
-  .header h1 {
+  .referal-title {
     font-size: 22px;
   }
 

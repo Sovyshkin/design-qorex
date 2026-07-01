@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from "../../stores/walletStore.ts";
 import { useRouter } from "vue-router";
 import InputCheck from "@/components/ui/inputs/InputCheck.vue";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -73,77 +74,84 @@ onMounted(async () => {
 </script>
 
 <template>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
-      @click="goBack()"
-    />
-    <h1>{{ t("safety") }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="safety">
-    <h2 class="profile-value">{{ t("auth") }}</h2>
-    <div class="auth profile-item">
-      <div class="list-item" v-for="(item, i) in auth" :key="i">
-        <div class="info">
-          <div class="wrap-img">
-            <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
+  <div class="safety-page">
+    <header class="safety-header">
+      <BackButton @click="goBack()" />
+      <h1 class="safety-title">{{ t("safety") }}</h1>
+      <div class="safety-header-spacer"></div>
+    </header>
+
+    <main class="safety-body">
+      <h2 class="safety-section-title">{{ t("auth") }}</h2>
+      <div class="safety-group">
+        <div class="safety-item" v-for="(item, i) in auth" :key="i">
+          <div class="safety-item__info">
+            <div class="safety-item__icon-wrap">
+              <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
+            </div>
+            <span class="safety-item__label">{{ item.name }}</span>
           </div>
-          <span class="list-value">{{ item.name }}</span>
+          <span class="safety-item__hint">@{{ walletStore.user.username }}</span>
         </div>
-        <span class="tg-name">@{{ walletStore.user.username }}</span>
-      </div>
-    </div>
-    <h2 class="profile-value">{{ t("logIn") }}</h2>
-    <div class="logIn profile-item">
-      <div class="list-item">
-        <div class="info">
-          <div class="wrap-img">
-            <img src="/assets/pin-code.svg" alt="pin-code" />
-          </div>
-          <span class="list-value">{{ t("code_password") }}</span>
-        </div>
-        <InputCheck
-          :modelValue="codePasswordActive"
-          @update:modelValue="toggleCodePassword"
-        />
       </div>
 
-      <button class="list-item list-item--button" type="button" @click="openTwoFactorSetup">
-        <div class="info">
-          <div class="wrap-img">
-            <img src="/assets/safety.svg" alt="2fa" />
+      <h2 class="safety-section-title">{{ t("logIn") }}</h2>
+      <div class="safety-group">
+        <div class="safety-item">
+          <div class="safety-item__info">
+            <div class="safety-item__icon-wrap">
+              <img src="/assets/pin-code.svg" alt="pin-code" />
+            </div>
+            <span class="safety-item__label">{{ t("code_password") }}</span>
           </div>
-          <div class="two-factor-copy">
-            <span class="list-value">{{ t("two_factor_auth") }}</span>
-            <small class="two-factor-status">
-              {{ twoFactorActive ? t("2fa_enabled") : t("setup_2fa") }}
-            </small>
-          </div>
+          <InputCheck
+            :modelValue="codePasswordActive"
+            @update:modelValue="toggleCodePassword"
+          />
         </div>
-        <span class="row-arrow">›</span>
-      </button>
 
-      <div class="list-item">
-        <div class="info">
-          <div class="wrap-img">
-            <img src="/assets/hide-balance.svg" alt="hide" />
+        <button class="safety-item safety-item--button" type="button" @click="openTwoFactorSetup">
+          <div class="safety-item__info">
+            <div class="safety-item__icon-wrap">
+              <img src="/assets/safety.svg" alt="2fa" />
+            </div>
+            <div class="safety-two-factor">
+              <span class="safety-item__label">{{ t("two_factor_auth") }}</span>
+              <small class="safety-two-factor__status">
+                {{ twoFactorActive ? t("2fa_enabled") : t("setup_2fa") }}
+              </small>
+            </div>
           </div>
-          <span class="list-value">{{ t("hide_balance") }}</span>
+          <span class="safety-item__arrow">›</span>
+        </button>
+
+        <div class="safety-item">
+          <div class="safety-item__info">
+            <div class="safety-item__icon-wrap">
+              <img src="/assets/hide-balance.svg" alt="hide" />
+            </div>
+            <span class="safety-item__label">{{ t("hide_balance") }}</span>
+          </div>
+          <InputCheck
+            :modelValue="hideBalanceActive"
+            @update:modelValue="toggleHideBalance"
+          />
         </div>
-        <InputCheck
-          :modelValue="hideBalanceActive"
-          @update:modelValue="toggleHideBalance"
-        />
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 </template>
 
 <style scoped>
-.header {
+.safety-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%),
+    #f1f5f9;
+}
+
+.safety-header {
   width: 100%;
   min-height: 64px;
   padding: 16px;
@@ -151,10 +159,10 @@ onMounted(async () => {
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 8px;
-  background: #f1f5f9;
+  background: transparent;
 }
 
-h1 {
+.safety-title {
   margin: 0;
   color: #0f172a;
   font-size: 24px;
@@ -164,7 +172,7 @@ h1 {
   text-align: center;
 }
 
-.safety {
+.safety-body {
   min-height: calc(100vh - 64px);
   min-height: calc(100dvh - 64px);
   display: flex;
@@ -172,19 +180,17 @@ h1 {
   gap: 14px;
   padding: 0 16px calc(176px + env(safe-area-inset-bottom));
   overflow-y: auto;
-  background:
-    radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%),
-    #f1f5f9;
+  background: transparent;
 }
 
-.profile-item {
+.safety-group {
   width: 100%;
   display: grid;
   gap: 10px;
   margin-bottom: 18px;
 }
 
-.profile-value {
+.safety-section-title {
   margin: 0 2px 2px;
   color: #64748b;
   font-size: 13px;
@@ -194,7 +200,7 @@ h1 {
   letter-spacing: 0.04em;
 }
 
-.list-item {
+.safety-item {
   width: 100%;
   min-height: 74px;
   display: grid;
@@ -209,16 +215,16 @@ h1 {
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
 
-.list-item--button {
+.safety-item--button {
   text-align: left;
 }
 
-.list-item:active {
+.safety-item:active {
   transform: scale(0.99);
   border-color: #bfdbfe;
 }
 
-.list-value {
+.safety-item__label {
   min-width: 0;
   color: #0f172a;
   font-size: 16px;
@@ -229,7 +235,7 @@ h1 {
   white-space: nowrap;
 }
 
-.info {
+.safety-item__info {
   min-width: 0;
   display: flex;
   align-items: center;
@@ -239,20 +245,20 @@ h1 {
   box-shadow: none !important;
 }
 
-.two-factor-copy {
+.safety-two-factor {
   min-width: 0;
   display: grid;
   gap: 4px;
 }
 
-.two-factor-status {
+.safety-two-factor__status {
   color: #64748b;
   font-size: 12px;
   line-height: 16px;
   font-weight: 650;
 }
 
-.wrap-img {
+.safety-item__icon-wrap {
   width: 48px;
   height: 48px;
   flex: 0 0 48px;
@@ -264,29 +270,13 @@ h1 {
   justify-content: center;
 }
 
-.wrap-img img {
+.safety-item__icon-wrap img {
   width: 24px;
   height: 24px;
   filter: invert(34%) sepia(98%) saturate(1817%) hue-rotate(211deg) brightness(95%) contrast(95%);
 }
 
-.arrow {
-  width: 44px;
-  height: 44px;
-  padding: 13px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-  object-fit: contain;
-  transition: transform 0.18s ease;
-}
-
-.arrow:active {
-  transform: scale(0.96);
-}
-
-.tg-name {
+.safety-item__hint {
   max-width: 132px;
   overflow: hidden;
   color: #64748b;
@@ -297,61 +287,60 @@ h1 {
   white-space: nowrap;
 }
 
-.row-arrow {
+.safety-item__arrow {
   color: #94a3b8;
   font-size: 26px;
   line-height: 1;
   font-weight: 500;
 }
 
-.emp {
+.safety-header-spacer {
   width: 44px;
   height: 44px;
 }
 
-:global(.dark-theme) .header,
-:global(.dark-theme) .safety {
-  background: #0d1b2a !important;
+:global(.dark-theme) .safety-page {
+  background:
+    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
-:global(.dark-theme) h1,
-:global(.dark-theme) .list-value {
+:global(.dark-theme) .safety-header,
+:global(.dark-theme) .safety-body {
+  background: transparent !important;
+}
+
+:global(.dark-theme) .safety-title,
+:global(.dark-theme) .safety-item__label {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .profile-value,
-:global(.dark-theme) .tg-name,
-:global(.dark-theme) .two-factor-status,
-:global(.dark-theme) .row-arrow {
+:global(.dark-theme) .safety-section-title,
+:global(.dark-theme) .safety-item__hint,
+:global(.dark-theme) .safety-two-factor__status,
+:global(.dark-theme) .safety-item__arrow {
   color: #94a3b8 !important;
 }
 
-:global(.dark-theme) .arrow {
-  background: rgba(30, 39, 59, 0.96) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  filter: brightness(0) invert(1);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28) !important;
-}
-
-:global(.dark-theme) .list-item {
+:global(.dark-theme) .safety-item {
   background: rgba(30, 39, 59, 0.96) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
 }
 
-:global(.dark-theme) .info {
+:global(.dark-theme) .safety-item__info {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
 }
 
-:global(.dark-theme) .wrap-img {
+:global(.dark-theme) .safety-item__icon-wrap {
   background: rgba(37, 98, 235, 0.18) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-:global(.dark-theme) .wrap-img img {
+:global(.dark-theme) .safety-item__icon-wrap img {
   filter: brightness(0) invert(1) opacity(0.92) !important;
 }
 </style>

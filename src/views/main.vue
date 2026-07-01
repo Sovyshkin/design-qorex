@@ -1,28 +1,32 @@
 <script setup>
 import { useWalletStore } from "@/stores/walletStore";
 import { useI18n } from "vue-i18n";
-import { onMounted, ref } from "vue";
+import { onActivated, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const walletStore = useWalletStore();
 const { t } = useI18n();
 const router = useRouter();
-const isInitialized = ref(false);
 
 const goRoute = (name) => router.push({ name });
 
-onMounted(async () => {
-  if (isInitialized.value) return;
+const refreshMainData = async () => {
   try {
-    const hasUserData = walletStore.user?.tg_id || walletStore.balance !== undefined;
-    const hasPrice = walletStore.usdt_price > 0;
-    if (!hasUserData && walletStore.userTg?.id) await walletStore.getUser();
-    if (!hasPrice) await walletStore.getPrice();
-    isInitialized.value = true;
+    const hasTelegramUser = walletStore.user?.tg_id || walletStore.userTg?.id;
+    const requests = [walletStore.getPrice()];
+
+    if (hasTelegramUser) {
+      requests.unshift(walletStore.getUser());
+    }
+
+    await Promise.allSettled(requests);
   } catch (err) {
-    console.error("Error in main.vue onMounted:", err);
+    console.error("Error refreshing main page data:", err);
   }
-});
+};
+
+onMounted(refreshMainData);
+onActivated(refreshMainData);
 </script>
 
 <template>

@@ -12,10 +12,10 @@ defineEmits(["click"]);
 
 <style scoped>
 .back-button {
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-  border-radius: 16px;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 18px;
   border: 1px solid var(--border, #e2e8f0);
   background: var(--surface, #ffffff);
   color: var(--textPrimary, #0f172a);
@@ -28,15 +28,15 @@ defineEmits(["click"]);
 }
 
 .back-button svg {
-  width: 23px;
-  height: 23px;
+  width: 28px;
+  height: 28px;
   display: block;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.7;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transform: translateX(-1px);
+  transform: translateX(-2px);
 }
 
 :global(.dark-theme) .back-button {

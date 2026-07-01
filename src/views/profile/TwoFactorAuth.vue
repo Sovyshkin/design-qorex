@@ -7,12 +7,13 @@ const router = useRouter();
 const fromRoute = router.currentRoute?.value?.query?.from || "";
 
 const handleBack = () => {
-  if (fromRoute === "transfer") {
-    router.push({ name: "transfer" });
-    return;
-  }
-  if (fromRoute === "withdraw") {
-    router.push({ name: "withdraw" });
+  if (fromRoute === "transfer" || fromRoute === "withdraw") {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push({ name: "main" });
     return;
   }
   router.push({ name: "safety" });
