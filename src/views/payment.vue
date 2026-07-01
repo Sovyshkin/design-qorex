@@ -97,9 +97,10 @@ p { max-width: 320px; margin: 0; color: #64748b; font-size: 14px; line-height: 2
 .cta:disabled, .secondary:disabled { opacity: .55; }
 
 :global(.dark-theme) .payment-page { background: #0d1b2a !important; }
-:global(.dark-theme) .payment-header h1, :global(.dark-theme) h2 { color: #ffffff !important; }
-:global(.dark-theme) .arrow { filter: brightness(0) invert(1); background: rgba(30,39,59,.96) !important; border-color: rgba(255,255,255,.08) !important; box-shadow: 0 16px 30px rgba(0,0,0,.28) !important; }
+:global(.dark-theme) .payment-header h1,
+:global(.dark-theme) .payment-shell h2 { color: #ffffff !important; }
+:global(.dark-theme) .payment-header .arrow { filter: brightness(0) invert(1); background: rgba(30,39,59,.96) !important; border-color: rgba(255,255,255,.08) !important; box-shadow: 0 16px 30px rgba(0,0,0,.28) !important; }
 :global(.dark-theme) .payment-shell { background: rgba(30,39,59,.96) !important; border-color: rgba(255,255,255,.08) !important; box-shadow: 0 18px 34px rgba(0,0,0,.34) !important; }
-:global(.dark-theme) p { color: #94a3b8 !important; }
-:global(.dark-theme) .secondary { background: rgba(13,27,42,.58) !important; border-color: rgba(255,255,255,.08) !important; color: #ffffff !important; }
+:global(.dark-theme) .payment-shell p { color: #94a3b8 !important; }
+:global(.dark-theme) .payment-shell .secondary { background: rgba(13,27,42,.58) !important; border-color: rgba(255,255,255,.08) !important; color: #ffffff !important; }
 </style>

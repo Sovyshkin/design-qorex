@@ -212,11 +212,11 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
-:global(.dark-theme) .header h1 {
+:global(.dark-theme) .deposit-page .header h1 {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .arrow {
+:global(.dark-theme) .deposit-page .arrow {
   filter: brightness(0) invert(1);
   opacity: 0.94;
 }

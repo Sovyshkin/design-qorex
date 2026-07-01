@@ -314,7 +314,7 @@ h1 {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.32) !important;
 }
 
-:global(.dark-theme) h1,
+:global(.dark-theme) .failed-header h1,
 :global(.dark-theme) .failed-hero__text h2,
 :global(.dark-theme) .failed-card__row strong {
   color: #ffffff !important;
@@ -326,7 +326,7 @@ h1 {
   color: #94a3b8 !important;
 }
 
-:global(.dark-theme) .arrow {
+:global(.dark-theme) .back-button .arrow {
   filter: brightness(0) invert(1);
 }
 

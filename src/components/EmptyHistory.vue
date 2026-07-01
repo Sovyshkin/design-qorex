@@ -62,11 +62,11 @@ p {
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
 }
 
-:global(.dark-theme) h2 {
+:global(.dark-theme) .empty-card h2 {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) p {
+:global(.dark-theme) .empty-card p {
   color: #94a3b8 !important;
 }
 

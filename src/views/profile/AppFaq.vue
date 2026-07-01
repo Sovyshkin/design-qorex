@@ -119,7 +119,7 @@ h1 { margin: 2px 0 0; color: #0f172a; font-size: 22px; line-height: 26px; font-w
   background: #0d1b2a !important;
 }
 
-:global(.dark-theme) h1,
+:global(.dark-theme) .page-header h1,
 :global(.dark-theme) .question strong {
   color: #ffffff !important;
 }

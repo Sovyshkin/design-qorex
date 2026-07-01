@@ -21,42 +21,44 @@ const sendCode = async () => {
 };
 </script>
 <template>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
-    <h1>{{ t("email_add") }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="container">
-    <div class="form-container">
-      <div class="form-header">
-        <h2 class="form-title">{{ t("email_add") }}</h2>
-        <p class="form-description">{{ t('email_text') }}</p>
-      </div>
-      
-      <div class="input-section">
-        <input 
-          type="email" 
-          :placeholder="t('email_enter')" 
-          id="email" 
-          v-model="walletStore.email"
-          class="form-input"
-        />
-      </div>
-      
-      <button class="btn" @click="sendCode()" :disabled="isSending || walletStore.isLoading">
-        <div class="btn-content">
-          <div v-if="isSending" class="loader"></div>
-          <span v-if="isSending">Отправляем...</span>
-          <span v-else>{{ t("email_send") }}</span>
+  <div class="email-add-page">
+    <header class="header">
+      <img
+        class="arrow"
+        src="../../assets/arrow-left.svg"
+        alt=""
+        @click="walletStore.goBack()"
+      />
+      <h1>{{ t("email_add") }}</h1>
+      <div class="emp"></div>
+    </header>
+    <main class="container">
+      <div class="form-container">
+        <div class="form-header">
+          <h2 class="form-title">{{ t("email_add") }}</h2>
+          <p class="form-description">{{ t('email_text') }}</p>
         </div>
-      </button>
-    </div>
-  </main>
+        
+        <div class="input-section">
+          <input 
+            type="email" 
+            :placeholder="t('email_enter')" 
+            id="email" 
+            v-model="walletStore.email"
+            class="form-input"
+          />
+        </div>
+        
+        <button class="btn" @click="sendCode()" :disabled="isSending || walletStore.isLoading">
+          <div class="btn-content">
+            <div v-if="isSending" class="loader"></div>
+            <span v-if="isSending">Отправляем...</span>
+            <span v-else>{{ t("email_send") }}</span>
+          </div>
+        </button>
+      </div>
+    </main>
+  </div>
 </template>
 <style scoped>
 .header {
@@ -291,36 +293,36 @@ select::placeholder {
   }
 }
 
-:global(.dark-theme) .header,
-:global(.dark-theme) .container {
+:global(.dark-theme) .email-add-page .header,
+:global(.dark-theme) .email-add-page .container {
   background: #0d1b2a !important;
 }
 
-:global(.dark-theme) h1,
-:global(.dark-theme) .form-title {
+:global(.dark-theme) .email-add-page .header h1,
+:global(.dark-theme) .email-add-page .form-title {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .form-description {
+:global(.dark-theme) .email-add-page .form-description {
   color: #94a3b8 !important;
 }
 
-:global(.dark-theme) .arrow {
+:global(.dark-theme) .email-add-page .header .arrow {
   background: rgba(30, 39, 59, 0.96) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   filter: brightness(0) invert(1);
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28) !important;
 }
 
-:global(.dark-theme) .form-container {
+:global(.dark-theme) .email-add-page .form-container {
   background: rgba(30, 39, 59, 0.96) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
 }
 
-:global(.dark-theme) input,
-:global(.dark-theme) textarea,
-:global(.dark-theme) select {
+:global(.dark-theme) .email-add-page input,
+:global(.dark-theme) .email-add-page textarea,
+:global(.dark-theme) .email-add-page select {
   background: rgba(13, 27, 42, 0.58) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
@@ -328,9 +330,9 @@ select::placeholder {
   box-shadow: none !important;
 }
 
-:global(.dark-theme) input::placeholder,
-:global(.dark-theme) textarea::placeholder,
-:global(.dark-theme) select::placeholder {
+:global(.dark-theme) .email-add-page input::placeholder,
+:global(.dark-theme) .email-add-page textarea::placeholder,
+:global(.dark-theme) .email-add-page select::placeholder {
   color: rgba(255, 255, 255, 0.42) !important;
 }
 </style>

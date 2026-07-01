@@ -1354,29 +1354,12 @@ body.dark-theme .scanner-page {
   color: var(--textPrimary, #ffffff) !important;
 }
 
-body.dark-theme header,
-body.dark-theme .header,
 body.dark-theme .home-header,
 body.dark-theme .history-header,
 body.dark-theme .payment-header,
 body.dark-theme .failed-header {
   background: transparent !important;
   color: var(--textPrimary, #ffffff) !important;
-}
-
-body.dark-theme h1,
-body.dark-theme h2,
-body.dark-theme h3,
-body.dark-theme h4,
-body.dark-theme h5,
-body.dark-theme h6,
-body.dark-theme p,
-body.dark-theme span,
-body.dark-theme label,
-body.dark-theme li,
-body.dark-theme a,
-body.dark-theme button {
-  color: inherit;
 }
 
 body.dark-theme .card,
