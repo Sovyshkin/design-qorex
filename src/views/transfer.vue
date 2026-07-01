@@ -1,9 +1,8 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import AppLoader from "@/components/AppLoader.vue";
-import TwoFactorSetupFlow from "@/components/TwoFactorSetupFlow.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import backIcon from "@/assets/arrow-left.svg";
 import copyIcon from "@/assets/copy.svg";
@@ -21,6 +20,7 @@ const isLoading = ref(true);
 const isTransferring = ref(false);
 const showNotice = ref(false);
 const walletCopied = ref(false);
+const isRedirectingTo2FA = ref(false);
 
 const ACCESS_TIMEOUT_MS = 9000;
 const WALLET_TIMEOUT_MS = 8000;
@@ -59,6 +59,7 @@ const isFormValid = computed(() => {
 
 const transferState = computed(() => {
   if (isLoading.value) return "loading";
+  if (isRedirectingTo2FA.value) return "redirect-2fa";
   if (!isTwoFactorSetupComplete.value) return "require-2fa";
   return "form";
 });
@@ -90,6 +91,10 @@ const copyWallet = async () => {
   }
 };
 
+const goToTwoFactorSetup = () => {
+  return router.replace({ name: "twoFactorAuth", query: { from: "transfer" } });
+};
+
 const closeNotice = () => {
   showNotice.value = false;
 };
@@ -112,17 +117,6 @@ const handleTransfer = async () => {
     );
   } finally {
     isTransferring.value = false;
-  }
-};
-
-const handleTwoFactorCompleted = async () => {
-  isLoading.value = true;
-  await checkTwoFactorAccess();
-
-  if (isTwoFactorSetupComplete.value) {
-    setTimeout(() => {
-      showNotice.value = true;
-    }, 300);
   }
 };
 
@@ -179,10 +173,12 @@ const checkTwoFactorAccess = async () => {
     }
 
     isTwoFactorSetupComplete.value = false;
-    console.warn("[PeekPay Transfer requires embedded 2FA setup]", {
-      expectedBranch: "require-2fa",
+    console.warn("[PeekPay Transfer requires 2FA fallback]", {
+      expectedBranch: "redirect-2fa",
       has2FA: walletStore.has2FA,
     });
+    isRedirectingTo2FA.value = true;
+    await goToTwoFactorSetup();
   } catch (error) {
     console.error("[PeekPay Transfer check2FA error]", {
       error,
@@ -234,6 +230,7 @@ watch(
   () => ({
     state: transferState.value,
     isLoading: isLoading.value,
+    isRedirectingTo2FA: isRedirectingTo2FA.value,
     isTwoFactorSetupComplete: isTwoFactorSetupComplete.value,
     has2FA: walletStore.has2FA,
     storeLoading: walletStore.isLoading,
@@ -256,8 +253,20 @@ watch(
       </div>
     </section>
 
-    <section v-else-if="!isTwoFactorSetupComplete" class="transfer-view__embedded-2fa">
-      <TwoFactorSetupFlow @back="walletStore.goBack()" @completed="handleTwoFactorCompleted" />
+    <section v-else-if="isRedirectingTo2FA" class="transfer-view__state transfer-view__state--loading">
+      <div class="transfer-view__state-card">
+        <AppLoader />
+        <h2>{{ t("loading") }}...</h2>
+        <p>{{ t("require_2fa_title") }}</p>
+      </div>
+    </section>
+
+    <section v-else-if="!isTwoFactorSetupComplete" class="transfer-view__state transfer-view__state--loading">
+      <div class="transfer-view__state-card">
+        <AppLoader />
+        <h2>{{ t("loading") }}...</h2>
+        <p>{{ t("require_2fa_title") }}</p>
+      </div>
     </section>
 
     <div v-else class="transfer-view__shell">
@@ -402,12 +411,6 @@ watch(
 }
 
 .transfer-view__shell {
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 18px 16px calc(132px + env(safe-area-inset-bottom));
-}
-
-.transfer-view__embedded-2fa {
   min-height: 100vh;
   min-height: 100dvh;
   padding: 18px 16px calc(132px + env(safe-area-inset-bottom));

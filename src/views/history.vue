@@ -3,6 +3,7 @@ import EmptyHistory from "@/components/EmptyHistory.vue";
 import { useWalletStore } from "@/stores/walletStore";
 import { useI18n } from "vue-i18n";
 import { computed, onMounted } from "vue";
+import { getTransactionStatusMeta } from "@/utils/transactionStatus";
 
 const walletStore = useWalletStore();
 const { t } = useI18n();
@@ -24,16 +25,8 @@ const groupedHistory = computed(() => {
   return groups;
 });
 
-const getTransactionStatus = (boolSuccess) => {
-  switch (boolSuccess) {
-    case "Error timer": return { text: t("error_timer"), class: "error" };
-    case "True":
-    case "success":
-    case true: return { text: t("success"), class: "success" };
-    case "Error": return { text: t("transaction_error"), class: "error" };
-    default: return { text: t("in_processing"), class: "in_processing" };
-  }
-};
+const getTransactionStatus = (boolSuccess) =>
+  getTransactionStatusMeta(boolSuccess, t);
 
 onMounted(async () => await walletStore.getPrice());
 </script>

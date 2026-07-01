@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import AppLoader from "@/components/AppLoader.vue";
@@ -28,6 +28,7 @@ const authKey = ref("");
 const otpauthUrl = ref("");
 const verificationCode = ref("");
 const keyCopied = ref(false);
+const rootRef = ref(null);
 
 const currentStep = computed(() => {
   if (step.value === 1) return "setup";
@@ -132,6 +133,23 @@ const verifyCode = async () => {
   }, 900);
 };
 
+const forceRepaint = async () => {
+  await nextTick();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const root = rootRef.value;
+      if (!root) return;
+
+      root.style.opacity = "0.99";
+      root.style.transform = "translateZ(0)";
+      // Force layout/repaint for buggy Telegram/WebView cases.
+      void root.offsetHeight;
+      root.style.opacity = "1";
+    });
+  });
+};
+
 onMounted(async () => {
   try {
     step.value = 1;
@@ -146,12 +164,22 @@ onMounted(async () => {
       authKey: Boolean(authKey.value),
       currentStep: currentStep.value,
     });
+    await forceRepaint();
   }
 });
+
+watch(
+  () => [loading.value, currentStep.value, qrImage.value, authKey.value],
+  async ([isLoading]) => {
+    if (!isLoading) {
+      await forceRepaint();
+    }
+  }
+);
 </script>
 
 <template>
-  <div class="tfa-flow" :class="{ 'tfa-flow--standalone': standalone }">
+  <div ref="rootRef" class="tfa-flow" :class="{ 'tfa-flow--standalone': standalone }">
     <header v-if="standalone" class="tfa-flow__header">
       <BackButton @click="goBack()" />
       <h1 class="tfa-flow__title">{{ t("two_factor_auth") }}</h1>

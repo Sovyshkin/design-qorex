@@ -5,6 +5,10 @@ import i18n from "@/i18n";
 import { useRouter } from "vue-router";
 import Cookies from "js-cookie";
 import axios from "axios";
+import {
+  isTransactionErrorStatus,
+  normalizeTransactionStatus,
+} from "@/utils/transactionStatus";
 
 // Вспомогательная функция для форматирования даты в локальном часовом поясе
 const formatDateForTransaction = (date = new Date()) => {
@@ -1010,6 +1014,15 @@ export const useWalletStore = defineStore("wallet", () => {
         let { id, datatime } = response.data.more_detail;
         let { type_trans, bool_suecess } = response.data;
         let amount_usdt = response.data.more_detail.amount;
+
+        if (isTransactionErrorStatus(bool_suecess)) {
+          transactionErrorMessage.value =
+            response.data?.detail ||
+            response.data?.message ||
+            t("transaction_error");
+          router.push({ name: "transaction_failed" });
+          return;
+        }
         
         // Загружаем цену только если её нет
         if (!usdt_price.value) {
@@ -1033,16 +1046,26 @@ export const useWalletStore = defineStore("wallet", () => {
       console.error('Error processing QR code:', err);
       
       if (isNetworkError(err)) {
+        transactionErrorMessage.value =
+          t('network_error') || 'Проблема с подключением к серверу';
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.data?.detail == "Недостаточно средств") {
+        transactionErrorMessage.value = t("insufficient_funds");
         errMessage.value = t("insufficient_funds");
       } else if (err.response?.status === 400) {
+        transactionErrorMessage.value =
+          t('invalid_qr_code') || 'Некорректный QR-код';
         showMessage(t('invalid_qr_code') || 'Некорректный QR-код', 'error');
       } else if (err.response?.status === 404) {
+        transactionErrorMessage.value =
+          t('payment_not_found') || 'Платеж не найден';
         showMessage(t('payment_not_found') || 'Платеж не найден', 'error');
       } else if (err.response?.data?.detail) {
+        transactionErrorMessage.value = err.response.data.detail;
         errMessage.value = err.response.data.detail;
       } else {
+        transactionErrorMessage.value =
+          t('qr_processing_failed') || 'Не удалось обработать QR-код';
         showMessage(t('qr_processing_failed') || 'Не удалось обработать QR-код', 'error');
       }
       
@@ -1393,6 +1416,15 @@ export const useWalletStore = defineStore("wallet", () => {
           let { id, datatime } = response.data.more_detail || {};
           let { type_trans, bool_suecess } = response.data;
           let amount_usdt = response.data.more_detail?.amount || amount;
+
+          if (normalizeTransactionStatus(bool_suecess) === "error") {
+            transactionErrorMessage.value =
+              response.data?.detail ||
+              response.data?.message ||
+              t("transfer_failed");
+            router.push({ name: "transaction_failed" });
+            return false;
+          }
 
           // Обновляем баланс асинхронно
           setTimeout(() => getUser(), 500);

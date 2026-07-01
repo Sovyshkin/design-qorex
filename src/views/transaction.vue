@@ -3,6 +3,7 @@ import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import { ref, onMounted } from "vue";
 import { useWalletStore } from "@/stores/walletStore";
+import { getTransactionStatusMeta } from "@/utils/transactionStatus";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -80,25 +81,8 @@ const formatDateTime = (dateInput) => {
   return `${day}.${month}.${year} ${hours}:${minutes}`;
 };
 
-const getTransactionStatus = (boolSuccess) => {
-  // Проверяем различные значения статуса
-  switch (boolSuccess) {
-    case "Error timer":
-      return { text: t('error_timer'), class: 'error' };
-    case "True":
-    case 'success':
-    case true:
-      return { text: t('success'), class: 'success' };
-    case "Error":
-      return { text: t('transaction_error'), class: 'error' };
-    case 'wait':
-    case "wait_pay":
-    case false:
-      return { text: t('in_processing'), class: 'in_processing' };
-    default:
-      return { text: t('in_processing'), class: 'in_processing' };
-  }
-};
+const getTransactionStatus = (boolSuccess) =>
+  getTransactionStatusMeta(boolSuccess, t);
 
 // Проверяем, можно ли показать кнопку просмотра счета
 const canViewInvoice = (transactionType, transactionId) => {
@@ -177,7 +161,7 @@ onMounted(() => {
     walletStore.transaction.amountRub = walletStore.roundToHundredths(amount_rub)
     walletStore.transaction.datatime = datatime
     walletStore.transaction.type_trans = type_trans
-    walletStore.transaction.bool_suecess = bool_suecess === 'True'
+    walletStore.transaction.bool_suecess = bool_suecess
   }
 })
 </script>
