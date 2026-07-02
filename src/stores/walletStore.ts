@@ -1053,6 +1053,30 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  const wait = (ms: number) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
+  const openLatestTransactionFromHistoryWithRetry = async (
+    previousSignatures: Set<string> = new Set(),
+    retries = 4,
+    delayMs = 900
+  ) => {
+    for (let attempt = 0; attempt < retries; attempt += 1) {
+      const opened = await openLatestTransactionFromHistory(previousSignatures);
+      if (opened) {
+        return true;
+      }
+
+      if (attempt < retries - 1) {
+        await wait(delayMs);
+      }
+    }
+
+    return false;
+  };
+
   const getRub = (amount) => {
     try {
       if (!amount || !usdt_price.value) {
@@ -1118,7 +1142,7 @@ export const useWalletStore = defineStore("wallet", () => {
             messageText.includes("success");
 
           if (looksSuccessful) {
-            const opened = await openLatestTransactionFromHistory(
+            const opened = await openLatestTransactionFromHistoryWithRetry(
               previousHistorySignatures
             );
 
