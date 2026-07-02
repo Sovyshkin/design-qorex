@@ -1127,7 +1127,11 @@ export const useWalletStore = defineStore("wallet", () => {
         crc: crc,
       });
 
-      let response = await axios.post(`/qr_take?${params.toString()}`, {});
+      let response = await axios.post(
+        `/qr_take?${params.toString()}`,
+        {},
+        { timeout: 70000 }
+      );
 
       if (response.status == 200) {
         const hasMoreDetail = !!response.data?.more_detail;
