@@ -1340,6 +1340,7 @@ body.dark-theme #app {
 body.dark-theme .wrapper,
 body.dark-theme .content-wrapper,
 body.dark-theme .pin-page,
+body.dark-theme .pin-page--standalone,
 body.dark-theme .container,
 body.dark-theme .profile,
 body.dark-theme .page-container,
@@ -1708,7 +1709,8 @@ body.dark-theme .back-button:active {
 .dark-theme .faq-page,
 .dark-theme .profile-page,
 .dark-theme .require-2fa,
-.dark-theme .pin-page {
+.dark-theme .pin-page,
+.dark-theme .pin-page--standalone {
   background:
     radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;

@@ -7,6 +7,7 @@ import BackButton from "@/components/ui/BackButton.vue";
 import copyIcon from "@/assets/copy.svg";
 import checkIcon from "@/assets/check.svg";
 import errorIcon from "@/assets/error.svg";
+import { getElementSnapshot, logThemeSnapshot } from "@/utils/pageDebug";
 
 const props = defineProps({
   standalone: {
@@ -163,6 +164,15 @@ onMounted(async () => {
       qrImage: Boolean(qrImage.value),
       authKey: Boolean(authKey.value),
       currentStep: currentStep.value,
+    });
+    logThemeSnapshot("TwoFactorSetupFlow mounted final", {
+      page: getElementSnapshot(".tfa-flow"),
+      header: getElementSnapshot(".tfa-flow__header"),
+      surface: getElementSnapshot(".tfa-flow__surface"),
+      stack: getElementSnapshot(".tfa-flow__stack"),
+      card: getElementSnapshot(".tfa-flow__card"),
+      qrShell: getElementSnapshot(".tfa-flow__qr-shell"),
+      standalone: props.standalone,
     });
     await forceRepaint();
   }
