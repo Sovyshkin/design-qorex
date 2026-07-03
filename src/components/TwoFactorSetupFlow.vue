@@ -314,6 +314,9 @@ watch(
 <style scoped>
 .tfa-flow {
   width: 100%;
+  display: block;
+  flex: 1 1 auto;
+  min-height: 100%;
   opacity: 1;
   visibility: visible;
   transform: none;

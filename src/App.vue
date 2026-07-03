@@ -504,6 +504,22 @@ h1 {
   background-color: var(--background, #f1f5f9);
 }
 
+.pin-page--standalone {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%),
+    #f1f5f9;
+}
+
 .pin-page--standalone,
 .pin-page--standalone *,
 .pin-page--standalone *::before,
@@ -525,6 +541,12 @@ h1 {
   visibility: visible !important;
   transform: none !important;
   filter: none !important;
+}
+
+body.dark-theme .pin-page--standalone {
+  background:
+    radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
 /* Фиксированный навбар */
