@@ -157,6 +157,7 @@ onMounted(async () => {
     await initialize2FA();
   } finally {
     loading.value = false;
+    await nextTick();
     console.log("TwoFactorSetupFlow mounted final:", {
       step: step.value,
       loading: loading.value,
@@ -196,14 +197,14 @@ watch(
       <div class="tfa-flow__spacer"></div>
     </header>
 
-    <section v-if="loading" class="tfa-flow__surface">
+    <section v-show="loading" class="tfa-flow__surface">
       <div class="tfa-flow__state-card">
         <AppLoader />
         <p class="tfa-flow__state-text">{{ t("loading") }}...</p>
       </div>
     </section>
 
-    <section v-else-if="error" class="tfa-flow__surface">
+    <section v-show="!loading && !!error" class="tfa-flow__surface">
       <div class="tfa-flow__card tfa-flow__card--error">
         <img :src="errorIcon" alt="Error" class="tfa-flow__error-icon" />
         <h2 class="tfa-flow__card-title">{{ t("error") }}</h2>
@@ -214,7 +215,7 @@ watch(
       </div>
     </section>
 
-    <section v-else-if="currentStep === 'setup'" class="tfa-flow__surface">
+    <section v-show="!loading && !error && currentStep === 'setup'" class="tfa-flow__surface">
       <div class="tfa-flow__stack">
         <section class="tfa-flow__card">
           <h2 class="tfa-flow__card-title">{{ t("setup_2fa") }}</h2>
@@ -262,7 +263,7 @@ watch(
       </div>
     </section>
 
-    <section v-else-if="currentStep === 'verify'" class="tfa-flow__surface">
+    <section v-show="!loading && !error && currentStep === 'verify'" class="tfa-flow__surface">
       <div class="tfa-flow__stack">
         <section class="tfa-flow__card">
           <h2 class="tfa-flow__card-title">{{ t("verify_2fa") }}</h2>
@@ -297,7 +298,7 @@ watch(
       </div>
     </section>
 
-    <section v-else class="tfa-flow__surface">
+    <section v-show="!loading && !error && currentStep === 'success'" class="tfa-flow__surface">
       <div class="tfa-flow__stack">
         <section class="tfa-flow__card tfa-flow__card--success">
           <div class="tfa-flow__status-icon">
