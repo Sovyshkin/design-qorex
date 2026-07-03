@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore";
 import { useRouter } from "vue-router";
 import BackButton from "@/components/ui/BackButton.vue";
+import { getElementSnapshot, logThemeSnapshot } from "@/utils/pageDebug";
 
 const { t } = useI18n();
 const showCopiedNotification = ref(false);
@@ -72,6 +73,17 @@ const formatDate = (dateString) => {
 };
 
 onMounted(() => {
+  nextTick(() => {
+    logThemeSnapshot("AppReferal mounted", {
+      page: getElementSnapshot(".referal-page"),
+      header: getElementSnapshot(".referal-header"),
+      content: getElementSnapshot(".referal-content"),
+      banner: getElementSnapshot(".banner"),
+      section: getElementSnapshot(".referal-section"),
+      list: getElementSnapshot(".referals-list"),
+      referralUserId: referralUserId.value,
+    });
+  });
   loadReferrals();
 });
 </script>

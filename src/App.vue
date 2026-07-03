@@ -1,14 +1,16 @@
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "./components/NavBar.vue";
 import AppLoader from "./components/AppLoader.vue";
 import AppMessage from "./components/AppMessage.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
+import { logThemeSnapshot } from "@/utils/pageDebug";
 
 const router = useRouter();
 const walletStore = useWalletStore();
 const accessDenied = ref(false);
+let bodyClassObserver = null;
 
 // Список публичных маршрутов, которые не требуют аутентификации
 const publicRoutes = ["enterPin", "createPin"];
@@ -103,6 +105,28 @@ const initializeApp = async () => {
 
 onMounted(() => {
   initializeApp();
+  nextTick(() => {
+    logThemeSnapshot("App mounted", {
+      route: router.currentRoute.value.fullPath,
+      showMainShell: showMainShell.value,
+      showContent: showContent.value,
+    });
+  });
+
+  if (typeof document !== "undefined") {
+    bodyClassObserver = new MutationObserver(() => {
+      logThemeSnapshot("Body class mutated", {
+        route: router.currentRoute.value.fullPath,
+        showMainShell: showMainShell.value,
+        showContent: showContent.value,
+      });
+    });
+
+    bodyClassObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+  }
 });
 
 // Компьютед свойство для отображения контента
@@ -147,15 +171,35 @@ watch(
 
 watch(
   () => router.currentRoute.value.fullPath,
-  async () => {
+  async (fullPath) => {
     await nextTick();
     window.scrollTo({ top: 0, behavior: "auto" });
     const wrapper = document.querySelector(".content-wrapper");
     if (wrapper) {
       wrapper.scrollTop = 0;
     }
+    logThemeSnapshot("Route changed", {
+      route: fullPath,
+      routeName: router.currentRoute.value.name,
+      showMainShell: showMainShell.value,
+      showContent: showContent.value,
+      isLoading: walletStore.isLoading,
+    });
+    setTimeout(() => {
+      logThemeSnapshot("Route changed + 300ms", {
+        route: fullPath,
+        routeName: router.currentRoute.value.name,
+      });
+    }, 300);
   }
 );
+
+onBeforeUnmount(() => {
+  if (bodyClassObserver) {
+    bodyClassObserver.disconnect();
+    bodyClassObserver = null;
+  }
+});
 </script>
 
 <template>

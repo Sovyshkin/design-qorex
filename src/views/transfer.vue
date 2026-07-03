@@ -6,6 +6,7 @@ import AppLoader from "@/components/AppLoader.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import backIcon from "@/assets/arrow-left.svg";
 import copyIcon from "@/assets/copy.svg";
+import { getElementSnapshot, logThemeSnapshot } from "@/utils/pageDebug";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -205,6 +206,14 @@ onMounted(async () => {
     has2FA: walletStore.has2FA,
   });
 
+  await nextTick();
+  logThemeSnapshot("Transfer mounted before access check", {
+    page: getElementSnapshot(".transfer-view"),
+    state: getElementSnapshot(".transfer-view__state"),
+    shell: getElementSnapshot(".transfer-view__shell"),
+    navbar: getElementSnapshot(".wallet-nav"),
+  });
+
   const loadingGuard = setTimeout(() => {
     if (!isLoading.value) return;
 
@@ -219,6 +228,18 @@ onMounted(async () => {
 
   await checkTwoFactorAccess();
   clearTimeout(loadingGuard);
+
+  await nextTick();
+  logThemeSnapshot("Transfer after access check", {
+    route: router.currentRoute.value.fullPath,
+    stateName: transferState.value,
+    page: getElementSnapshot(".transfer-view"),
+    state: getElementSnapshot(".transfer-view__state"),
+    shell: getElementSnapshot(".transfer-view__shell"),
+    header: getElementSnapshot(".transfer-view__header"),
+    navbar: getElementSnapshot(".wallet-nav"),
+  });
+
   if (isTwoFactorSetupComplete.value) {
     setTimeout(() => {
       showNotice.value = true;

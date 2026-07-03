@@ -1,10 +1,22 @@
 <script setup>
+import { onMounted, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '../../stores/walletStore.ts'
 import BackButton from "@/components/ui/BackButton.vue";
+import { getElementSnapshot, logThemeSnapshot } from "@/utils/pageDebug";
 
 const { t } = useI18n();
 const walletStore = useWalletStore()
+
+onMounted(async () => {
+  await nextTick();
+  logThemeSnapshot("SelectLang mounted", {
+    page: getElementSnapshot(".lang-page"),
+    header: getElementSnapshot(".lang-header"),
+    list: getElementSnapshot(".lang-list"),
+    firstItem: getElementSnapshot(".lang-item"),
+  });
+});
 
 </script>
 <template>

@@ -420,87 +420,79 @@ const isValidPaymentUrl = (url) => {
   }
 };
 
-// Проверка наличия суммы в URL
-const hasAmountInUrl = (url) => {
+const getQueryValueFromRawQr = (raw, key) => {
+  if (!raw || typeof raw !== "string") return null;
+
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = raw.match(new RegExp(`(?:[?&#]|^)${escapedKey}=([^&#]*)`, "i"));
+
+  if (!match) return null;
+
+  try {
+    return decodeURIComponent(match[1].replace(/\+/g, " "));
+  } catch (_error) {
+    return match[1];
+  }
+};
+
+const getAmountCandidate = (url, key) => {
   try {
     const urlObj = new URL(url);
-    const params = urlObj.searchParams;
-    
-    // Проверяем различные параметры суммы
-    return params.has('amount') || 
-           params.has('sum') || 
-           params.has('value') ||
-           url.includes('amount=') ||
-           url.includes('sum=') ||
-           url.includes('value=');
-  } catch (error) {
-    // Если не удается парсить как URL, проверяем строку напрямую
-    return url.includes('amount=') || 
-           url.includes('sum=') || 
-           url.includes('value=');
+    const directValue = urlObj.searchParams.get(key);
+    if (directValue !== null && directValue !== "") {
+      return directValue;
+    }
+  } catch (_error) {
+    // fallback below
   }
+
+  return getQueryValueFromRawQr(url, key);
+};
+
+// Проверка наличия суммы в URL
+const hasAmountInUrl = (url) => {
+  const amountValue = getAmountCandidate(url, "amount");
+  const sumValue = getAmountCandidate(url, "sum");
+  const valueValue = getAmountCandidate(url, "value");
+
+  return Boolean(
+    (amountValue && amountValue.trim() !== "") ||
+    (sumValue && sumValue.trim() !== "") ||
+    (valueValue && valueValue.trim() !== "")
+  );
 };
 
 // Парсинг суммы из QR-кода
 const parseAmountFromUrl = (url) => {
-  try {
-    const urlObj = new URL(url);
-    const params = urlObj.searchParams;
-    
-    // Проверяем amount (точная сумма в рублях)
-    if (params.has('amount')) {
-      const amount = parseFloat(params.get('amount'));
-      if (!isNaN(amount) && amount > 0) {
-        return amount.toFixed(2);
-      }
+  const amountRaw = getAmountCandidate(url, "amount");
+  if (amountRaw) {
+    const normalizedAmount = String(amountRaw).replace(",", ".").trim();
+    const amount = Number(normalizedAmount);
+    if (Number.isFinite(amount) && amount > 0) {
+      return amount.toFixed(2);
     }
-    
-    // Проверяем sum (сумма в копейках)
-    if (params.has('sum')) {
-      const sum = parseInt(params.get('sum'));
-      if (!isNaN(sum) && sum > 0) {
-        // Конвертируем копейки в рубли (делим на 100)
-        return (sum / 100).toFixed(2);
-      }
-    }
-    
-    // Проверяем value
-    if (params.has('value')) {
-      const value = parseFloat(params.get('value'));
-      if (!isNaN(value) && value > 0) {
-        return value.toFixed(2);
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    // Если не удается парсить как URL, проверяем строку напрямую
-    const amountMatch = url.match(/amount=([0-9]+\.?[0-9]*)/i);
-    if (amountMatch) {
-      const amount = parseFloat(amountMatch[1]);
-      if (!isNaN(amount) && amount > 0) {
-        return amount.toFixed(2);
-      }
-    }
-    
-    const sumMatch = url.match(/sum=([0-9]+)/i);
-    if (sumMatch) {
-      const sum = parseInt(sumMatch[1]);
-      if (!isNaN(sum) && sum > 0) {
-        return (sum / 100).toFixed(2);
-      }
-    }
-    
-    const valueMatch = url.match(/value=([0-9]+\.?[0-9]*)/i);
-    if (valueMatch) {
-      const value = parseFloat(valueMatch[1]);
-      if (!isNaN(value) && value > 0) {
-        return value.toFixed(2);
-      }
-    }
-    
-    return null;
   }
+
+  const sumRaw = getAmountCandidate(url, "sum");
+  if (sumRaw) {
+    const normalizedSum = String(sumRaw).replace(/[^\d]/g, "").trim();
+    const sum = Number(normalizedSum);
+    if (Number.isFinite(sum) && sum > 0) {
+      // NSPK: последние 2 цифры — копейки, например 53000 => 530.00
+      return (sum / 100).toFixed(2);
+    }
+  }
+
+  const valueRaw = getAmountCandidate(url, "value");
+  if (valueRaw) {
+    const normalizedValue = String(valueRaw).replace(",", ".").trim();
+    const value = Number(normalizedValue);
+    if (Number.isFinite(value) && value > 0) {
+      return value.toFixed(2);
+    }
+  }
+
+  return null;
 };
 
 // Добавление суммы в URL
@@ -2454,4 +2446,3 @@ body.dark-theme .info-value {
   color: #f5f5f5 !important;
 }
 </style>
-

@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "../../stores/walletStore.ts";
 import { useRouter } from "vue-router";
 import InputCheck from "@/components/ui/inputs/InputCheck.vue";
 import BackButton from "@/components/ui/BackButton.vue";
+import { getElementSnapshot, logThemeSnapshot } from "@/utils/pageDebug";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -63,9 +64,29 @@ const goBack = () => {
 // Загружаем актуальные данные пользователя при монтировании компонента
 onMounted(async () => {
   try {
+    await nextTick();
+    logThemeSnapshot("AppSafety mounted", {
+      page: getElementSnapshot(".safety-page"),
+      header: getElementSnapshot(".safety-header"),
+      body: getElementSnapshot(".safety-body"),
+      firstItem: getElementSnapshot(".safety-item"),
+      storeFlags: {
+        codePasswordActive: codePasswordActive.value,
+        hideBalanceActive: hideBalanceActive.value,
+        twoFactorActive: twoFactorActive.value,
+      },
+    });
+
     // Проверяем 2FA без блокировки первого рендера страницы.
     if (walletStore.user?.tg_id || walletStore.userTg?.id) {
       await walletStore.check2FAStatus();
+      await nextTick();
+      logThemeSnapshot("AppSafety after check2FAStatus", {
+        page: getElementSnapshot(".safety-page"),
+        body: getElementSnapshot(".safety-body"),
+        firstItem: getElementSnapshot(".safety-item"),
+        has2FA: walletStore.has2FA,
+      });
     }
   } catch (error) {
     console.error('Ошибка загрузки данных пользователя:', error);
