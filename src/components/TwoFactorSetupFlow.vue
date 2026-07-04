@@ -45,6 +45,308 @@ const qrSrc = computed(() => {
   return `data:image/png;base64,${qrImage.value}`;
 });
 
+const rootStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        display: "block",
+        flex: "1 1 auto",
+        minHeight: "100dvh",
+        position: "relative",
+        zIndex: "2",
+        background:
+          "radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.16), transparent 62%), linear-gradient(180deg, #07111f 0%, #0d1b2a 100%)",
+        color: "#ffffff",
+      }
+    : {
+        width: "100%",
+        display: "block",
+        flex: "1 1 auto",
+        minHeight: "100dvh",
+        position: "relative",
+        zIndex: "2",
+      }
+);
+
+const titleStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        color: "#ffffff",
+      }
+    : {}
+);
+
+const headerStyle = computed(() => ({
+  width: "100%",
+  padding: "20px 16px 10px",
+  display: "grid",
+  gridTemplateColumns: "44px 1fr 44px",
+  alignItems: "center",
+  gap: "12px",
+}));
+
+const surfaceStyle = computed(() => ({
+  position: "relative",
+  zIndex: "2",
+  display: "grid",
+  gap: "14px",
+  width: "100%",
+  padding: "8px 16px 40px",
+  minHeight: props.standalone ? "calc(100dvh - 80px)" : "auto",
+  background: "transparent",
+}));
+
+const stackStyle = computed(() => ({
+  width: "100%",
+  maxWidth: "420px",
+  margin: "0 auto",
+  display: "grid",
+  gap: "14px",
+  position: "relative",
+  zIndex: "2",
+}));
+
+const cardStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        maxWidth: "420px",
+        margin: "0 auto",
+        padding: "18px",
+        borderRadius: "24px",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        background: "rgba(30, 39, 59, 0.96)",
+        borderColor: "rgba(255, 255, 255, 0.08)",
+        boxShadow: "0 18px 34px rgba(0, 0, 0, 0.28)",
+        position: "relative",
+        zIndex: "2",
+      }
+    : {
+        width: "100%",
+        maxWidth: "420px",
+        margin: "0 auto",
+        padding: "18px",
+        borderRadius: "24px",
+        border: "1px solid #e2e8f0",
+        background: "rgba(255, 255, 255, 0.96)",
+        boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+        position: "relative",
+        zIndex: "2",
+      }
+);
+
+const successCardStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        maxWidth: "420px",
+        margin: "0 auto",
+        padding: "18px",
+        borderRadius: "24px",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        background: "rgba(22, 101, 52, 0.2)",
+        borderColor: "rgba(34, 197, 94, 0.28)",
+      }
+    : {
+        width: "100%",
+        maxWidth: "420px",
+        margin: "0 auto",
+        padding: "18px",
+        borderRadius: "24px",
+        border: "1px solid #bbf7d0",
+        background: "linear-gradient(135deg, #ecfdf5, #ffffff)",
+      }
+);
+
+const bodyTextStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        color: "#94a3b8",
+      }
+    : {}
+);
+
+const keyValueStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        color: "#ffffff",
+      }
+    : {}
+);
+
+const stateCardStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        ...cardStyle.value,
+        padding: "24px",
+        display: "grid",
+        justifyItems: "center",
+        gap: "12px",
+      }
+    : {
+        ...cardStyle.value,
+        padding: "24px",
+        display: "grid",
+        justifyItems: "center",
+        gap: "12px",
+      }
+);
+
+const centerCardStyle = computed(() => ({
+  ...cardStyle.value,
+  display: "grid",
+  justifyItems: "center",
+  gap: "14px",
+}));
+
+const qrShellStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "214px",
+        height: "214px",
+        padding: "14px",
+        display: "grid",
+        placeItems: "center",
+        borderRadius: "24px",
+        background: "rgba(30, 39, 59, 0.96)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        boxShadow: "0 18px 34px rgba(0, 0, 0, 0.28)",
+      }
+    : {
+        width: "214px",
+        height: "214px",
+        padding: "14px",
+        display: "grid",
+        placeItems: "center",
+        borderRadius: "24px",
+        background: "#ffffff",
+        border: "1px solid #e2e8f0",
+      }
+);
+
+const keyBoxStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        minHeight: "52px",
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        background: "rgba(30, 39, 59, 0.96)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        borderRadius: "18px",
+        cursor: "pointer",
+      }
+    : {
+        width: "100%",
+        minHeight: "52px",
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        background: "#f8fafc",
+        border: "1px solid #e2e8f0",
+        borderRadius: "18px",
+        cursor: "pointer",
+      }
+);
+
+const inputStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        minHeight: "58px",
+        padding: "0 16px",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderRadius: "18px",
+        background: "rgba(30, 39, 59, 0.96)",
+        borderColor: "rgba(255, 255, 255, 0.08)",
+        boxShadow: "0 18px 34px rgba(0, 0, 0, 0.28)",
+        color: "#ffffff",
+        textAlign: "center",
+        fontSize: "24px",
+        lineHeight: "1",
+        fontWeight: "750",
+        letterSpacing: "8px",
+      }
+    : {
+        width: "100%",
+        minHeight: "58px",
+        padding: "0 16px",
+        border: "1px solid #e2e8f0",
+        borderRadius: "18px",
+        background: "#ffffff",
+        color: "#0f172a",
+        textAlign: "center",
+        fontSize: "24px",
+        lineHeight: "1",
+        fontWeight: "750",
+        letterSpacing: "8px",
+      }
+);
+
+const secondaryButtonStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        minHeight: "52px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "18px",
+        fontSize: "15px",
+        fontWeight: "750",
+        background: "rgba(13, 27, 42, 0.58)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        color: "#ffffff",
+      }
+    : {
+        width: "100%",
+        minHeight: "52px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "18px",
+        fontSize: "15px",
+        fontWeight: "750",
+        background: "#ffffff",
+        border: "1px solid #dbeafe",
+        color: "#1e40af",
+      }
+);
+
+const primaryButtonStyle = computed(() =>
+  isDarkTheme.value
+    ? {
+        width: "100%",
+        minHeight: "52px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "18px",
+        fontSize: "15px",
+        fontWeight: "750",
+        background: "linear-gradient(135deg, #2562eb, #3882fa)",
+        color: "#ffffff",
+      }
+    : {
+        width: "100%",
+        minHeight: "52px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "18px",
+        fontSize: "15px",
+        fontWeight: "750",
+        background: "linear-gradient(135deg, #2563eb, #1e40af)",
+        color: "#ffffff",
+      }
+);
+
 const syncThemeState = () => {
   if (typeof document === "undefined") return;
 
@@ -250,16 +552,18 @@ watch(
       'tfa-flow--standalone': standalone,
       'tfa-flow--dark': isDarkTheme,
     }"
+    :style="rootStyle"
   >
-    <header v-if="standalone" class="tfa-flow__header">
+    <header v-if="standalone" class="tfa-flow__header" :style="headerStyle">
       <BackButton @click="goBack()" />
-      <h1 class="tfa-flow__title">{{ t("two_factor_auth") }}</h1>
+      <h1 class="tfa-flow__title" :style="titleStyle">{{ t('two_factor_auth') }}</h1>
       <div class="tfa-flow__spacer"></div>
     </header>
 
-    <section class="tfa-flow__surface">
+    <section class="tfa-flow__surface" :style="surfaceStyle">
       <div
         class="tfa-flow__state-card"
+        :style="stateCardStyle"
         :class="{ 'tfa-flow__block--hidden': !loading }"
       >
         <AppLoader />
@@ -268,46 +572,51 @@ watch(
 
       <div
         class="tfa-flow__card tfa-flow__card--error"
+        :style="cardStyle"
         :class="{ 'tfa-flow__block--hidden': loading || !error }"
       >
         <img :src="errorIcon" alt="Error" class="tfa-flow__error-icon" />
-        <h2 class="tfa-flow__card-title">{{ t("error") }}</h2>
-        <p class="tfa-flow__card-text">{{ error }}</p>
-        <button class="tfa-flow__button tfa-flow__button--primary" @click="goBack()">
+        <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("error") }}</h2>
+        <p class="tfa-flow__card-text" :style="bodyTextStyle">{{ error }}</p>
+        <button class="tfa-flow__button tfa-flow__button--primary" :style="primaryButtonStyle" @click="goBack()">
           {{ t("go_back") }}
         </button>
       </div>
 
       <div
         class="tfa-flow__stack"
+        :style="stackStyle"
         :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'setup' }"
       >
-        <section class="tfa-flow__card">
-          <h2 class="tfa-flow__card-title">{{ t("setup_2fa") }}</h2>
-          <p class="tfa-flow__card-text">{{ t("2fa_instruction_1") }}</p>
+        <section class="tfa-flow__card" :style="cardStyle">
+          <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("setup_2fa") }}</h2>
+          <p class="tfa-flow__card-text" :style="bodyTextStyle">{{ t("2fa_instruction_1") }}</p>
           <ol class="tfa-flow__list">
-            <li>{{ t("2fa_instruction_2") }}</li>
-            <li>{{ t("2fa_instruction_3") }}</li>
-            <li>{{ t("2fa_instruction_4") }}</li>
+            <li :style="bodyTextStyle">{{ t("2fa_instruction_2") }}</li>
+            <li :style="bodyTextStyle">{{ t("2fa_instruction_3") }}</li>
+            <li :style="bodyTextStyle">{{ t("2fa_instruction_4") }}</li>
           </ol>
         </section>
 
-        <section class="tfa-flow__card tfa-flow__card--center">
+        <section class="tfa-flow__card tfa-flow__card--center" :style="centerCardStyle">
           <div
             class="tfa-flow__qr-shell"
+            :style="qrShellStyle"
             :class="{ 'tfa-flow__block--hidden': !qrImage }"
           >
             <img :src="qrSrc" alt="QR Code" class="tfa-flow__qr-image" />
           </div>
           <div
             class="tfa-flow__qr-placeholder"
+            :style="bodyTextStyle"
             :class="{ 'tfa-flow__block--hidden': !!qrImage }"
           >
-            <p class="tfa-flow__card-text">{{ t("loading") }}...</p>
+            <p class="tfa-flow__card-text" :style="bodyTextStyle">{{ t("loading") }}...</p>
           </div>
 
           <button
             class="tfa-flow__button tfa-flow__button--secondary"
+            :style="secondaryButtonStyle"
             :class="{ 'tfa-flow__block--hidden': !otpauthUrl }"
             @click="openAuthenticatorApp"
           >
@@ -317,18 +626,20 @@ watch(
 
         <section
           class="tfa-flow__card"
+          :style="cardStyle"
           :class="{ 'tfa-flow__block--hidden': !authKey }"
         >
-          <label class="tfa-flow__label">{{ t("your_code") }}</label>
-          <button class="tfa-flow__key-box" :class="{ 'is-copied': keyCopied }" @click="copyKey">
-            <span class="tfa-flow__key-value">{{ authKey }}</span>
+          <label class="tfa-flow__label" :style="bodyTextStyle">{{ t("your_code") }}</label>
+          <button class="tfa-flow__key-box" :style="keyBoxStyle" :class="{ 'is-copied': keyCopied }" @click="copyKey">
+            <span class="tfa-flow__key-value" :style="keyValueStyle">{{ authKey }}</span>
             <img :src="copyIcon" alt="Copy" class="tfa-flow__copy-icon" />
           </button>
-          <p class="tfa-flow__hint">{{ t("tap_to_copy_wallet") }}</p>
+          <p class="tfa-flow__hint" :style="bodyTextStyle">{{ t("tap_to_copy_wallet") }}</p>
         </section>
 
         <button
           class="tfa-flow__button tfa-flow__button--primary"
+          :style="primaryButtonStyle"
           :disabled="!qrImage"
           @click="goToVerification"
         >
@@ -338,14 +649,15 @@ watch(
 
       <div
         class="tfa-flow__stack"
+        :style="stackStyle"
         :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'verify' }"
       >
-        <section class="tfa-flow__card">
-          <h2 class="tfa-flow__card-title">{{ t("verify_2fa") }}</h2>
-          <p class="tfa-flow__card-text">{{ t("enter_code_from_app") }}</p>
+        <section class="tfa-flow__card" :style="cardStyle">
+          <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("verify_2fa") }}</h2>
+          <p class="tfa-flow__card-text" :style="bodyTextStyle">{{ t("enter_code_from_app") }}</p>
         </section>
 
-        <section class="tfa-flow__card">
+        <section class="tfa-flow__card" :style="cardStyle">
           <div class="tfa-flow__input-wrap">
             <input
               v-model="verificationCode"
@@ -355,33 +667,36 @@ watch(
               inputmode="numeric"
               :placeholder="t('enter_6_digit_code')"
               class="tfa-flow__input"
+              :style="inputStyle"
             />
           </div>
         </section>
 
         <button
           class="tfa-flow__button tfa-flow__button--primary"
+          :style="primaryButtonStyle"
           :disabled="verificationCode.length !== 6"
           @click="verifyCode"
         >
           {{ t("verify_and_enable") }}
         </button>
 
-        <button class="tfa-flow__button tfa-flow__button--secondary" @click="step = 1">
+        <button class="tfa-flow__button tfa-flow__button--secondary" :style="secondaryButtonStyle" @click="step = 1">
           {{ t("back_to_qr") }}
         </button>
       </div>
 
       <div
         class="tfa-flow__stack"
+        :style="stackStyle"
         :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'success' }"
       >
-        <section class="tfa-flow__card tfa-flow__card--success">
+        <section class="tfa-flow__card tfa-flow__card--success" :style="successCardStyle">
           <div class="tfa-flow__status-icon">
             <img :src="checkIcon" alt="Enabled" class="tfa-flow__status-image" />
           </div>
-          <h2 class="tfa-flow__card-title">{{ t("2fa_enabled") }}</h2>
-          <p class="tfa-flow__card-text">{{ t("2fa_enabled_description") }}</p>
+          <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("2fa_enabled") }}</h2>
+          <p class="tfa-flow__card-text" :style="bodyTextStyle">{{ t("2fa_enabled_description") }}</p>
         </section>
       </div>
     </section>
