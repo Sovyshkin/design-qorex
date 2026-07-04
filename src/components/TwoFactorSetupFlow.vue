@@ -491,11 +491,11 @@ const forceRepaint = async () => {
       const root = rootRef.value;
       if (!root) return;
 
-      root.style.opacity = "0.99";
-      root.style.transform = "translateZ(0)";
-      // Force layout/repaint for buggy Telegram/WebView cases.
+      // Force layout/repaint for buggy Telegram/WebView cases without
+      // keeping a transformed composited layer alive.
       void root.offsetHeight;
-      root.style.opacity = "1";
+      root.style.removeProperty("opacity");
+      root.style.removeProperty("transform");
 
       const standaloneShell = root.closest(".pin-page--standalone");
       if (standaloneShell) {
