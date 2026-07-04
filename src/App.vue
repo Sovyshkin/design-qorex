@@ -155,6 +155,18 @@ const isTwoFactorStandaloneRoute = computed(
   () => router.currentRoute.value.name === "twoFactorAuth"
 );
 
+const standaloneShellStyle = computed(() =>
+  walletStore.isDarkTheme
+    ? {
+        background:
+          "radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%), linear-gradient(180deg, #07111f 0%, #0d1b2a 100%)",
+      }
+    : {
+        background:
+          "radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, transparent 62%), #f1f5f9",
+      }
+);
+
 const shouldShowGlobalLoader = computed(() => {
   const currentRoute = router.currentRoute.value;
   const nonBlockingRoutes = ["deposit", "transfer", "withdraw", "safety"];
@@ -265,9 +277,10 @@ onBeforeUnmount(() => {
       <!-- Отображаем страницы PIN/2FA без общей оболочки и нижнего навбара -->
       <div
         v-if="!showMainShell"
-        :key="`standalone-${currentRouteKey}`"
+        :key="`standalone-${currentRouteKey}-${walletStore.isDarkTheme ? 'dark' : 'light'}`"
         class="standalone-shell pin-page--standalone"
         :class="{ 'standalone-shell--two-factor': isTwoFactorStandaloneRoute }"
+        :style="standaloneShellStyle"
       >
         <div class="wrap-load" v-if="shouldShowStandaloneLoader">
           <AppLoader />

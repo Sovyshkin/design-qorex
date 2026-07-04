@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import AppLoader from "@/components/AppLoader.vue";
@@ -30,7 +30,22 @@ const otpauthUrl = ref("");
 const verificationCode = ref("");
 const keyCopied = ref(false);
 const rootRef = ref(null);
-const isDarkTheme = ref(false);
+const getInitialThemeState = () => {
+  if (walletStore.isDarkTheme) {
+    return true;
+  }
+
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return (
+    document.body.classList.contains("dark-theme") ||
+    document.documentElement.classList.contains("dark-theme")
+  );
+};
+
+const isDarkTheme = ref(getInitialThemeState());
 let themeObserver = null;
 
 const currentStep = computed(() => {
@@ -218,26 +233,6 @@ const centerCardStyle = computed(() => ({
   gap: "14px",
 }));
 
-const stateCardRenderStyle = computed(() =>
-  loading.value ? stateCardStyle.value : hiddenBlockStyle
-);
-
-const errorCardRenderStyle = computed(() =>
-  isErrorVisible.value ? cardStyle.value : hiddenBlockStyle
-);
-
-const setupStackRenderStyle = computed(() =>
-  isSetupVisible.value ? stackStyle.value : hiddenBlockStyle
-);
-
-const verifyStackRenderStyle = computed(() =>
-  isVerifyVisible.value ? stackStyle.value : hiddenBlockStyle
-);
-
-const successStackRenderStyle = computed(() =>
-  isSuccessVisible.value ? stackStyle.value : hiddenBlockStyle
-);
-
 const qrShellStyle = computed(() =>
   isDarkTheme.value
     ? {
@@ -385,11 +380,7 @@ const primaryButtonStyle = computed(() =>
 );
 
 const syncThemeState = () => {
-  if (typeof document === "undefined") return;
-
-  isDarkTheme.value =
-    document.body.classList.contains("dark-theme") ||
-    document.documentElement.classList.contains("dark-theme");
+  isDarkTheme.value = getInitialThemeState();
 };
 
 const goBack = () => emit("back");
@@ -483,45 +474,11 @@ const verifyCode = async () => {
   }, 900);
 };
 
-const forceRepaint = async () => {
-  await nextTick();
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      const root = rootRef.value;
-      if (!root) return;
-
-      // Force layout/repaint for buggy Telegram/WebView cases without
-      // keeping a transformed composited layer alive.
-      void root.offsetHeight;
-      root.style.removeProperty("opacity");
-      root.style.removeProperty("transform");
-
-      const standaloneShell = root.closest(".pin-page--standalone");
-      if (standaloneShell) {
-        standaloneShell.scrollTop = 0;
-      }
-
-      const wrapper = document.querySelector(".wrapper");
-      if (wrapper) {
-        wrapper.scrollTop = 0;
-      }
-
-      const surface = root.querySelector(".tfa-flow__surface");
-      if (surface) {
-        surface.scrollTop = 0;
-      }
-
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    });
-  });
-};
-
 const logVisibleFlowState = (tag) => {
   const root = rootRef.value;
   if (!root || typeof document === "undefined") return;
 
-  const visibleStack = root.querySelector(".tfa-flow__stack[style], .tfa-flow__stack:not(.tfa-flow__block--hidden)");
+  const visibleStack = root.querySelector(".tfa-flow__stack");
   const visibleCards = Array.from(root.querySelectorAll(".tfa-flow__stack .tfa-flow__card"))
     .filter((element) => getComputedStyle(element).display !== "none")
     .map((element, index) => ({
@@ -572,6 +529,8 @@ onMounted(async () => {
     });
   }
 
+  syncThemeState();
+
   try {
     step.value = 1;
     if (rootRef.value) {
@@ -588,6 +547,7 @@ onMounted(async () => {
       qrImage: Boolean(qrImage.value),
       authKey: Boolean(authKey.value),
       currentStep: currentStep.value,
+      isDarkTheme: isDarkTheme.value,
     });
     logThemeSnapshot("TwoFactorSetupFlow mounted final", {
       page: getElementSnapshot(".tfa-flow"),
@@ -598,12 +558,7 @@ onMounted(async () => {
       qrShell: getElementSnapshot(".tfa-flow__qr-shell"),
       standalone: props.standalone,
     });
-    await forceRepaint();
-    logVisibleFlowState("after forceRepaint immediate");
-    setTimeout(() => {
-      forceRepaint();
-      logVisibleFlowState("after forceRepaint timeout");
-    }, 120);
+    logVisibleFlowState("mounted final");
   }
 });
 
@@ -615,10 +570,10 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  () => [loading.value, currentStep.value, qrImage.value, authKey.value],
-  async ([isLoading]) => {
-    if (!isLoading) {
-      await forceRepaint();
+  () => [loading.value, currentStep.value, qrImage.value, authKey.value, walletStore.isDarkTheme],
+  () => {
+    syncThemeState();
+    if (!loading.value) {
       logVisibleFlowState("watch after loading");
     }
   }
@@ -643,16 +598,18 @@ watch(
 
     <section class="tfa-flow__surface" :style="surfaceStyle">
       <div
+        v-if="loading"
         class="tfa-flow__state-card"
-        :style="stateCardRenderStyle"
+        :style="stateCardStyle"
       >
         <AppLoader />
         <p class="tfa-flow__state-text">{{ t("loading") }}...</p>
       </div>
 
       <div
+        v-else-if="isErrorVisible"
         class="tfa-flow__card tfa-flow__card--error"
-        :style="errorCardRenderStyle"
+        :style="cardStyle"
       >
         <img :src="errorIcon" alt="Error" class="tfa-flow__error-icon" />
         <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("error") }}</h2>
@@ -663,8 +620,9 @@ watch(
       </div>
 
       <div
+        v-else-if="isSetupVisible"
         class="tfa-flow__stack"
-        :style="setupStackRenderStyle"
+        :style="stackStyle"
       >
         <section class="tfa-flow__card" :style="cardStyle">
           <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("setup_2fa") }}</h2>
@@ -677,36 +635,24 @@ watch(
         </section>
 
         <section class="tfa-flow__card tfa-flow__card--center" :style="centerCardStyle">
-          <div
-            class="tfa-flow__qr-shell"
-            :style="qrShellStyle"
-            :class="{ 'tfa-flow__block--hidden': !qrImage }"
-          >
+          <div v-if="qrImage" class="tfa-flow__qr-shell" :style="qrShellStyle">
             <img :src="qrSrc" alt="QR Code" class="tfa-flow__qr-image" />
           </div>
-          <div
-            class="tfa-flow__qr-placeholder"
-            :style="bodyTextStyle"
-            :class="{ 'tfa-flow__block--hidden': !!qrImage }"
-          >
+          <div v-else class="tfa-flow__qr-placeholder" :style="bodyTextStyle">
             <p class="tfa-flow__card-text" :style="bodyTextStyle">{{ t("loading") }}...</p>
           </div>
 
           <button
+            v-if="otpauthUrl"
             class="tfa-flow__button tfa-flow__button--secondary"
             :style="secondaryButtonStyle"
-            :class="{ 'tfa-flow__block--hidden': !otpauthUrl }"
             @click="openAuthenticatorApp"
           >
             {{ t("open_authenticator") }}
           </button>
         </section>
 
-        <section
-          class="tfa-flow__card"
-          :style="cardStyle"
-          :class="{ 'tfa-flow__block--hidden': !authKey }"
-        >
+        <section v-if="authKey" class="tfa-flow__card" :style="cardStyle">
           <label class="tfa-flow__label" :style="bodyTextStyle">{{ t("your_code") }}</label>
           <button class="tfa-flow__key-box" :style="keyBoxStyle" :class="{ 'is-copied': keyCopied }" @click="copyKey">
             <span class="tfa-flow__key-value" :style="keyValueStyle">{{ authKey }}</span>
@@ -726,8 +672,9 @@ watch(
       </div>
 
       <div
+        v-else-if="isVerifyVisible"
         class="tfa-flow__stack"
-        :style="verifyStackRenderStyle"
+        :style="stackStyle"
       >
         <section class="tfa-flow__card" :style="cardStyle">
           <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("verify_2fa") }}</h2>
@@ -764,8 +711,9 @@ watch(
       </div>
 
       <div
+        v-else-if="isSuccessVisible"
         class="tfa-flow__stack"
-        :style="successStackRenderStyle"
+        :style="stackStyle"
       >
         <section class="tfa-flow__card tfa-flow__card--success" :style="successCardStyle">
           <div class="tfa-flow__status-icon">

@@ -198,13 +198,6 @@
     -webkit-text-fill-color: #ffffff !important;
   }
 
-  /* Текст - ИСКЛЮЧАЕМ кнопки */
-  p:not(.btn p):not(.btn span), 
-  span:not(.btn span):not(.btn *), 
-  div:not(.btn):not(.btn div) {
-    color: #ffffff !important;
-  }
-
   .text-secondary {
     color: #cccccc !important;
   }
