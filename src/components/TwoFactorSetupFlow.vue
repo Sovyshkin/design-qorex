@@ -197,15 +197,19 @@ watch(
       <div class="tfa-flow__spacer"></div>
     </header>
 
-    <section v-show="loading" class="tfa-flow__surface">
-      <div class="tfa-flow__state-card">
+    <section class="tfa-flow__surface">
+      <div
+        class="tfa-flow__state-card"
+        :class="{ 'tfa-flow__block--hidden': !loading }"
+      >
         <AppLoader />
         <p class="tfa-flow__state-text">{{ t("loading") }}...</p>
       </div>
-    </section>
 
-    <section v-show="!loading && !!error" class="tfa-flow__surface">
-      <div class="tfa-flow__card tfa-flow__card--error">
+      <div
+        class="tfa-flow__card tfa-flow__card--error"
+        :class="{ 'tfa-flow__block--hidden': loading || !error }"
+      >
         <img :src="errorIcon" alt="Error" class="tfa-flow__error-icon" />
         <h2 class="tfa-flow__card-title">{{ t("error") }}</h2>
         <p class="tfa-flow__card-text">{{ error }}</p>
@@ -213,10 +217,11 @@ watch(
           {{ t("go_back") }}
         </button>
       </div>
-    </section>
 
-    <section v-show="!loading && !error && currentStep === 'setup'" class="tfa-flow__surface">
-      <div class="tfa-flow__stack">
+      <div
+        class="tfa-flow__stack"
+        :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'setup' }"
+      >
         <section class="tfa-flow__card">
           <h2 class="tfa-flow__card-title">{{ t("setup_2fa") }}</h2>
           <p class="tfa-flow__card-text">{{ t("2fa_instruction_1") }}</p>
@@ -228,23 +233,32 @@ watch(
         </section>
 
         <section class="tfa-flow__card tfa-flow__card--center">
-          <div v-if="qrImage" class="tfa-flow__qr-shell">
+          <div
+            class="tfa-flow__qr-shell"
+            :class="{ 'tfa-flow__block--hidden': !qrImage }"
+          >
             <img :src="qrSrc" alt="QR Code" class="tfa-flow__qr-image" />
           </div>
-          <div v-else class="tfa-flow__qr-placeholder">
+          <div
+            class="tfa-flow__qr-placeholder"
+            :class="{ 'tfa-flow__block--hidden': !!qrImage }"
+          >
             <p class="tfa-flow__card-text">{{ t("loading") }}...</p>
           </div>
 
           <button
-            v-if="otpauthUrl"
             class="tfa-flow__button tfa-flow__button--secondary"
+            :class="{ 'tfa-flow__block--hidden': !otpauthUrl }"
             @click="openAuthenticatorApp"
           >
             {{ t("open_authenticator") }}
           </button>
         </section>
 
-        <section v-if="authKey" class="tfa-flow__card">
+        <section
+          class="tfa-flow__card"
+          :class="{ 'tfa-flow__block--hidden': !authKey }"
+        >
           <label class="tfa-flow__label">{{ t("your_code") }}</label>
           <button class="tfa-flow__key-box" :class="{ 'is-copied': keyCopied }" @click="copyKey">
             <span class="tfa-flow__key-value">{{ authKey }}</span>
@@ -261,10 +275,11 @@ watch(
           {{ t("continue") }}
         </button>
       </div>
-    </section>
 
-    <section v-show="!loading && !error && currentStep === 'verify'" class="tfa-flow__surface">
-      <div class="tfa-flow__stack">
+      <div
+        class="tfa-flow__stack"
+        :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'verify' }"
+      >
         <section class="tfa-flow__card">
           <h2 class="tfa-flow__card-title">{{ t("verify_2fa") }}</h2>
           <p class="tfa-flow__card-text">{{ t("enter_code_from_app") }}</p>
@@ -296,10 +311,11 @@ watch(
           {{ t("back_to_qr") }}
         </button>
       </div>
-    </section>
 
-    <section v-show="!loading && !error && currentStep === 'success'" class="tfa-flow__surface">
-      <div class="tfa-flow__stack">
+      <div
+        class="tfa-flow__stack"
+        :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'success' }"
+      >
         <section class="tfa-flow__card tfa-flow__card--success">
           <div class="tfa-flow__status-icon">
             <img :src="checkIcon" alt="Enabled" class="tfa-flow__status-image" />
@@ -358,6 +374,8 @@ watch(
   opacity: 1;
   visibility: visible;
   transform: none;
+  display: grid;
+  gap: 14px;
 }
 
 .tfa-flow--standalone .tfa-flow__surface {
@@ -402,6 +420,10 @@ watch(
   opacity: 1;
   visibility: visible;
   transform: none;
+}
+
+.tfa-flow__block--hidden {
+  display: none !important;
 }
 
 .tfa-flow__card {
