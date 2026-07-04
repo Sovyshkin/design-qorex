@@ -136,11 +136,24 @@ const showContent = computed(() => {
 });
 
 const shelllessRoutes = ["enterPin", "createPin", "twoFactorAuth"];
+const standaloneLoaderRoutes = ["enterPin", "createPin"];
 
 const showMainShell = computed(() => {
   const currentRoute = router.currentRoute.value;
   return !shelllessRoutes.includes(currentRoute.name);
 });
+
+const shouldShowStandaloneLoader = computed(() => {
+  const currentRoute = router.currentRoute.value;
+  return (
+    standaloneLoaderRoutes.includes(currentRoute.name) &&
+    walletStore.isLoading
+  );
+});
+
+const isTwoFactorStandaloneRoute = computed(
+  () => router.currentRoute.value.name === "twoFactorAuth"
+);
 
 const shouldShowGlobalLoader = computed(() => {
   const currentRoute = router.currentRoute.value;
@@ -167,6 +180,7 @@ const resetAppScroll = () => {
 
   const selectors = [
     ".content-wrapper",
+    ".standalone-shell",
     ".pin-page--standalone",
     ".wrapper",
     ".tfa-flow",
@@ -249,8 +263,13 @@ onBeforeUnmount(() => {
 
     <template v-else>
       <!-- Отображаем страницы PIN/2FA без общей оболочки и нижнего навбара -->
-      <div v-if="!showMainShell" class="pin-page pin-page--standalone">
-        <div class="wrap-load" v-if="walletStore.isLoading">
+      <div
+        v-if="!showMainShell"
+        :key="`standalone-${currentRouteKey}`"
+        class="standalone-shell pin-page--standalone"
+        :class="{ 'standalone-shell--two-factor': isTwoFactorStandaloneRoute }"
+      >
+        <div class="wrap-load" v-if="shouldShowStandaloneLoader">
           <AppLoader />
         </div>
         <router-view v-else v-slot="{ Component }">
@@ -259,7 +278,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Отображаем основной контент с навбаром -->
-      <div v-else>
+      <div v-else :key="`shell-branch-${currentRouteKey}`">
         <div class="content-wrapper" :key="`shell-${currentRouteKey}`">
           <div class="wrap-load" v-if="shouldShowGlobalLoader">
             <AppLoader />
@@ -533,6 +552,7 @@ h1 {
   background-color: var(--background, #f1f5f9);
 }
 
+.standalone-shell,
 .pin-page--standalone {
   width: 100%;
   min-height: 100vh;
@@ -549,6 +569,10 @@ h1 {
     #f1f5f9;
 }
 
+.standalone-shell,
+.standalone-shell *,
+.standalone-shell *::before,
+.standalone-shell *::after,
 .pin-page--standalone,
 .pin-page--standalone *,
 .pin-page--standalone *::before,
@@ -557,6 +581,15 @@ h1 {
   transition: none !important;
 }
 
+.standalone-shell .tfa-flow,
+.standalone-shell .tfa-flow__surface,
+.standalone-shell .tfa-flow__stack,
+.standalone-shell .tfa-flow__card,
+.standalone-shell .tfa-flow__state-card,
+.standalone-shell .tfa-flow__header,
+.standalone-shell .tfa-flow__qr-shell,
+.standalone-shell .tfa-flow__button,
+.standalone-shell .back-button,
 .pin-page--standalone .tfa-flow,
 .pin-page--standalone .tfa-flow__surface,
 .pin-page--standalone .tfa-flow__stack,
@@ -572,6 +605,7 @@ h1 {
   filter: none !important;
 }
 
+body.dark-theme .standalone-shell,
 body.dark-theme .pin-page--standalone {
   background:
     radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
