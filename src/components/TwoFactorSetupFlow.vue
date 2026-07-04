@@ -39,6 +39,17 @@ const currentStep = computed(() => {
   return "success";
 });
 
+const isSetupVisible = computed(
+  () => !loading.value && !error.value && currentStep.value === "setup"
+);
+const isVerifyVisible = computed(
+  () => !loading.value && !error.value && currentStep.value === "verify"
+);
+const isSuccessVisible = computed(
+  () => !loading.value && !error.value && currentStep.value === "success"
+);
+const isErrorVisible = computed(() => !loading.value && !!error.value);
+
 const qrSrc = computed(() => {
   if (!qrImage.value) return "";
   if (qrImage.value.startsWith("data:image")) return qrImage.value;
@@ -106,12 +117,17 @@ const stackStyle = computed(() => ({
   zIndex: "2",
 }));
 
+const hiddenBlockStyle = Object.freeze({
+  display: "none",
+});
+
 const cardStyle = computed(() =>
   isDarkTheme.value
     ? {
         width: "100%",
         maxWidth: "420px",
         margin: "0 auto",
+        display: "block",
         padding: "18px",
         borderRadius: "24px",
         borderStyle: "solid",
@@ -126,6 +142,7 @@ const cardStyle = computed(() =>
         width: "100%",
         maxWidth: "420px",
         margin: "0 auto",
+        display: "block",
         padding: "18px",
         borderRadius: "24px",
         border: "1px solid #e2e8f0",
@@ -200,6 +217,26 @@ const centerCardStyle = computed(() => ({
   justifyItems: "center",
   gap: "14px",
 }));
+
+const stateCardRenderStyle = computed(() =>
+  loading.value ? stateCardStyle.value : hiddenBlockStyle
+);
+
+const errorCardRenderStyle = computed(() =>
+  isErrorVisible.value ? cardStyle.value : hiddenBlockStyle
+);
+
+const setupStackRenderStyle = computed(() =>
+  isSetupVisible.value ? stackStyle.value : hiddenBlockStyle
+);
+
+const verifyStackRenderStyle = computed(() =>
+  isVerifyVisible.value ? stackStyle.value : hiddenBlockStyle
+);
+
+const successStackRenderStyle = computed(() =>
+  isSuccessVisible.value ? stackStyle.value : hiddenBlockStyle
+);
 
 const qrShellStyle = computed(() =>
   isDarkTheme.value
@@ -480,6 +517,47 @@ const forceRepaint = async () => {
   });
 };
 
+const logVisibleFlowState = (tag) => {
+  const root = rootRef.value;
+  if (!root || typeof document === "undefined") return;
+
+  const visibleStack = root.querySelector(".tfa-flow__stack[style], .tfa-flow__stack:not(.tfa-flow__block--hidden)");
+  const visibleCards = Array.from(root.querySelectorAll(".tfa-flow__stack .tfa-flow__card"))
+    .filter((element) => getComputedStyle(element).display !== "none")
+    .map((element, index) => ({
+      index,
+      className: element.className,
+      rect: element.getBoundingClientRect(),
+      display: getComputedStyle(element).display,
+      visibility: getComputedStyle(element).visibility,
+      opacity: getComputedStyle(element).opacity,
+      background: getComputedStyle(element).background,
+      text: element.innerText.slice(0, 140),
+    }));
+
+  console.log(`[PeekPay TwoFactor visible state] ${tag}`, {
+    currentStep: currentStep.value,
+    loading: loading.value,
+    error: error.value,
+    visibleStack: visibleStack
+      ? {
+          className: visibleStack.className,
+          rect: visibleStack.getBoundingClientRect(),
+          display: getComputedStyle(visibleStack).display,
+          visibility: getComputedStyle(visibleStack).visibility,
+          opacity: getComputedStyle(visibleStack).opacity,
+        }
+      : null,
+    visibleCards,
+    elementAtTop: document.elementFromPoint(32, 120)?.className || null,
+    elementAtCenter:
+      document.elementFromPoint(
+        Math.max(1, Math.floor(window.innerWidth / 2)),
+        Math.max(1, Math.floor(window.innerHeight / 2))
+      )?.className || null,
+  });
+};
+
 onMounted(async () => {
   syncThemeState();
 
@@ -521,8 +599,10 @@ onMounted(async () => {
       standalone: props.standalone,
     });
     await forceRepaint();
+    logVisibleFlowState("after forceRepaint immediate");
     setTimeout(() => {
       forceRepaint();
+      logVisibleFlowState("after forceRepaint timeout");
     }, 120);
   }
 });
@@ -539,6 +619,7 @@ watch(
   async ([isLoading]) => {
     if (!isLoading) {
       await forceRepaint();
+      logVisibleFlowState("watch after loading");
     }
   }
 );
@@ -563,8 +644,7 @@ watch(
     <section class="tfa-flow__surface" :style="surfaceStyle">
       <div
         class="tfa-flow__state-card"
-        :style="stateCardStyle"
-        :class="{ 'tfa-flow__block--hidden': !loading }"
+        :style="stateCardRenderStyle"
       >
         <AppLoader />
         <p class="tfa-flow__state-text">{{ t("loading") }}...</p>
@@ -572,8 +652,7 @@ watch(
 
       <div
         class="tfa-flow__card tfa-flow__card--error"
-        :style="cardStyle"
-        :class="{ 'tfa-flow__block--hidden': loading || !error }"
+        :style="errorCardRenderStyle"
       >
         <img :src="errorIcon" alt="Error" class="tfa-flow__error-icon" />
         <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("error") }}</h2>
@@ -585,8 +664,7 @@ watch(
 
       <div
         class="tfa-flow__stack"
-        :style="stackStyle"
-        :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'setup' }"
+        :style="setupStackRenderStyle"
       >
         <section class="tfa-flow__card" :style="cardStyle">
           <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("setup_2fa") }}</h2>
@@ -649,8 +727,7 @@ watch(
 
       <div
         class="tfa-flow__stack"
-        :style="stackStyle"
-        :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'verify' }"
+        :style="verifyStackRenderStyle"
       >
         <section class="tfa-flow__card" :style="cardStyle">
           <h2 class="tfa-flow__card-title" :style="titleStyle">{{ t("verify_2fa") }}</h2>
@@ -688,8 +765,7 @@ watch(
 
       <div
         class="tfa-flow__stack"
-        :style="stackStyle"
-        :class="{ 'tfa-flow__block--hidden': loading || !!error || currentStep !== 'success' }"
+        :style="successStackRenderStyle"
       >
         <section class="tfa-flow__card tfa-flow__card--success" :style="successCardStyle">
           <div class="tfa-flow__status-icon">
