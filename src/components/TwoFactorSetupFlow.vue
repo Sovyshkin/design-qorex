@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import AppLoader from "@/components/AppLoader.vue";
@@ -30,6 +30,8 @@ const otpauthUrl = ref("");
 const verificationCode = ref("");
 const keyCopied = ref(false);
 const rootRef = ref(null);
+const isDarkTheme = ref(false);
+let themeObserver = null;
 
 const currentStep = computed(() => {
   if (step.value === 1) return "setup";
@@ -42,6 +44,14 @@ const qrSrc = computed(() => {
   if (qrImage.value.startsWith("data:image")) return qrImage.value;
   return `data:image/png;base64,${qrImage.value}`;
 });
+
+const syncThemeState = () => {
+  if (typeof document === "undefined") return;
+
+  isDarkTheme.value =
+    document.body.classList.contains("dark-theme") ||
+    document.documentElement.classList.contains("dark-theme");
+};
 
 const goBack = () => emit("back");
 
@@ -169,6 +179,19 @@ const forceRepaint = async () => {
 };
 
 onMounted(async () => {
+  syncThemeState();
+
+  if (typeof document !== "undefined") {
+    themeObserver = new MutationObserver(() => {
+      syncThemeState();
+    });
+
+    themeObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+  }
+
   try {
     step.value = 1;
     if (rootRef.value) {
@@ -202,6 +225,13 @@ onMounted(async () => {
   }
 });
 
+onBeforeUnmount(() => {
+  if (themeObserver) {
+    themeObserver.disconnect();
+    themeObserver = null;
+  }
+});
+
 watch(
   () => [loading.value, currentStep.value, qrImage.value, authKey.value],
   async ([isLoading]) => {
@@ -213,7 +243,14 @@ watch(
 </script>
 
 <template>
-  <div ref="rootRef" class="tfa-flow" :class="{ 'tfa-flow--standalone': standalone }">
+  <div
+    ref="rootRef"
+    class="tfa-flow"
+    :class="{
+      'tfa-flow--standalone': standalone,
+      'tfa-flow--dark': isDarkTheme,
+    }"
+  >
     <header v-if="standalone" class="tfa-flow__header">
       <BackButton @click="goBack()" />
       <h1 class="tfa-flow__title">{{ t("two_factor_auth") }}</h1>
@@ -645,53 +682,65 @@ watch(
   margin-bottom: 12px;
 }
 
-:global(.dark-theme) .tfa-flow--standalone {
+.tfa-flow--dark.tfa-flow--standalone {
   background:
     radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.16), transparent 62%),
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
-:global(.dark-theme) .tfa-flow__title,
-:global(.dark-theme) .tfa-flow__card-title,
-:global(.dark-theme) .tfa-flow__key-value {
+.tfa-flow--dark .tfa-flow__title,
+.tfa-flow--dark .tfa-flow__card-title,
+.tfa-flow--dark .tfa-flow__key-value {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .tfa-flow__card,
-:global(.dark-theme) .tfa-flow__state-card,
-:global(.dark-theme) .tfa-flow__qr-shell,
-:global(.dark-theme) .tfa-flow__input,
-:global(.dark-theme) .tfa-flow__key-box {
+.tfa-flow--dark .tfa-flow__card,
+.tfa-flow--dark .tfa-flow__state-card,
+.tfa-flow--dark .tfa-flow__qr-shell,
+.tfa-flow--dark .tfa-flow__input,
+.tfa-flow--dark .tfa-flow__key-box {
   background: rgba(30, 39, 59, 0.96) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28) !important;
 }
 
-:global(.dark-theme) .tfa-flow__card--success {
+.tfa-flow--dark .tfa-flow__card--success {
   background: rgba(22, 101, 52, 0.2) !important;
   border-color: rgba(34, 197, 94, 0.28) !important;
 }
 
-:global(.dark-theme) .tfa-flow__card-text,
-:global(.dark-theme) .tfa-flow__state-text,
-:global(.dark-theme) .tfa-flow__list li,
-:global(.dark-theme) .tfa-flow__hint,
-:global(.dark-theme) .tfa-flow__label {
+.tfa-flow--dark .tfa-flow__card-text,
+.tfa-flow--dark .tfa-flow__state-text,
+.tfa-flow--dark .tfa-flow__list li,
+.tfa-flow--dark .tfa-flow__hint,
+.tfa-flow--dark .tfa-flow__label {
   color: #94a3b8 !important;
 }
 
-:global(.dark-theme) .tfa-flow__input {
+.tfa-flow--dark .tfa-flow__input {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .tfa-flow__button--primary {
+.tfa-flow--dark .tfa-flow__button--primary {
   background: linear-gradient(135deg, #2562eb, #3882fa) !important;
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .tfa-flow__button--secondary {
+.tfa-flow--dark .tfa-flow__button--secondary {
   background: rgba(13, 27, 42, 0.58) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
+}
+
+.tfa-flow--dark .tfa-flow__surface {
+  background: transparent !important;
+}
+
+.tfa-flow--dark .tfa-flow__qr-placeholder {
+  color: #94a3b8 !important;
+}
+
+.tfa-flow--dark .tfa-flow__list li::marker {
+  color: #60a5fa !important;
 }
 </style>
