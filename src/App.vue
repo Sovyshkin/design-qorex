@@ -154,6 +154,33 @@ const shouldShowGlobalLoader = computed(() => {
 
 const currentRouteKey = computed(() => router.currentRoute.value.fullPath);
 
+const resetAppScroll = () => {
+  try {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  } catch (_error) {}
+
+  try {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.scrollingElement && (document.scrollingElement.scrollTop = 0);
+  } catch (_error) {}
+
+  const selectors = [
+    ".content-wrapper",
+    ".pin-page--standalone",
+    ".wrapper",
+    ".tfa-flow",
+    ".tfa-flow__surface",
+  ];
+
+  selectors.forEach((selector) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.scrollTop = 0;
+    }
+  });
+};
+
 watch(
   () => ({
     routeName: router.currentRoute.value.name,
@@ -173,11 +200,7 @@ watch(
   () => router.currentRoute.value.fullPath,
   async (fullPath) => {
     await nextTick();
-    window.scrollTo({ top: 0, behavior: "auto" });
-    const wrapper = document.querySelector(".content-wrapper");
-    if (wrapper) {
-      wrapper.scrollTop = 0;
-    }
+    resetAppScroll();
     logThemeSnapshot("Route changed", {
       route: fullPath,
       routeName: router.currentRoute.value.name,
@@ -186,11 +209,17 @@ watch(
       isLoading: walletStore.isLoading,
     });
     setTimeout(() => {
+      resetAppScroll();
       logThemeSnapshot("Route changed + 300ms", {
         route: fullPath,
         routeName: router.currentRoute.value.name,
       });
     }, 300);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resetAppScroll();
+      });
+    });
   }
 );
 

@@ -147,6 +147,23 @@ const forceRepaint = async () => {
       // Force layout/repaint for buggy Telegram/WebView cases.
       void root.offsetHeight;
       root.style.opacity = "1";
+
+      const standaloneShell = root.closest(".pin-page--standalone");
+      if (standaloneShell) {
+        standaloneShell.scrollTop = 0;
+      }
+
+      const wrapper = document.querySelector(".wrapper");
+      if (wrapper) {
+        wrapper.scrollTop = 0;
+      }
+
+      const surface = root.querySelector(".tfa-flow__surface");
+      if (surface) {
+        surface.scrollTop = 0;
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     });
   });
 };
@@ -154,6 +171,9 @@ const forceRepaint = async () => {
 onMounted(async () => {
   try {
     step.value = 1;
+    if (rootRef.value) {
+      rootRef.value.scrollTop = 0;
+    }
     await initialize2FA();
   } finally {
     loading.value = false;
@@ -176,6 +196,9 @@ onMounted(async () => {
       standalone: props.standalone,
     });
     await forceRepaint();
+    setTimeout(() => {
+      forceRepaint();
+    }, 120);
   }
 });
 
