@@ -30,24 +30,26 @@ const handleScannerClick = (navigate) => {
 </script>
 
 <template>
-  <nav class="wallet-nav-wrap">
-    <div class="wallet-nav">
-      <router-link v-for="item in navItems" :key="item.id" :to="item.path" custom v-slot="{ navigate, isActive }">
-        <button v-if="item.id === 'scanner'" class="wallet-tab center-scan" :class="{ active: isActive }" @click="handleScannerClick(navigate)">
-          <img :src="`/assets/${item.icon}.svg`" alt="scan" />
-        </button>
-        <button v-else class="wallet-tab" :class="{ active: isActive }" @click="navigate">
-          <img :src="`/assets/${item.icon}${item.isPng ? '.png' : '.svg'}`" class="wallet-icon" alt="icon" />
-          <span>{{ item.name }}</span>
-          <span class="active-dot"></span>
-        </button>
-      </router-link>
-    </div>
-  </nav>
+  <Teleport to="body">
+    <nav class="wallet-nav-wrap">
+      <div class="wallet-nav">
+        <router-link v-for="item in navItems" :key="item.id" :to="item.path" custom v-slot="{ navigate, isActive }">
+          <button v-if="item.id === 'scanner'" class="wallet-tab center-scan" :class="{ active: isActive }" @click="handleScannerClick(navigate)">
+            <img :src="`/assets/${item.icon}.svg`" alt="scan" />
+          </button>
+          <button v-else class="wallet-tab" :class="{ active: isActive }" @click="navigate">
+            <img :src="`/assets/${item.icon}${item.isPng ? '.png' : '.svg'}`" class="wallet-icon" alt="icon" />
+            <span>{{ item.name }}</span>
+            <span class="active-dot"></span>
+          </button>
+        </router-link>
+      </div>
+    </nav>
+  </Teleport>
 </template>
 
 <style scoped>
-.wallet-nav-wrap { position: fixed !important; left: 0; right: 0; bottom: max(8px, env(safe-area-inset-bottom)) !important; z-index: 5000 !important; padding: 0 14px; pointer-events: none; transform: translateZ(0); }
+.wallet-nav-wrap { position: fixed !important; top: auto !important; left: 0 !important; right: 0 !important; bottom: max(8px, env(safe-area-inset-bottom)) !important; width: 100% !important; z-index: 5000 !important; padding: 0 14px; pointer-events: none; transform: none !important; }
 .wallet-nav { height: 76px; border-radius: 26px; border: 1px solid var(--border, #e2e8f0); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(15,23,42,.14); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; pointer-events: auto; }
 .wallet-tab { position: relative; width: 58px; min-height: 56px; border-radius: 18px; display: grid; place-items: center; gap: 3px; color: var(--textSecondary, #64748b); transition: transform .18s ease, color .18s ease; }
 .wallet-tab span { font-size: 10px; font-weight: 500; line-height: 1; transition: font-weight .18s ease, color .18s ease; }
