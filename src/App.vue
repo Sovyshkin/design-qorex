@@ -155,6 +155,10 @@ const isTwoFactorStandaloneRoute = computed(
   () => router.currentRoute.value.name === "twoFactorAuth"
 );
 
+const usesEmbeddedNav = computed(
+  () => router.currentRoute.value.name === "deposit"
+);
+
 const standaloneShellStyle = computed(() =>
   walletStore.isDarkTheme
     ? {
@@ -300,7 +304,7 @@ onBeforeUnmount(() => {
             <component :is="Component" :key="currentRouteKey" />
           </router-view>
         </div>
-        <NavBar class="navbar-fixed" />
+        <NavBar v-if="!usesEmbeddedNav" class="navbar-fixed" />
       </div>
     </template>
   </main>

@@ -20,7 +20,7 @@ const networks=[{id:"USDT_TRC20",name:"TRC20",symbol:"T"},{id:"USDT_TON",name:"T
 const balance = computed(()=>Number(walletStore.balance||0));
 const valid = computed(()=>Number(amount.value)>=5&&Number(amount.value)<=balance.value&&address.value.trim()&&code.value.length===6&&!submitting.value);
 
-const initialize=async()=>{phase.value="checking";try{await walletStore.check2FAStatus();if(!walletStore.has2FA){phase.value="redirecting";await router.replace({name:"twoFactorAuth",query:{from:"withdraw"}});return}phase.value="ready"}catch(_error){phase.value="error"}};
+const initialize=async()=>{phase.value="checking";try{const has2FA=await walletStore.check2FAStatus();if(!has2FA){phase.value="redirecting";await router.replace({name:"twoFactorAuth",query:{from:"withdraw"}});return}phase.value="ready"}catch(_error){phase.value="error"}};
 const normalizeCode=()=>code.value=code.value.replace(/\D/g,"").slice(0,6);
 const submit=async()=>{if(!valid.value)return;submitting.value=true;try{const result=await walletStore.withdrawFunds(amount.value,network.value.replace("USDT_",""),address.value.trim(),memo.value.trim(),code.value);if(result){success.value=true;amount.value="";address.value="";memo.value="";code.value=""}}finally{submitting.value=false}};
 const closeSuccess=()=>{success.value=false;walletStore.getUser()};

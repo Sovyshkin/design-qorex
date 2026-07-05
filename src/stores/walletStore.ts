@@ -1334,6 +1334,24 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  const is2FAEnabledResponse = (data: any): boolean => {
+    const detail = String(data?.detail || data?.message || "")
+      .toLowerCase()
+      .replace(/[!.,]/g, "")
+      .trim();
+
+    return (
+      data?.connected === true ||
+      data?.enabled === true ||
+      data?.has_2fa === true ||
+      data?.has2FA === true ||
+      String(data?.status || "").toLowerCase() === "enabled" ||
+      detail.includes("уже подключ") ||
+      detail.includes("already connected") ||
+      detail.includes("already enabled")
+    );
+  };
+
   const enable2FA = async () => {
     try {
       loaderScan.value = true;
@@ -1346,7 +1364,16 @@ export const useWalletStore = defineStore("wallet", () => {
       
       let response = await axios.post(`/fa_take?${params.toString()}`, {});
 
-      if (response.status === 200 && response.data.status === "success") {
+      if (is2FAEnabledResponse(response.data)) {
+        has2FA.value = true;
+        return {
+          success: true,
+          alreadyEnabled: true,
+          detail: response.data?.detail,
+        };
+      }
+
+      if ((response.status === 200 || response.status === 202) && response.data.status === "success") {
         return {
           success: true,
           detail: response.data.detail,
@@ -1411,20 +1438,19 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const is2FAChecking = ref(false);
+  let check2FAPromise: Promise<boolean> | null = null;
 
-  const check2FAStatus = async () => {
-    if (is2FAChecking.value) {
-      console.log('2FA check already running, skipping...');
-      return;
-    }
+  const check2FAStatus = async (): Promise<boolean> => {
+    if (check2FAPromise) return check2FAPromise;
 
-    try {
+    check2FAPromise = (async () => {
+      try {
       is2FAChecking.value = true;
       const tgId = String(user.value.tg_id || userTg.value.id);
       
       if (!tgId || tgId === 'undefined') {
         console.log('No valid user ID for 2FA check');
-        return;
+        return false;
       }
 
       // Пробуем получить статус 2FA через существующий endpoint
@@ -1436,19 +1462,20 @@ export const useWalletStore = defineStore("wallet", () => {
       
       let response = await axios.post(`/fa_take?${params.toString()}`, {});
 
-      if (response.data.detail == "Уже подключено") {
-        has2FA.value = true;
-      } else {
-        has2FA.value = false;
+        has2FA.value = is2FAEnabledResponse(response.data);
+        return has2FA.value;
+      } catch (err) {
+        console.error('Error checking 2FA status:', err);
+        return has2FA.value;
+      } finally {
+        is2FAChecking.value = false;
       }
-    } catch (err) {
-      console.error('Error checking 2FA status:', err);
-      has2FA.value = false;
-      
-      // Не показываем сообщение об ошибке для этого метода,
-      // так как он используется для проверки статуса
+    })();
+
+    try {
+      return await check2FAPromise;
     } finally {
-      is2FAChecking.value = false;
+      check2FAPromise = null;
     }
   };
 
@@ -1499,7 +1526,7 @@ export const useWalletStore = defineStore("wallet", () => {
       let faResponse = await axios.post(`/fa_take?${params.toString()}`, {});
 
       // Если detail: 'Уже подключено', то получаем wallet через take_user_w
-      if (faResponse.data && faResponse.data.detail === "Уже подключено") {
+      if (is2FAEnabledResponse(faResponse.data)) {
         // Обновляем статус 2FA, так как он уже подключен
         has2FA.value = true;
         return await getUserWallet();

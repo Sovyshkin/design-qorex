@@ -21,8 +21,8 @@ const valid = computed(() => Number(amount.value) >= 1 && Number(amount.value) <
 const initialize = async () => {
   phase.value = "checking";
   try {
-    await walletStore.check2FAStatus();
-    if (!walletStore.has2FA) {
+    const has2FA = await walletStore.check2FAStatus();
+    if (!has2FA) {
       phase.value = "redirecting";
       await router.replace({ name: "twoFactorAuth", query: { from: "transfer" } });
       return;

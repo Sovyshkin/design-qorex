@@ -3,6 +3,10 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useWalletStore } from "@/stores/walletStore.ts";
 
+defineProps({
+  embedded: { type: Boolean, default: false },
+});
+
 const { t } = useI18n();
 const router = useRouter();
 const walletStore = useWalletStore();
@@ -30,8 +34,8 @@ const handleScannerClick = (navigate) => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <nav class="wallet-nav-wrap">
+  <Teleport to="body" :disabled="embedded">
+    <nav class="wallet-nav-wrap" :class="{ 'is-embedded': embedded }">
       <div class="wallet-nav">
         <router-link v-for="item in navItems" :key="item.id" :to="item.path" custom v-slot="{ navigate, isActive }">
           <button v-if="item.id === 'scanner'" class="wallet-tab center-scan" :class="{ active: isActive }" @click="handleScannerClick(navigate)">
@@ -50,6 +54,7 @@ const handleScannerClick = (navigate) => {
 
 <style scoped>
 .wallet-nav-wrap { position: fixed !important; top: auto !important; left: 0 !important; right: 0 !important; bottom: max(8px, env(safe-area-inset-bottom)) !important; width: 100% !important; z-index: 5000 !important; padding: 0 14px; pointer-events: none; transform: none !important; }
+.wallet-nav-wrap.is-embedded { position: relative !important; inset: auto !important; width: 100% !important; margin: 4px 0 0; padding: 0; z-index: 10 !important; }
 .wallet-nav { height: 76px; border-radius: 26px; border: 1px solid var(--border, #e2e8f0); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(15,23,42,.14); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; pointer-events: auto; }
 .wallet-tab { position: relative; width: 58px; min-height: 56px; border-radius: 18px; display: grid; place-items: center; gap: 3px; color: var(--textSecondary, #64748b); transition: transform .18s ease, color .18s ease; }
 .wallet-tab span { font-size: 10px; font-weight: 500; line-height: 1; transition: font-weight .18s ease, color .18s ease; }

@@ -1,29 +1,60 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import BackButton from "@/components/ui/BackButton.vue";
+import { BarcodeFormat, QRCodeWriter } from "@zxing/library";
 
 defineProps({ standalone: { type: Boolean, default: false } });
 const emit = defineEmits(["back", "completed"]);
 const { t } = useI18n();
 const walletStore = useWalletStore();
 const phase = ref("loading");
-const qrImage = ref("");
+const qrSource = ref("");
 const authKey = ref("");
 const code = ref("");
 const submitting = ref(false);
 const error = ref("");
-const qrSource = computed(() => qrImage.value ? `data:image/png;base64,${qrImage.value}` : "");
+
+const brandOtpAuthUrl = (rawKey) => {
+  const url = new URL(rawKey);
+  const decodedLabel = decodeURIComponent(url.pathname.replace(/^\/totp\//, ""));
+  const account = decodedLabel.includes(":")
+    ? decodedLabel.slice(decodedLabel.indexOf(":") + 1)
+    : decodedLabel;
+
+  url.pathname = `/totp/${encodeURIComponent(`PeekPay:${account}`)}`;
+  url.searchParams.set("issuer", "PeekPay");
+  return url.toString();
+};
+
+const createQrDataUrl = (value) => {
+  const size = 320;
+  const matrix = new QRCodeWriter().encode(value, BarcodeFormat.QR_CODE, size, size);
+  let path = "";
+
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      if (matrix.get(x, y)) path += `M${x} ${y}h1v1h-1z`;
+    }
+  }
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
 
 const initialize = async () => {
   phase.value = "loading";
   error.value = "";
   try {
     const result = await walletStore.enable2FA();
-    if (!result?.success || !result?.qrImage || !result?.key) throw new Error(result?.detail || t("2fa_setup_failed"));
-    qrImage.value = result.qrImage;
-    authKey.value = result.key;
+    if (result?.alreadyEnabled) {
+      phase.value = "success";
+      return;
+    }
+    if (!result?.success || !result?.key) throw new Error(result?.detail || t("2fa_setup_failed"));
+    authKey.value = brandOtpAuthUrl(result.key);
+    qrSource.value = createQrDataUrl(authKey.value);
     phase.value = "setup";
   } catch (cause) {
     error.value = cause?.message || t("error_occurred");
