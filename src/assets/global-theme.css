@@ -6,11 +6,6 @@
     background-color: var(--bg-primary) !important;
   }
 
-  /* header */
-  header {
-    background-color: var(--bg-primary) !important;
-  }
-
   /* Контейнеры */
   .container,
   .profile {

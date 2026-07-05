@@ -85,11 +85,12 @@ onActivated(refreshMainData);
 .home-page { min-height: 100vh; background: #f1f5f9; }
 .home-header { padding: 18px 16px 8px; }
 .home-user { display: flex; align-items: center; gap: 12px; }
+.home-user > div:last-child { min-width: 0; display: grid; justify-items: start; text-align: left !important; }
 .home-avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; border: 2px solid #dbeafe; background: #fff; }
 .home-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .home-avatar.brand-avatar img { object-fit: contain; padding: 7px; }
-h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 1.15; font-weight: 600; }
-.home-user p { margin: 2px 0 0; color: #2563eb; font-size: 13px; font-weight: 500; }
+h1 { width: 100%; margin: 0; color: #0f172a; font-size: 20px; line-height: 1.15; font-weight: 600; text-align: left !important; }
+.home-user p { width: 100%; margin: 2px 0 0; color: #2563eb; font-size: 13px; font-weight: 500; text-align: left !important; }
 
 .home-content { padding: 12px 16px 124px; display: grid; gap: 16px; }
 

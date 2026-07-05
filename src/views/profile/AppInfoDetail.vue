@@ -4,10 +4,12 @@ import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import AutoScrollPills from "@/components/ui/AutoScrollPills.vue";
 import BackButton from "@/components/ui/BackButton.vue";
+import { useWalletStore } from "@/stores/walletStore.ts";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const walletStore = useWalletStore();
 
 const pages = computed(() => ({
   aml: {
@@ -76,13 +78,14 @@ const currentPage = computed(() => pages.value[route.params.slug] || pages.value
 </script>
 
 <template>
-  <main class="detail-page">
+  <main class="detail-page" :class="{'is-dark':walletStore.isDarkTheme}">
     <header class="page-header">
       <BackButton @click="router.back()" />
       <div>
         <h1>{{ currentPage.title }}</h1>
         <span>{{ currentPage.eyebrow }}</span>
       </div>
+      <div class="header-spacer" aria-hidden="true"></div>
     </header>
 
     <section class="intro-card">
@@ -104,10 +107,11 @@ const currentPage = computed(() => pages.value[route.params.slug] || pages.value
 
 <style scoped>
 .detail-page { min-height: 100vh; padding: 20px 16px 124px; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 16px; }
-.page-header { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 14px; margin-bottom: 4px; }
-.page-header div { min-width: 0; }
+.page-header { width:100%;min-height:72px;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:10px;margin-bottom:4px;background:transparent!important;border:0!important;box-shadow:none!important; }
+.page-header div { min-width: 0;text-align:center; }
 .page-header span { color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
-h1 { margin: 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight: 750; }
+h1 { margin: 0 0 5px; color: #0f172a; font-size: 20px; line-height: 24px; font-weight: 750; overflow-wrap:anywhere; }
+.header-spacer{width:52px;height:52px}
 .intro-card { border-radius: 24px; padding: 18px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.22); display: grid; gap: 14px; }
 .intro-card * { color: #fff !important; }
 .intro-card p { margin: 0; color: rgba(255,255,255,.88) !important; font-size: 15px; line-height: 22px; font-weight: 500; }
@@ -118,4 +122,8 @@ h1 { margin: 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight:
 .content-card p, .notice-card p { margin: 0; color: #64748b; font-size: 14px; line-height: 21px; font-weight: 500; }
 .notice-card { background: #eff6ff; border-color: #bfdbfe; }
 .notice-card strong { display: block; margin-bottom: 6px; color: #1e40af; font-size: 14px; line-height: 18px; font-weight: 800; }
+.detail-page.is-dark .page-header{background:transparent!important}
+.detail-page.is-dark .page-header h1{color:#fff!important}
+.detail-page.is-dark .page-header span{color:#94a3b8!important}
+@media(max-width:360px){.detail-page{padding-inline:12px}.page-header{grid-template-columns:48px minmax(0,1fr) 48px;gap:8px}h1{font-size:18px;line-height:22px}.header-spacer{width:48px;height:48px}}
 </style>
