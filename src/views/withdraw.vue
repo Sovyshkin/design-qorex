@@ -51,7 +51,7 @@ onMounted(initialize);
 
         <section class="withdraw-card amount-card">
           <div class="section-heading"><span>01</span><div><small>{{t('amount')}}</small><h2>{{t('withdraw_amount')}}</h2></div></div>
-          <label class="amount-control"><img :src="usdtIcon" alt=""><input class="amount-input" v-model="amount" type="number" min="5" :max="balance" placeholder="0"><b>USDT</b></label>
+          <label class="amount-control"><img :src="usdtIcon" alt=""><input class="amount-input" v-model="amount" type="number" min="5" :max="balance" placeholder="0" style="border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important"><b>USDT</b></label>
           <div class="amount-meta"><span>Min 5 USDT</span><span>Max {{walletStore.roundToHundredths(balance)}} USDT</span></div>
         </section>
 
@@ -89,6 +89,7 @@ onMounted(initialize);
 .withdraw-layout .amount-control>img{width:46px;height:46px;display:block;filter:drop-shadow(0 6px 10px rgba(16,185,129,.16))}
 .withdraw-layout .amount-input{all:unset!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;height:54px!important;display:block!important;color:var(--screen-text)!important;font-size:30px!important;line-height:54px!important;font-weight:760!important;font-variant-numeric:tabular-nums!important;caret-color:var(--screen-primary)!important}
 .withdraw-layout .amount-input::placeholder{color:var(--screen-muted)!important;opacity:.7!important}
+.withdraw-layout .amount-input::-webkit-inner-spin-button,.withdraw-layout .amount-input::-webkit-outer-spin-button{-webkit-appearance:none!important;margin:0!important}
 .withdraw-layout .amount-control b{padding:10px 12px!important;border-radius:13px;color:var(--screen-text)!important}
 .withdraw-layout .amount-meta span,.withdraw-layout .network-note span{color:var(--screen-muted)!important}
 
