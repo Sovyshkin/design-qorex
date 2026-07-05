@@ -67,7 +67,7 @@ defineEmits(["back"]);
 .wallet-screen__heading h1 { margin: 0; color: var(--screen-text) !important; font-size: clamp(20px, 6vw, 26px); line-height: 1.15; font-weight: 700; }
 .wallet-screen__heading p { margin: 5px 0 0; color: var(--screen-muted) !important; font-size: 13px; line-height: 1.25; }
 .wallet-screen__spacer { width: 48px; }
-.wallet-screen__body { width: 100%; padding: 8px 16px calc(128px + env(safe-area-inset-bottom)); display: grid !important; gap: 16px; }
+.wallet-screen__body { width: 100%; padding: 8px 16px calc(132px + var(--tg-content-safe-area-inset-bottom, 0px)); display: grid !important; gap: 16px; }
 
 .wallet-screen.is-dark {
   --screen-bg: #0d1b2a;
