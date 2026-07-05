@@ -85,7 +85,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="history-page">
+  <div class="history-page" :class="{ 'is-dark': walletStore.isDarkTheme }">
     <header class="history-header">
       <h1>{{ t("history_tranc") }}</h1>
     </header>
@@ -220,70 +220,83 @@ h2 { margin: 0; color: #64748b; font-size: 14px; font-weight: 500; }
   background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
   border-color: #cbd5e1;
 }
-.row-meta { text-align: left; display: grid; }
+.row-meta { min-width: 0; text-align: left; display: grid; justify-items: start; align-content: center; gap: 4px; }
 strong { color: #0f172a; font-size: 14px; font-weight: 600; }
 small { color: #64748b; font-size: 12px; }
-.state { font-size: 11px; }
+.state { display: block; margin: 0; padding: 0; font-size: 11px; line-height: 1.15; text-align: left; justify-self: start; }
 .success { color: #10b981; }
 .error { color: #ef4444; }
 .in_processing { color: #2563eb; }
 .row-right { text-align: right; display: grid; }
 
-:global(.dark-theme) .history-page {
+.history-page.is-dark {
   background:
     radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
-:global(.dark-theme) .history-header h1 {
+.history-page.is-dark .history-header h1 {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) .history-group h2 {
+.history-page.is-dark .history-group h2 {
   color: #94a3b8 !important;
 }
 
-:global(.dark-theme) .history-item {
+.history-page.is-dark .history-item {
   background: rgba(30, 39, 59, 0.94) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3) !important;
 }
 
-:global(.dark-theme) .row-icon {
+.history-page.is-dark .row-icon {
   border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-:global(.dark-theme) .row-icon--deposit {
+.history-page.is-dark .row-icon svg,
+.history-page.is-dark .row-icon svg path {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.history-page.is-dark .row-icon--reward svg,
+.history-page.is-dark .row-icon--reward svg path {
+  fill: #ffffff !important;
+  stroke: none !important;
+}
+
+.history-page.is-dark .row-icon--deposit {
   background: linear-gradient(180deg, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0.1) 100%) !important;
-  color: #34d399 !important;
-}
-
-:global(.dark-theme) .row-icon--withdraw {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
-  color: #f87171 !important;
-}
-
-:global(.dark-theme) .row-icon--transfer {
-  background: linear-gradient(180deg, rgba(37, 98, 235, 0.24) 0%, rgba(37, 98, 235, 0.12) 100%) !important;
-  color: #60a5fa !important;
-}
-
-:global(.dark-theme) .row-icon--reward {
-  background: linear-gradient(180deg, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.1) 100%) !important;
-  color: #c4b5fd !important;
-}
-
-:global(.dark-theme) .row-icon--exchange {
-  background: linear-gradient(180deg, rgba(148, 163, 184, 0.18) 0%, rgba(100, 116, 139, 0.1) 100%) !important;
-  color: #e2e8f0 !important;
-}
-
-:global(.dark-theme) strong {
   color: #ffffff !important;
 }
 
-:global(.dark-theme) small {
+.history-page.is-dark .row-icon--withdraw {
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
+  color: #ffffff !important;
+}
+
+.history-page.is-dark .row-icon--transfer {
+  background: linear-gradient(180deg, rgba(37, 98, 235, 0.24) 0%, rgba(37, 98, 235, 0.12) 100%) !important;
+  color: #ffffff !important;
+}
+
+.history-page.is-dark .row-icon--reward {
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.1) 100%) !important;
+  color: #ffffff !important;
+}
+
+.history-page.is-dark .row-icon--exchange {
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.18) 0%, rgba(100, 116, 139, 0.1) 100%) !important;
+  color: #ffffff !important;
+}
+
+.history-page.is-dark strong {
+  color: #ffffff !important;
+}
+
+.history-page.is-dark small {
   color: #94a3b8 !important;
 }
 </style>

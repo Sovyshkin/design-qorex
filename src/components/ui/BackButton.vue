@@ -1,9 +1,18 @@
 <script setup>
+import { useWalletStore } from "@/stores/walletStore.ts";
+
 defineEmits(["click"]);
+const walletStore = useWalletStore();
 </script>
 
 <template>
-  <button class="back-button" type="button" aria-label="Back" @click="$emit('click')">
+  <button
+    class="back-button"
+    :class="{ 'is-dark': walletStore.isDarkTheme }"
+    type="button"
+    aria-label="Back"
+    @click="$emit('click')"
+  >
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M15 5 8 12l7 7" />
     </svg>
@@ -39,15 +48,15 @@ defineEmits(["click"]);
   transform: translateX(-2px);
 }
 
-:global(.dark-theme) .back-button {
+.back-button.is-dark {
   background: var(--surface, #1e273b);
   border-color: var(--border, rgba(255, 255, 255, 0.08));
   color: #ffffff !important;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
 }
 
-:global(.dark-theme) .back-button svg,
-:global(.dark-theme) .back-button path {
+.back-button.is-dark svg,
+.back-button.is-dark path {
   stroke: #ffffff !important;
   color: #ffffff !important;
 }
