@@ -1,290 +1,66 @@
 <script setup>
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
-import { ref, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import WalletScreen from "@/components/ui/WalletScreen.vue";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
-const router = useRouter();
-const selectedNetwork = ref("USDT_TRC20");
-const localAmount = ref("");
-
+const amount = ref("");
+const network = ref("USDT_TRC20");
+const loading = ref(false);
+const paymentUrl = ref("");
+const showPayment = ref(false);
 const networks = [
-  { id: "USDT_TRC20", name: "TRC20 (Tron)", icon: "usdt" },
-  { id: "USDT_TON", name: "TON", icon: "ton" },
-  { id: "USDT_ERC20", name: "ERC20 (Ethereum)", icon: "ethereum" },
-  { id: "USDT_BSC", name: "BEP20 (BSC)", icon: "bsc" },
+  { id:"USDT_TRC20", name:"TRC20 (Tron)", symbol:"T", color:"#26a17b" },
+  { id:"USDT_TON", name:"TON", symbol:"◆", color:"#0098ea" },
+  { id:"USDT_ERC20", name:"ERC20 (Ethereum)", symbol:"♦", color:"#627eea" },
+  { id:"USDT_BSC", name:"BEP20 (BSC)", symbol:"⬡", color:"#f3ba2f" },
 ];
+const valid = computed(() => Number(amount.value) >= 1 && Number(amount.value) <= 10000 && !loading.value);
+const sanitize = () => { amount.value = String(amount.value).replace(/\D/g, "").slice(0, 5); };
 
-const isCreatingInvoice = ref(false);
-const isDisabled = ref(false);
-const showPaymentChoiceModal = ref(false);
-const currentPaymentUrl = ref("");
-const currentNetworkName = ref("");
-const copyStatus = ref("");
-
-const normalizeNumber = (value) => {
-  if (!value) return "";
-  let normalized = value.toString().replace(/,/g, ".").replace(/[^\d.-]/g, "");
-  const parts = normalized.split(".");
-  if (parts.length > 2) normalized = parts[0] + "." + parts.slice(1).join("");
-  return normalized;
-};
-
-const handleAmountInput = (event) => {
-  let normalized = normalizeNumber(event.target.value);
-  if (normalized.includes(".")) normalized = normalized.split(".")[0];
-  localAmount.value = normalized;
-  const numValue = parseInt(normalized);
-  if (!isNaN(numValue) && numValue > 0) walletStore.amount = normalized;
-  else if (normalized === "") walletStore.amount = "";
-};
-
-const selectQuickAmount = (amount) => {
-  localAmount.value = amount.toString();
-  walletStore.amount = amount.toString();
-};
-
-const handleCopyLink = async (url) => {
-  copyStatus.value = "copying";
+const submit = async () => {
+  if (!valid.value) return walletStore.showMessage(t("invalid_amount") || "Введите сумму от 1 до 10000 USDT", "error");
+  loading.value = true;
   try {
-    await navigator.clipboard.writeText(url);
-    copyStatus.value = "copied";
-    walletStore.showMessage("Ссылка скопирована в буфер обмена", "success");
-    setTimeout(() => (copyStatus.value = ""), 2000);
-  } catch (_error) {
-    copyStatus.value = "error";
-    walletStore.showMessage("Не удалось скопировать ссылку", "error");
-    setTimeout(() => (copyStatus.value = ""), 2000);
-  }
-};
-
-const openPaymentUrl = (url) => {
-  if (!url) return;
-  try {
-    if (window.Telegram?.WebApp?.openLink) {
-      window.Telegram.WebApp.openLink(url, { try_instant_view: false });
-      return;
-    }
-    window.open(url, "_blank", "noopener,noreferrer");
-  } catch (_error) {
-    window.location.href = url;
-  }
-};
-
-const handleOpenInApp = (url) => {
-  openPaymentUrl(url);
-  showPaymentChoiceModal.value = false;
-};
-
-const closePaymentModal = () => {
-  copyStatus.value = "";
-  showPaymentChoiceModal.value = false;
-};
-
-const createInvoice2 = async () => {
-  if (isDisabled.value) return;
-  const cleanAmount = localAmount.value.replace(/[^\d]/g, "");
-  const numAmount = parseInt(cleanAmount);
-  if (!cleanAmount || isNaN(numAmount) || numAmount <= 0) return walletStore.showMessage("Введите корректную сумму в USDT", "error");
-  if (numAmount < 1) return walletStore.showMessage("Минимальная сумма для пополнения: 1 USDT", "error");
-  if (numAmount > 10000) return walletStore.showMessage("Максимальная сумма для пополнения: 10,000 USDT", "error");
-
-  isDisabled.value = true;
-  isCreatingInvoice.value = true;
-  try {
-    walletStore.amount = Math.floor(numAmount).toString();
-    const url = await walletStore.createInvoice(selectedNetwork.value);
-    if (url && url.trim()) {
-      currentPaymentUrl.value = url.trim();
-      currentNetworkName.value = networks.find((n) => n.id === selectedNetwork.value)?.name || selectedNetwork.value;
-      showPaymentChoiceModal.value = true;
-    } else {
-      walletStore.showMessage("Не удалось получить ссылку для оплаты", "error");
-    }
+    walletStore.amount = String(Math.floor(Number(amount.value)));
+    const url = await walletStore.createInvoice(network.value);
+    if (!url) throw new Error("empty payment url");
+    paymentUrl.value = url;
+    showPayment.value = true;
   } catch (error) {
-    walletStore.showMessage(error?.response?.data?.detail || "Произошла ошибка при создании платежа", "error");
-  } finally {
-    isCreatingInvoice.value = false;
-    setTimeout(() => (isDisabled.value = false), 500);
-  }
+    walletStore.showMessage(error?.response?.data?.detail || t("error_occurred"), "error");
+  } finally { loading.value = false; }
 };
 
-watch(showPaymentChoiceModal, () => {});
-onMounted(() => walletStore.startInvoiceTimer());
+const openPayment = () => {
+  if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(paymentUrl.value);
+  else window.open(paymentUrl.value, "_blank", "noopener,noreferrer");
+};
+const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl.value); walletStore.showMessage(t("copied"), "success", 1500); };
 </script>
 
 <template>
-  <div class="deposit-page">
-    <header class="header">
-      <img class="arrow" src="../assets/arrow-left.svg" alt="back" @click="walletStore.goBack()" />
-      <h1>{{ t("deposit_page") }}</h1>
-      <div class="emp"></div>
-    </header>
-
-    <main class="content">
-      <section class="sheet-card">
-        <label class="field-label">Amount</label>
-        <div class="amount-input-wrap">
-          <input type="text" placeholder="0" :value="localAmount" @input="handleAmountInput" inputmode="numeric" />
-          <span>USDT</span>
-        </div>
-
-        <div class="quick-grid">
-          <button v-for="amount in [5, 10, 25, 50, 100]" :key="amount" class="quick" :class="{ active: localAmount === amount.toString() }" @click="selectQuickAmount(amount)">
-            {{ amount }}
-          </button>
-        </div>
-
-        <label class="field-label">Network</label>
-        <div class="network-list">
-          <button v-for="network in networks" :key="network.id" class="network" :class="{ active: selectedNetwork === network.id }" @click="selectedNetwork = network.id">
-            <div class="left"><img :src="`/assets/${network.icon}.png`" alt="icon" /><span>{{ network.name }}</span></div>
-            <span class="dot" v-if="selectedNetwork === network.id">●</span>
-          </button>
-        </div>
-      </section>
-
-      <button class="cta" :disabled="isCreatingInvoice || isDisabled || walletStore.remainingInvoiceTime > 0" @click="createInvoice2()">
-        <span v-if="walletStore.remainingInvoiceTime > 0">Подождите {{ walletStore.remainingInvoiceTime }}с</span>
-        <span v-else-if="isCreatingInvoice">Создание платежа...</span>
-        <span v-else>{{ t("continue") }}</span>
+  <WalletScreen :title="t('deposit_page')" @back="walletStore.goBack()">
+    <section class="operation-hero">
+      <span>USDT</span><strong>{{ amount || "0" }}</strong><small>{{ t("enter_amount") }}</small>
+    </section>
+    <section class="form-card">
+      <label class="field"><span>{{ t("amount") || "Amount" }}</span><div><input v-model="amount" inputmode="numeric" placeholder="0" @input="sanitize"><b>USDT</b></div></label>
+      <div class="quick"><button v-for="value in [5,10,25,50,100]" :key="value" :class="{active:amount===String(value)}" @click="amount=String(value)">{{ value }}</button></div>
+      <div class="field-title">{{ t("network") || "Network" }}</div>
+      <button v-for="item in networks" :key="item.id" class="network" :class="{active:network===item.id}" @click="network=item.id">
+        <span class="coin" :style="{background:item.color}">{{ item.symbol }}</span><strong>{{ item.name }}</strong><span class="radio" />
       </button>
-    </main>
-
-    <div v-if="showPaymentChoiceModal" class="modal-overlay" @click.self="closePaymentModal">
-      <div class="modal">
-        <h3>Способ оплаты</h3>
-        <p>{{ currentNetworkName }}</p>
-        <button class="secondary" :disabled="copyStatus === 'copying'" @click="handleCopyLink(currentPaymentUrl)">
-          <span v-if="copyStatus === 'copied'">Ссылка скопирована</span>
-          <span v-else-if="copyStatus === 'copying'">Копирование...</span>
-          <span v-else>Скопировать ссылку</span>
-        </button>
-        <button class="cta" @click="handleOpenInApp(currentPaymentUrl)">Открыть в приложении</button>
-        <button class="ghost" @click="closePaymentModal">Отмена</button>
-      </div>
-    </div>
-  </div>
+    </section>
+    <button class="primary" :disabled="!valid" @click="submit">{{ loading ? `${t('loading')}...` : t("continue") }}</button>
+    <div v-if="showPayment" class="scrim" @click.self="showPayment=false"><section class="payment-sheet"><span class="sheet-handle"/><h2>{{ t("deposit_payment") }}</h2><p>{{ networks.find(n=>n.id===network)?.name }}</p><button class="primary" @click="openPayment">{{ t("open_in_app") || "Открыть оплату" }}</button><button class="secondary" @click="copyPayment">{{ t("copy") || "Скопировать ссылку" }}</button><button class="link" @click="showPayment=false">{{ t("cancel") || "Отмена" }}</button></section></div>
+  </WalletScreen>
 </template>
 
 <style scoped>
-.deposit-page { min-height: 100vh; background: #f1f5f9; }
-.header { padding: 16px; display: flex; align-items: center; justify-content: space-between; }
-.arrow, .emp { width: 24px; height: 24px; }
-h1 { margin: 0; color: #0f172a; font-size: 20px; font-weight: 600; }
-
-.content { padding: 6px 16px 124px; display: grid; gap: 16px; }
-.sheet-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); display: grid; gap: 10px; }
-.field-label { font-size: 14px; font-weight: 500; color: #64748b; }
-
-.amount-input-wrap { position: relative; }
-.amount-input-wrap input { width: 100%; height: 56px; padding: 0 16px; border-radius: 16px; border: 1px solid #dbe3ef; background: #f8fafc; color: #0f172a; font-weight: 600; }
-.amount-input-wrap span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 14px; }
-
-.quick-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 4px; }
-.quick { min-height: 38px; border-radius: 12px; background: #eff6ff; color: #1e40af; font-size: 12px; font-weight: 600; }
-.quick.active { background: #2563eb; color: #fff; }
-
-.network-list { display: grid; gap: 8px; }
-.network { min-height: 54px; border-radius: 14px; border: 1px solid #e2e8f0; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; }
-.network.active { background: #eff6ff; border-color: #3b82f6; }
-.left { display: flex; gap: 10px; align-items: center; }
-.left img { width: 24px; height: 24px; }
-.left span { color: #0f172a; font-weight: 500; }
-.dot { color: #2563eb; }
-
-.cta { min-height: 54px; border-radius: 16px; background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; font-weight: 600; box-shadow: 0 12px 26px rgba(37,99,235,.28); }
-.cta:disabled { opacity: .55; }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: grid; place-items: center; z-index: 120; padding: 16px; }
-.modal { width: 100%; max-width: 380px; background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; box-shadow: 0 20px 40px rgba(15,23,42,.2); padding: 16px; display: grid; gap: 10px; }
-.modal h3 { margin: 0; color: #0f172a; font-weight: 600; }
-.modal p { margin: 0; color: #64748b; }
-.secondary, .ghost { min-height: 48px; border-radius: 14px; font-weight: 600; }
-.secondary { background: #eff6ff; color: #1e40af; }
-.ghost { background: #f8fafc; color: #64748b; }
-
-:global(.dark-theme) .deposit-page {
-  background:
-    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
-    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
-}
-
-:global(.dark-theme) .deposit-page .header h1 {
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .deposit-page .arrow {
-  filter: brightness(0) invert(1);
-  opacity: 0.94;
-}
-
-:global(.dark-theme) .sheet-card,
-:global(.dark-theme) .modal {
-  background: rgba(30, 39, 59, 0.96) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
-}
-
-:global(.dark-theme) .field-label,
-:global(.dark-theme) .modal p {
-  color: #cbd5e1 !important;
-}
-
-:global(.dark-theme) .amount-input-wrap input {
-  background: rgba(13, 27, 42, 0.58) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .amount-input-wrap span {
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .quick {
-  background: rgba(241, 245, 249, 0.95) !important;
-  color: #1e40af !important;
-}
-
-:global(.dark-theme) .quick.active {
-  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .network {
-  background: rgba(13, 27, 42, 0.46) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-:global(.dark-theme) .network.active {
-  background: rgba(37, 98, 235, 0.18) !important;
-  border-color: rgba(56, 130, 250, 0.42) !important;
-}
-
-:global(.dark-theme) .left span,
-:global(.dark-theme) .modal h3 {
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .dot {
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .cta {
-  background: linear-gradient(135deg, #2562eb, #3882fa) !important;
-  color: #ffffff !important;
-  box-shadow: 0 14px 30px rgba(37, 98, 235, 0.28) !important;
-}
-
-:global(.dark-theme) .secondary {
-  background: rgba(37, 98, 235, 0.16) !important;
-  color: #ffffff !important;
-}
-
-:global(.dark-theme) .ghost {
-  background: rgba(13, 27, 42, 0.54) !important;
-  color: #94a3b8 !important;
-}
+.operation-hero{min-height:150px;padding:22px;display:flex!important;flex-direction:column;justify-content:center;border-radius:26px;background:linear-gradient(145deg,#3b82f6,#1e40af)!important;box-shadow:0 20px 40px rgba(37,99,235,.25)}.operation-hero span,.operation-hero small{color:#dbeafe!important;font-size:13px}.operation-hero strong{margin:9px 0;color:#fff!important;font-size:40px;line-height:1;font-weight:750}
+.form-card{padding:16px;display:grid!important;gap:10px;border:1px solid var(--screen-border);border-radius:24px;background:var(--screen-card)!important;box-shadow:0 12px 30px rgba(15,23,42,.07)}.field{display:grid;gap:7px}.field>span,.field-title{color:var(--screen-muted)!important;font-size:13px;font-weight:650}.field div{height:60px;padding:0 15px;display:flex!important;align-items:center;border:1px solid var(--screen-border);border-radius:17px;background:var(--screen-soft)!important}.field input{min-width:0;flex:1;color:var(--screen-text)!important;font-size:22px;font-weight:700}.field b{color:var(--screen-text)!important;font-size:14px;font-weight:700}.quick{display:grid!important;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:5px}.quick button{min-height:40px;border-radius:12px;background:var(--screen-soft)!important;color:var(--screen-primary)!important;font-size:13px;font-weight:750}.quick button.active{background:var(--screen-primary)!important;color:#fff!important}.network{min-height:62px;padding:9px 12px;display:grid!important;grid-template-columns:38px 1fr 20px;align-items:center;gap:10px;border:1px solid var(--screen-border);border-radius:17px;background:transparent!important;text-align:left}.network.active{border-color:var(--screen-primary);background:color-mix(in srgb,var(--screen-primary) 10%,transparent)!important}.coin{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:#fff!important;font-weight:800}.network strong{color:var(--screen-text)!important;font-size:15px;font-weight:650}.radio{width:18px;height:18px;border:2px solid var(--screen-muted);border-radius:50%}.network.active .radio{border:5px solid var(--screen-primary)}
+.primary,.secondary{min-height:54px;border-radius:17px;font-weight:750}.primary{background:linear-gradient(135deg,#2563eb,#3b82f6)!important;color:#fff!important;box-shadow:0 14px 28px rgba(37,99,235,.24)}.primary:disabled{opacity:.45}.secondary{background:var(--screen-soft)!important;color:var(--screen-primary)!important}.scrim{position:fixed;inset:0;z-index:200;display:flex!important;align-items:flex-end;padding:16px;background:rgba(2,6,23,.58)!important}.payment-sheet{width:100%;padding:14px 18px calc(18px + env(safe-area-inset-bottom));display:grid!important;gap:10px;border:1px solid var(--screen-border);border-radius:26px;background:var(--screen-card)!important;box-shadow:0 24px 60px rgba(0,0,0,.3)}.sheet-handle{width:44px;height:4px;margin:0 auto 5px;border-radius:4px;background:var(--screen-border)}.payment-sheet h2{color:var(--screen-text)!important;font-size:21px;font-weight:750}.payment-sheet p{color:var(--screen-muted)!important}.link{min-height:44px;color:var(--screen-muted)!important;font-weight:650}
 </style>
