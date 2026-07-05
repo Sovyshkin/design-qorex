@@ -2,6 +2,7 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import { ref } from 'vue';
+import BackButton from '@/components/ui/BackButton.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -32,12 +33,7 @@ const checkCode = async () => {
 </script>
 <template>
   <header class="header">
-    <img
-      class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
+    <BackButton @click="walletStore.goBack()" />
     <h1>{{ t("enter_code") }}</h1>
     <div class="emp"></div>
   </header>
@@ -86,6 +82,8 @@ const checkCode = async () => {
 .emp {
   width: 32px;
 }
+
+.header :deep(.back-button){width:44px;height:44px;flex-basis:44px;border-radius:16px}.header :deep(.back-button svg){width:25px;height:25px}
 
 h1 {
   color: #0F172A;

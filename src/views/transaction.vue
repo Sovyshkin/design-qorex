@@ -4,6 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 import { ref, onMounted } from "vue";
 import { useWalletStore } from "@/stores/walletStore";
 import { getTransactionStatusMeta } from "@/utils/transactionStatus";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -169,12 +170,7 @@ onMounted(() => {
 <template>
   <div class="transaction-page">
     <header class="header">
-      <img
-        class="arrow"
-        src="@/assets/arrow-left.svg"
-        alt=""
-        @click="goBack()"
-      />
+      <BackButton @click="goBack()" />
       <h1>{{ walletStore.transaction.type_trans === 'transfer' ? t('transfer_transaction') : t(walletStore.transaction.type_trans) }}</h1>
       <div class="emp"></div>
     </header>

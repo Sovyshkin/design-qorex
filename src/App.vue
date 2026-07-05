@@ -156,7 +156,7 @@ const isTwoFactorStandaloneRoute = computed(
 );
 
 const usesEmbeddedNav = computed(
-  () => router.currentRoute.value.name === "deposit"
+  () => ["deposit", "withdraw"].includes(router.currentRoute.value.name)
 );
 
 const standaloneShellStyle = computed(() =>

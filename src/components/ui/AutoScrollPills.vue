@@ -19,7 +19,7 @@ const props = defineProps({
 <template>
   <div class="auto-scroll-pills" :style="{ '--scroll-duration': `${duration}s` }">
     <div class="track">
-      <div class="group" v-for="groupIndex in 2" :key="groupIndex" :aria-hidden="groupIndex === 2 ? 'true' : 'false'">
+      <div class="pill-group" v-for="groupIndex in 2" :key="groupIndex" :aria-hidden="groupIndex === 2 ? 'true' : 'false'">
         <span v-for="(item, index) in items" :key="`${item}-${index}-${groupIndex}`" class="pill" :class="variant">{{ item }}</span>
       </div>
     </div>
@@ -39,7 +39,7 @@ const props = defineProps({
   animation: scroll var(--scroll-duration, 18s) linear infinite;
 }
 
-.group {
+.pill-group {
   display: flex;
   gap: 8px;
   padding-right: 8px;

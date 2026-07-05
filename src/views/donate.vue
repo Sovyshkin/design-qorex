@@ -1,6 +1,7 @@
 <script setup>
 import { useWalletStore } from "@/stores/walletStore.ts";
 import { ref } from "vue";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const walletStore = useWalletStore();
 const selectedNetwork = ref("");
@@ -35,7 +36,7 @@ const copyAddress = async () => {
 <template>
   <div class="donate-page">
     <header class="header">
-      <img class="arrow" src="../assets/arrow-left.svg" alt="back" @click="walletStore.goBack()" />
+      <BackButton @click="walletStore.goBack()" />
       <h1>Поддержать проект</h1>
       <div class="emp"></div>
     </header>
@@ -68,7 +69,7 @@ const copyAddress = async () => {
 <style scoped>
 .donate-page { min-height: 100vh; background: #f1f5f9; }
 .header { padding: 16px; display: flex; align-items: center; justify-content: space-between; }
-.arrow, .emp { width: 24px; height: 24px; }
+.emp { width: 52px; height: 52px; }
 h1 { margin: 0; font-size: 20px; color: #0f172a; font-weight: 600; }
 .content { padding: 8px 16px 124px; }
 .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 24px rgba(15,23,42,.08); }

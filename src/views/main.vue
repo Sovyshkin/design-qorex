@@ -38,7 +38,7 @@ onActivated(refreshMainData);
         </div>
         <div>
           <h1>{{ walletStore.user.first_name || walletStore.userTg.first_name || "Пользователь" }}</h1>
-          <p>Premium</p>
+          <p>PeekPay Account</p>
         </div>
       </div>
     </header>

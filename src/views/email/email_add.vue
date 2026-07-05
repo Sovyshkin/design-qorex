@@ -2,6 +2,7 @@
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from '@/stores/walletStore.ts'
 import { ref } from 'vue';
+import BackButton from '@/components/ui/BackButton.vue';
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -23,12 +24,7 @@ const sendCode = async () => {
 <template>
   <div class="email-add-page">
     <header class="header">
-      <img
-        class="arrow"
-        src="../../assets/arrow-left.svg"
-        alt=""
-        @click="walletStore.goBack()"
-      />
+      <BackButton @click="walletStore.goBack()" />
       <h1>{{ t("email_add") }}</h1>
       <div class="emp"></div>
     </header>
@@ -77,15 +73,16 @@ const sendCode = async () => {
   height: 44px;
 }
 
-.arrow {
+.header :deep(.back-button) {
   width: 44px;
   height: 44px;
-  padding: 13px;
+  flex-basis: 44px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-  object-fit: contain;
+}
+
+.header :deep(.back-button svg) {
+  width: 25px;
+  height: 25px;
 }
 
 h1 {
@@ -305,13 +302,6 @@ select::placeholder {
 
 :global(.dark-theme) .email-add-page .form-description {
   color: #94a3b8 !important;
-}
-
-:global(.dark-theme) .email-add-page .header .arrow {
-  background: rgba(30, 39, 59, 0.96) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  filter: brightness(0) invert(1);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28) !important;
 }
 
 :global(.dark-theme) .email-add-page .form-container {

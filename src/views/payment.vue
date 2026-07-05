@@ -1,7 +1,7 @@
 <template>
   <div class="payment-page">
     <header class="payment-header">
-      <img class="arrow" src="../assets/arrow-left.svg" alt="Назад" @click="goBack" />
+      <BackButton @click="goBack" />
       <h1>{{ t('deposit_payment') }}</h1>
       <div class="emp"></div>
     </header>
@@ -33,6 +33,7 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
 import { useWalletStore } from '@/stores/walletStore';
+import BackButton from '@/components/ui/BackButton.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -83,6 +84,7 @@ onMounted(() => {
 <style scoped>
 .payment-page { min-height: 100vh; min-height: 100dvh; background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); padding-bottom: calc(124px + env(safe-area-inset-bottom)); }
 .payment-header { min-height: 64px; padding: 16px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; }
+.payment-header :deep(.back-button){width:44px;height:44px;flex-basis:44px;border-radius:16px}.payment-header :deep(.back-button svg){width:25px;height:25px}
 .arrow { width: 44px; height: 44px; padding: 13px; border-radius: 16px; background: rgba(255,255,255,.94); border: 1px solid #e2e8f0; box-shadow: 0 10px 24px rgba(15,23,42,.08); object-fit: contain; }
 .emp { width: 44px; height: 44px; }
 h1 { margin: 0; color: #0f172a; font-size: 22px; line-height: 26px; font-weight: 750; text-align: center; letter-spacing: -0.03em; }

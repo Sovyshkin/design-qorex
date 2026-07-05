@@ -109,8 +109,10 @@ const currentPage = computed(() => pages.value[route.params.slug] || pages.value
 .page-header span { color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 h1 { margin: 0; color: #0f172a; font-size: 21px; line-height: 26px; font-weight: 750; }
 .intro-card { border-radius: 24px; padding: 18px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.22); display: grid; gap: 14px; }
-.intro-card * { color: #fff; }
-.intro-card p { margin: 0; color: rgba(255,255,255,.88); font-size: 15px; line-height: 22px; font-weight: 500; }
+.intro-card * { color: #fff !important; }
+.intro-card p { margin: 0; color: rgba(255,255,255,.88) !important; font-size: 15px; line-height: 22px; font-weight: 500; }
+.intro-card :deep(.auto-scroll-pills),.intro-card :deep(.track),.intro-card :deep(.pill-group){background:transparent!important;border:0!important;box-shadow:none!important}
+.intro-card :deep(.pill.white){background:rgba(255,255,255,.14)!important;color:#fff!important;border:1px solid rgba(255,255,255,.16)}
 .content-card, .notice-card { border-radius: 22px; background: rgba(255,255,255,.94); border: 1px solid #e2e8f0; box-shadow: 0 10px 24px rgba(15,23,42,.06); padding: 16px; }
 .content-card h2 { margin: 0 0 8px; color: #0f172a; font-size: 17px; line-height: 22px; font-weight: 750; }
 .content-card p, .notice-card p { margin: 0; color: #64748b; font-size: 14px; line-height: 21px; font-weight: 500; }

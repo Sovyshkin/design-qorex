@@ -4,9 +4,11 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import AutoScrollPills from "@/components/ui/AutoScrollPills.vue";
 import BackButton from "@/components/ui/BackButton.vue";
+import { useWalletStore } from "@/stores/walletStore.ts";
 
 const { t } = useI18n();
 const router = useRouter();
+const walletStore = useWalletStore();
 const active = ref(0);
 
 const faq = computed(() => [
@@ -44,12 +46,12 @@ const openSupport = () => {
 </script>
 
 <template>
-  <main class="faq-page">
+  <main class="faq-page" :class="{'is-dark':walletStore.isDarkTheme}">
     <header class="page-header">
       <BackButton @click="router.back()" />
       <div>
-        <span>FAQ</span>
         <h1>{{ t("faq") }}</h1>
+        <span>FAQ</span>
       </div>
       <div class="header-spacer"></div>
     </header>
@@ -92,19 +94,19 @@ const openSupport = () => {
 
 <style scoped>
 .faq-page { width: 100%; max-width: 100%; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; padding: 16px 16px calc(176px + env(safe-area-inset-bottom)); background: radial-gradient(820px 360px at 50% -18%, #dbeafe 0%, #f1f5f9 58%); display: grid; align-content: start; gap: 16px; }
-.page-header { width: 100%; min-width: 0; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; margin-bottom: 2px; }
+.page-header { width: 100%; min-width: 0; min-height: 64px; display: grid; grid-template-columns: 52px minmax(0, 1fr) 52px; align-items: center; gap: 10px; margin-bottom: 2px; background: transparent!important; }
 .page-header div:nth-child(2) { min-width: 0; max-width: 100%; text-align: center; overflow: hidden; }
 .page-header span { color: #64748b; font-size: 12px; line-height: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
-h1 { margin: 2px 0 0; color: #0f172a; font-size: 22px; line-height: 26px; font-weight: 750; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.header-spacer { width: 44px; height: 44px; }
+h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 23px; font-weight: 750; white-space: normal; overflow-wrap: anywhere; }
+.header-spacer { width: 52px; height: 52px; }
 .hero-card { width: 100%; min-width: 0; position: relative; overflow: hidden; border-radius: 24px; padding: 18px; color: #fff; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); box-shadow: 0 18px 34px rgba(37,99,235,.24); display: grid; grid-template-columns: minmax(0,1fr) 58px; gap: 10px; align-items: center; }
 .hero-card::after { content: ""; position: absolute; width: 150px; height: 150px; right: -64px; bottom: -78px; border-radius: 50%; background: rgba(255,255,255,.14); }
 .hero-copy { min-width: 0; position: relative; z-index: 1; }
 .hero-copy span { color: rgba(255,255,255,.72); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 .hero-copy h2 { max-width: 100%; margin: 8px 0 6px; font-size: 22px; line-height: 27px; font-weight: 750; overflow-wrap: anywhere; }
 .hero-copy p { max-width: 100%; margin: 0; color: rgba(255,255,255,.82); font-size: 14px; line-height: 20px; font-weight: 500; overflow-wrap: anywhere; }
-.hero-badge { position: relative; z-index: 1; width: 54px; height: 54px; border-radius: 20px; display: grid; place-items: center; background: rgba(255,255,255,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); font-size: 30px; line-height: 1; font-weight: 850; }
-.tips { width: 100%; min-width: 0; overflow: hidden; }
+.hero-badge { position: relative; z-index: 1; width: 54px; height: 54px; border-radius: 20px; display: grid; place-items: center; background: rgba(255,255,255,.16); box-shadow: none; color:#fff!important; font-size: 30px; line-height: 1; font-weight: 850; }
+.tips { width: 100%; min-width: 0; overflow: hidden; padding:2px 0; }
 .faq-list { width: 100%; min-width: 0; display: grid; gap: 10px; }
 .faq-item { width: 100%; min-width: 0; border: 1px solid #e2e8f0; border-radius: 20px; background: rgba(255,255,255,.94); box-shadow: 0 10px 24px rgba(15,23,42,.06); padding: 16px; text-align: left; overflow: hidden; transition: border-color .18s ease, transform .18s ease; }
 .faq-item:active { transform: scale(.99); }
@@ -148,6 +150,13 @@ h1 { margin: 2px 0 0; color: #0f172a; font-size: 22px; line-height: 26px; font-w
 :global(.dark-theme) .faq-item p {
   border-top-color: rgba(255, 255, 255, 0.08) !important;
 }
+
+.faq-page.is-dark .page-header{background:transparent!important;box-shadow:none!important;border:0!important}
+.faq-page.is-dark .page-header h1,.faq-page.is-dark .question strong{color:#fff!important}
+.faq-page.is-dark .page-header span,.faq-page.is-dark .faq-item p{color:#94a3b8!important}
+.faq-page.is-dark .hero-copy span,.faq-page.is-dark .hero-copy h2,.faq-page.is-dark .hero-copy p{color:#fff!important}
+.faq-page.is-dark .faq-item{background:#1e273b!important;border-color:rgba(255,255,255,.08)!important}
+.faq-page.is-dark :deep(.pill.soft){border-color:rgba(255,255,255,.08)!important;background:#1e273b!important;color:#fff!important;box-shadow:none!important}
 
 @media (max-width: 380px) {
   .faq-page {

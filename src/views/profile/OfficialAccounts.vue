@@ -1,9 +1,9 @@
-<
 <script setup>
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "../../stores/walletStore.ts";
 import { useRouter } from "vue-router";
+import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -32,35 +32,33 @@ const accounts = ref([
 </script>
 
 <template>
-  <header class="header">
-    <img
-      class="arrow"
-      src="../../assets/arrow-left.svg"
-      alt=""
-      @click="walletStore.goBack()"
-    />
-    <h1>{{ t("official_accounts") }}</h1>
-    <div class="emp"></div>
-  </header>
-  <main class="safety">
-    <div class="docs">
-      <a class="list-item" v-for="(item, i) in accounts" :key="i" :href="item.href" target="_blank">
-        <div class="info">
+  <div class="official-page" :class="{'is-dark':walletStore.isDarkTheme}">
+    <header class="header">
+      <BackButton @click="walletStore.goBack()" />
+      <h1>{{ t("official_accounts") }}</h1>
+      <div class="emp"></div>
+    </header>
+    <main class="safety">
+      <div class="docs">
+        <a class="list-item" v-for="(item, i) in accounts" :key="i" :href="item.href" target="_blank">
+          <div class="info">
             <div class="wrap-img">
-            <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
-          </div>
-          <div class="wrap-text">
+              <img :src="`/assets/${item.icon}.svg`" :alt="item.icon" />
+            </div>
+            <div class="wrap-text">
               <span class="list-value">{{ item.name }}</span>
               <span class="subtitle">{{ item.value }}</span>
+            </div>
           </div>
-        </div>
-        <img class="arrow-right" src="../../assets/arrow-right.svg" alt="arrow-right" />
-      </a>
-    </div>
-  </main>
+          <img class="arrow-right" src="../../assets/arrow-right.svg" alt="arrow-right" />
+        </a>
+      </div>
+    </main>
+  </div>
 </template>
 
 <style scoped>
+.official-page{min-height:100vh;min-height:100dvh;background:#f1f5f9}
 .header {
   padding: 20px 15px;
   width: 100%;
@@ -136,23 +134,13 @@ h2 {
   width: 24px;
 }
 
-.arrow {
-  height: 32px;
-  width: 32px;
-  transition: transform 0.3s ease;
-}
-
 .arrow-right {
   width: 24px;
   height: 24px;
 }
 
-.list-item:hover .arrow {
-  transform: translateX(5px);
-  transition: transform 0.3s ease;
-}
 .emp {
-  width: 32px;
+  width: 52px;
 }
 
 .wrap-text {
@@ -165,4 +153,11 @@ h2 {
     font-weight: 300;
     font-size: 10px;
 }
+.official-page.is-dark{background:linear-gradient(180deg,#07111f,#0d1b2a)!important}
+.official-page.is-dark .header{background:transparent!important;color:#fff!important}
+.official-page.is-dark .header h1,.official-page.is-dark .list-value{color:#fff!important}
+.official-page.is-dark .list-item{background:#1e273b!important;border:1px solid rgba(255,255,255,.08);box-shadow:0 14px 28px rgba(0,0,0,.22)}
+.official-page.is-dark .wrap-img{background:rgba(37,98,235,.28)!important}
+.official-page.is-dark .wrap-img img,.official-page.is-dark .arrow-right{filter:brightness(0) invert(1)!important;opacity:1}
+.official-page.is-dark .subtitle{color:#94a3b8!important;opacity:1}
 </style>

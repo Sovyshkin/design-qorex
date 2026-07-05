@@ -50,7 +50,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="profile-page">
+  <main class="profile-page" :class="{ 'is-dark': walletStore.isDarkTheme }">
     <section class="profile-user">
       <div class="avatar" :class="{ 'logo-avatar': !walletStore.userTg.photo_url }">
         <img v-if="walletStore.userTg.photo_url" :src="walletStore.userTg.photo_url" alt="avatar" />
@@ -139,7 +139,7 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
 .profile-row { width: 100%; min-height: 56px; border-radius: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr) 18px; gap: 12px; align-items: center; padding: 0 14px; text-align: left; transition: background-color .18s ease, transform .18s ease; }
 .profile-row + .profile-row { border-top: 1px solid #eef2f7; }
 .profile-row:active { background: #f8fafc; transform: scale(.995); }
-.profile-row i { width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: grid; place-items: center; font-style: normal; box-shadow: inset 0 1px 0 rgba(255,255,255,.85); }
+.profile-row i { width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb; display: grid; place-items: center; font-style: normal; box-shadow: none; }
 .profile-row svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; color: currentColor; filter: none; }
 .profile-row svg * { fill: none !important; stroke: currentColor !important; color: currentColor !important; filter: none !important; }
 .profile-row span { color: #0f172a; font-size: 16px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -202,7 +202,19 @@ h1 { margin: 0; color: #0f172a; font-size: 20px; line-height: 24px; font-weight:
   background: rgba(37, 98, 235, 0.16) !important;
   color: #dbeafe !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
+.profile-page.is-dark .profile-row i {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.profile-page.is-dark .profile-row i::before,
+.profile-page.is-dark .profile-row i::after {
+  display: none !important;
+  box-shadow: none !important;
 }
 
 :global(.dark-theme) .profile-row svg,
