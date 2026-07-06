@@ -800,7 +800,7 @@ h1 {
 
 .transaction-page .transaction-header {
   width: 100%;
-  padding: 26px 18px 22px;
+  padding: 30px 18px 46px !important;
   gap: 16px;
   border: 1px solid #e2e8f0;
   border-radius: 26px;
