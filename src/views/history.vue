@@ -230,9 +230,21 @@ small { color: #64748b; font-size: 12px; }
 .row-right { text-align: right; display: grid; }
 
 .history-page.is-dark {
-  background:
-    radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%),
-    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
+  background: #0d1b2a !important;
+}
+
+:global(body.dark-theme) .history-page.is-dark,
+:global(body.dark-theme) .history-page.is-dark .history-header,
+:global(body.dark-theme) .history-page.is-dark .history-content,
+:global(body.dark-theme) .history-page.is-dark .history-group {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:global(body.dark-theme) .history-page.is-dark {
+  background: #0d1b2a !important;
+  background-color: #0d1b2a !important;
 }
 
 .history-page.is-dark .history-header h1 {

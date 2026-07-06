@@ -56,7 +56,7 @@ const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl
       </div>
       <label class="amount-control">
         <img class="amount-control__icon" :src="usdtIcon" alt="">
-        <input class="amount-control__input" v-model="amount" inputmode="numeric" placeholder="0" aria-label="USDT amount" @input="sanitize">
+        <input class="amount-control__input" v-model="amount" inputmode="numeric" placeholder="0" aria-label="USDT amount" style="border:0!important;outline:0!important;background:transparent!important;background-color:transparent!important;box-shadow:none!important;padding:0!important;margin:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important" @input="sanitize">
         <span class="amount-control__currency">USDT</span>
       </label>
       <div class="quick-amounts">
@@ -99,7 +99,7 @@ const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl
 /* Keep the amount entry as one visual control, isolated from legacy input styles. */
 .deposit-layout .amount-control{min-height:86px;height:auto;padding:14px 16px;display:grid!important;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;border-radius:20px}
 .amount-control__icon{width:46px;height:46px;display:block;filter:drop-shadow(0 6px 10px rgba(16,185,129,.16))}
-.deposit-layout .amount-control__input{all:unset!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;height:54px!important;display:block!important;color:var(--screen-text)!important;font-size:32px!important;line-height:54px!important;font-weight:760!important;font-variant-numeric:tabular-nums!important;caret-color:var(--screen-primary)!important}
+.deposit-layout .amount-control__input,.deposit-layout .amount-control__input:focus,.deposit-layout .amount-control__input:focus-visible{all:unset!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;height:54px!important;display:block!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-color:transparent!important;box-shadow:none!important;color:var(--screen-text)!important;font-size:32px!important;line-height:54px!important;font-weight:760!important;font-variant-numeric:tabular-nums!important;caret-color:var(--screen-primary)!important;appearance:none!important;-webkit-appearance:none!important}
 .deposit-layout .amount-control__input::placeholder{color:var(--screen-muted)!important;opacity:.7!important}
 .amount-control__currency{padding:10px 12px!important;border-radius:13px;background:color-mix(in srgb,var(--screen-primary) 10%,transparent)!important;color:var(--screen-text)!important;font-size:13px!important;font-weight:800!important}
 .network-card{min-height:104px;padding:17px;grid-template-columns:46px minmax(0,1fr);gap:14px}
