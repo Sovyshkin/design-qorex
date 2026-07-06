@@ -168,7 +168,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="transaction-page">
+  <div class="transaction-page" :class="{ 'is-dark': walletStore.isDarkTheme }">
     <header class="header">
       <BackButton @click="goBack()" />
       <h1>{{ walletStore.transaction.type_trans === 'transfer' ? t('transfer_transaction') : t(walletStore.transaction.type_trans) }}</h1>
@@ -764,5 +764,181 @@ h1 {
   box-shadow: 
     0 8px 20px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Refined transaction receipt */
+.transaction-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
+  padding-bottom: 124px;
+  background: radial-gradient(620px 280px at 50% -10%, #dbeafe 0%, transparent 68%), #f1f5f9;
+}
+
+.transaction-page .header {
+  min-height: 82px;
+  padding: 16px !important;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  background: transparent !important;
+}
+
+.transaction-page .header h1 {
+  margin: 0;
+  color: #0f172a !important;
+  font-size: 24px !important;
+  line-height: 1.15 !important;
+  font-weight: 750 !important;
+  text-align: center;
+}
+
+.transaction-page .transaction-content {
+  flex: none;
+  padding: 10px 16px 28px !important;
+  gap: 18px;
+}
+
+.transaction-page .transaction-header {
+  width: 100%;
+  padding: 26px 18px 22px;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
+}
+
+.transaction-page .wrap-img {
+  width: 68px;
+  height: 68px;
+  padding: 17px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #3b82f6, #1e40af) !important;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, .28);
+}
+
+.transaction-page .wrap-img img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.transaction-page .transaction-amounts { gap: 7px; }
+.transaction-page .amount-usdt {
+  color: #0f172a !important;
+  font-size: 31px;
+  line-height: 1.05;
+  font-weight: 780;
+  letter-spacing: -.025em;
+}
+.transaction-page .amount-rub {
+  color: #64748b !important;
+  opacity: 1;
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.transaction-page .status-badge {
+  margin-top: -40px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 750;
+}
+
+.transaction-page .transaction-details {
+  padding: 8px 18px;
+  gap: 0;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  background: #fff !important;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, .08) !important;
+}
+
+.transaction-page .detail-item {
+  min-height: 58px;
+  padding: 14px 0;
+  display: grid;
+  grid-template-columns: minmax(105px, .8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 12px;
+  border: 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.transaction-page .detail-item:last-child { border-bottom: 0 !important; }
+.transaction-page .detail-label {
+  min-width: 0;
+  color: #64748b !important;
+  opacity: 1;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.transaction-page .detail-value,
+.transaction-page .detail-value-container {
+  min-width: 0;
+  color: #0f172a !important;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.transaction-page .detail-value.clickable {
+  justify-content: flex-end;
+  overflow-wrap: anywhere;
+}
+.transaction-page .detail-value img { width: 17px; height: 17px; flex: 0 0 17px; }
+
+.transaction-page.is-dark {
+  background: #0d1b2a !important;
+  color: #fff !important;
+}
+.transaction-page.is-dark .header,
+.transaction-page.is-dark .transaction-content { background: transparent !important; }
+.transaction-page.is-dark .header h1,
+.transaction-page.is-dark .amount-usdt { color: #fff !important; }
+.transaction-page.is-dark .amount-rub,
+.transaction-page.is-dark .detail-label { color: #94a3b8 !important; }
+.transaction-page.is-dark .transaction-header,
+.transaction-page.is-dark .transaction-details {
+  background: #1e273b !important;
+  border-color: rgba(255, 255, 255, .08) !important;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, .28) !important;
+}
+.transaction-page.is-dark .detail-item {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, .07) !important;
+}
+.transaction-page.is-dark .detail-value,
+.transaction-page.is-dark .detail-value-container { color: #fff !important; }
+.transaction-page.is-dark .detail-value img { filter: brightness(0) invert(1); opacity: .86; }
+.transaction-page.is-dark .success { background: rgba(16, 185, 129, .14) !important; color: #34d399 !important; }
+.transaction-page.is-dark .error { background: rgba(239, 68, 68, .14) !important; color: #f87171 !important; }
+.transaction-page.is-dark .in_processing { background: rgba(59, 130, 246, .15) !important; color: #60a5fa !important; }
+
+/* Light receipt stays clean: no outlined fields inside the details card. */
+:global(body:not(.dark-theme)) .transaction-page:not(.is-dark) .transaction-details {
+  border: 0 !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, .09) !important;
+}
+:global(body:not(.dark-theme)) .transaction-page:not(.is-dark) .transaction-details > .detail-item {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+:global(body:not(.dark-theme)) .transaction-page:not(.is-dark) .transaction-details > .detail-item + .detail-item {
+  border-top: 1px solid rgba(226, 232, 240, .72) !important;
+}
+
+@media (max-width: 360px) {
+  .transaction-page .transaction-content { padding-inline: 12px !important; }
+  .transaction-page .amount-usdt { font-size: 27px; }
+  .transaction-page .detail-item { grid-template-columns: minmax(88px, .75fr) minmax(0, 1.25fr); }
 }
 </style>
