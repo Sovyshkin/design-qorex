@@ -1854,7 +1854,7 @@ body.dark-theme .back-button:active {
   position: fixed !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: calc(8px + var(--tg-content-safe-area-inset-bottom, 0px)) !important;
+  bottom: 8px !important;
   z-index: 5000 !important;
   pointer-events: none;
 }

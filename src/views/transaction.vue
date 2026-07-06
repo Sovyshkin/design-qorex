@@ -840,7 +840,8 @@ h1 {
 }
 
 .transaction-page .status-badge {
-  margin-top: -40px;
+  margin-top: -62px;
+  margin-bottom: 22px;
   padding: 8px 13px;
   border-radius: 999px;
   font-size: 12px;
