@@ -6,8 +6,8 @@
         <button class="close" @click="closeModal">✕</button>
       </div>
       <div class="content">
+        <iframe v-if="paymentUrl" ref="paymentFrame" :src="paymentUrl" class="frame" allow="payment; clipboard-write" @load="onIframeLoad" title="Payment Page"></iframe>
         <div v-if="loading" class="loading"><div class="spinner"></div><p>{{ t('loading_payment_page') }}</p></div>
-        <iframe v-if="paymentUrl && !loading" ref="paymentFrame" :src="paymentUrl" class="frame" @load="onIframeLoad" title="Payment Page"></iframe>
       </div>
     </div>
   </div>
@@ -22,10 +22,11 @@ const emit = defineEmits(['close', 'payment-success']);
 const loading = ref(true);
 const paymentFrame = ref(null);
 const closeModal = () => emit('close');
-const onIframeLoad = () => { loading.value = false; if (paymentFrame.value?.contentWindow) emit('payment-success'); };
+const onIframeLoad = () => { loading.value = false; };
 const handleKeyDown = (event) => { if (event.key === 'Escape') closeModal(); };
 onMounted(() => { document.addEventListener('keydown', handleKeyDown); if (props.show) document.body.style.overflow = 'hidden'; });
-watch(() => props.show, (v) => { document.body.style.overflow = v ? 'hidden' : ''; });
+watch(() => props.show, (v) => { document.body.style.overflow = v ? 'hidden' : ''; if (v) loading.value = true; });
+watch(() => props.paymentUrl, () => { loading.value = true; });
 onUnmounted(() => { document.removeEventListener('keydown', handleKeyDown); document.body.style.overflow = ''; });
 </script>
 
@@ -35,9 +36,15 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeyDown); docu
 .head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #e2e8f0; }
 .head h3 { margin: 0; color: #0f172a; font-size: 18px; }
 .close { width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; }
-.content { flex: 1; }
-.loading { height: 100%; display: grid; place-items: center; color: #64748b; }
+.content { position: relative; flex: 1; min-height: 0; background: #f8fafc; }
+.loading { position: absolute; inset: 0; z-index: 2; height: 100%; display: grid; place-content: center; justify-items: center; gap: 12px; background: #f8fafc; color: #64748b; }
 .spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #bfdbfe; border-top-color: #2563eb; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .frame { width: 100%; height: 100%; border: 0; }
+:global(.dark-theme) .modal { background: #1e273b; border-color: rgba(255,255,255,.08); }
+:global(.dark-theme) .head { border-color: rgba(255,255,255,.08); }
+:global(.dark-theme) .head h3 { color: #fff; }
+:global(.dark-theme) .close { background: #17243a; color: #fff; }
+:global(.dark-theme) .content,
+:global(.dark-theme) .loading { background: #0d1b2a; color: #94a3b8; }
 </style>

@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import WalletScreen from "@/components/ui/WalletScreen.vue";
 import NavBar from "@/components/NavBar.vue";
+import DepositModal from "@/components/DepositModal.vue";
 import usdtIcon from "@/assets/coin-usdt.svg";
 import tonIcon from "@/assets/coin-ton.svg";
 import ethereumIcon from "@/assets/coin-ethereum.svg";
@@ -16,6 +17,7 @@ const network = ref("USDT_TRC20");
 const loading = ref(false);
 const paymentUrl = ref("");
 const showPayment = ref(false);
+const showEmbeddedPayment = ref(false);
 const networks = [
   { id:"USDT_TRC20", name:"TRON", standard:"TRC20", icon:usdtIcon },
   { id:"USDT_TON", name:"TON", standard:"TON Network", icon:tonIcon },
@@ -41,7 +43,13 @@ const submit = async () => {
 };
 
 const openPayment = () => {
-  if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(paymentUrl.value);
+  if (!paymentUrl.value) return;
+  showPayment.value = false;
+  showEmbeddedPayment.value = true;
+};
+const openInBrowser = () => {
+  if (!paymentUrl.value) return;
+  if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(paymentUrl.value, { try_instant_view: false });
   else window.open(paymentUrl.value, "_blank", "noopener,noreferrer");
 };
 const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl.value); walletStore.showMessage(t("copied"), "success", 1500); };
@@ -81,9 +89,10 @@ const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl
     </section>
 
     <button class="primary" :disabled="!valid" @click="submit"><span>{{ loading ? `${t('loading')}...` : t("continue") }}</span><b>→</b></button>
-    <div v-if="showPayment" class="scrim" @click.self="showPayment=false"><section class="payment-sheet"><span class="sheet-handle"/><div class="sheet-network"><img :src="selectedNetwork?.icon" alt=""><div><h2>{{ t("deposit_payment") }}</h2><p>{{ selectedNetwork?.name }} · {{ selectedNetwork?.standard }}</p></div></div><button class="primary" @click="openPayment"><span>{{ t("open_in_app") }}</span><b>↗</b></button><button class="secondary" @click="copyPayment">{{ t("copy") }}</button><button class="link" @click="showPayment=false">{{ t("cancel") }}</button></section></div>
+    <div v-if="showPayment" class="scrim" @click.self="showPayment=false"><section class="payment-sheet"><span class="sheet-handle"/><div class="sheet-network"><img :src="selectedNetwork?.icon" alt=""><div><h2>{{ t("deposit_payment") }}</h2><p>{{ selectedNetwork?.name }} · {{ selectedNetwork?.standard }}</p></div></div><button class="primary" @click="openPayment"><span>{{ t("open_in_app") }}</span><b>↗</b></button><button class="secondary" @click="openInBrowser">{{ t("open_in_browser") }}</button><button class="secondary" @click="copyPayment">{{ t("copy") }}</button><button class="link" @click="showPayment=false">{{ t("cancel") }}</button></section></div>
   </WalletScreen>
   <NavBar embedded />
+  <DepositModal v-if="showEmbeddedPayment" :show="showEmbeddedPayment" :payment-url="paymentUrl" @close="showEmbeddedPayment=false" />
   </div>
 </template>
 
