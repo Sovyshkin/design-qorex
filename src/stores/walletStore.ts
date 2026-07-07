@@ -792,23 +792,57 @@ export const useWalletStore = defineStore("wallet", () => {
         cryptocurrency: cryptocurrency,
       });
 
-      if (response.data.result) {
-        pay_link.value = response.data.result.link;
-        working_invoice = response.data.result.uuid;
-        // await creatingInvoceDb(); // Убираем запрос на creating_invoce_db
+      const payload = response?.data ?? {};
+      const result = payload?.result ?? {};
+      const rawLink = typeof result?.link === "string" ? result.link.trim() : "";
+      const legacyLink = typeof payload?.data === "string" && /^https?:\/\//i.test(payload.data.trim())
+        ? payload.data.trim()
+        : "";
+      const invoiceLink = rawLink || legacyLink;
+      const invoiceUuid = String(
+        result?.uuid ||
+        payload?.creating_invoce_db?.transaction_id ||
+        (typeof payload?.data === "string" && !/^https?:\/\//i.test(payload.data.trim()) ? payload.data.trim() : "") ||
+        ""
+      );
+
+      let isValidPaymentLink = false;
+      try {
+        const parsedLink = new URL(invoiceLink);
+        isValidPaymentLink = parsedLink.protocol === "https:" || parsedLink.protocol === "http:";
+      } catch (_error) {
+        isValidPaymentLink = false;
+      }
+
+      if (payload?.ok !== false && isValidPaymentLink && invoiceUuid) {
+        pay_link.value = invoiceLink;
+        working_invoice = invoiceUuid;
+        // creating_invoce_db уже приходит в этом ответе: повторный запрос не нужен.
         
         // Обновляем время последнего создания инвойса
         lastInvoiceTime.value = Date.now();
         
         console.log('Pay link set:', pay_link.value);
         console.log('Pay link type:', typeof pay_link.value);
-        console.log('Response data:', response.data.result);
+        console.log('Invoice created:', {
+          uuid: working_invoice,
+          link: pay_link.value,
+          transactionId: payload?.creating_invoce_db?.transaction_id,
+          databaseId: payload?.creating_invoce_db?.id,
+        });
         
         // Возвращаем ссылку для использования в модальном окне
         return pay_link.value;
       } else {
+        console.error('Invalid create_invoces response:', {
+          ok: payload?.ok,
+          hasLink: Boolean(invoiceLink),
+          validLink: isValidPaymentLink,
+          hasUuid: Boolean(invoiceUuid),
+          detail: payload?.detail,
+        });
         showMessage(t('invoice_creation_failed') || 'Не удалось создать счет для оплаты', 'error');
-        throw new Error('Invoice creation failed');
+        throw new Error(payload?.detail || 'Invoice creation failed');
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
