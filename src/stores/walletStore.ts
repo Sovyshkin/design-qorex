@@ -150,6 +150,8 @@ export const useWalletStore = defineStore("wallet", () => {
   const userWallet = ref(""); // Номер кошелька пользователя для переводов
   const has2FA = ref(false); // Статус 2FA пользователя
   let messageTimer: ReturnType<typeof setTimeout> | null = null;
+  let createUserPromise: Promise<boolean> | null = null;
+  let getUserPromise: Promise<void> | null = null;
 
   const history = ref([]);
 
@@ -574,71 +576,74 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
-  const createUser = async () => {
-    // Проверяем наличие ID пользователя
-    if (!userTg.value.id) {
-      console.error('Cannot create user: no tg_id available');
-      console.log('userTg.value:', userTg.value);
-      return;
+  const createUser = async (): Promise<boolean> => {
+    if (createUserPromise) {
+      console.log('createUser already running, reusing the same request');
+      return createUserPromise;
     }
 
-    try {
-      isCreatingUser.value = true;
-      const userData: any = {
-        first_name: userTg.value.first_name,
-        last_name: userTg.value.last_name,
-        username: userTg.value.username || "", // Убеждаемся что username передается, даже если пустой
-        tg_id: String(userTg.value.id),
-      };
-      
-      console.log('Creating user with data:', userData);
+    const telegramId = String(userTg.value.id || "");
+    if (!telegramId) {
+      console.error('Cannot create user: no tg_id available', userTg.value);
+      return false;
+    }
 
-      // Добавляем поле whoreferal если есть реферальный ID
-      if (referalId.value) {
-        userData.whoreferal = referalId.value;
-      }
+    createUserPromise = (async () => {
+      try {
+        isCreatingUser.value = true;
+        const userData: any = {
+          first_name: userTg.value.first_name,
+          last_name: userTg.value.last_name,
+          username: userTg.value.username || "",
+          tg_id: telegramId,
+        };
 
-      let response = await axios.post(`/new_user`, userData);
+        if (referalId.value) userData.whoreferal = referalId.value;
 
-      if (response.status === 200 || response.status === 201) {
-        // Помечаем что пользователь создан
-        localStorage.setItem(`user_created_${userTg.value.id}`, "true");
-        
-        // Очищаем реферальный ID после использования
-        if (referalId.value) {
+        console.log('Creating user with data:', userData);
+        const response = await axios.post(`/new_user`, userData);
+
+        if (response.status === 200 || response.status === 201) {
+          localStorage.setItem(`user_created_${telegramId}`, "true");
           referalId.value = "";
+          return true;
         }
-        
-        // Пользователь создан, данные загрузятся при следующем обращении
-        // НЕ ВЫЗЫВАЕМ getUser() здесь - это приведет к рекурсии!
+
+        return false;
+      } catch (err: any) {
+        console.error('Error creating user:', err);
+        if (err.response?.status === 409) {
+          localStorage.setItem(`user_created_${telegramId}`, "true");
+          return true;
+        }
+        if (err.isNetworkError || (!err.response && err.request)) {
+          showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+        } else if (err.response?.data?.detail) {
+          showMessage(err.response.data.detail, 'error');
+        }
+        return false;
+      } finally {
+        isCreatingUser.value = false;
       }
-    } catch (err) {
-      console.error('Error creating user:', err);
-      if (err.isNetworkError || (!err.response && err.request)) {
-        showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
-      } else if (err.response?.status === 409) {
-        // Пользователь уже существует
-        localStorage.setItem(`user_created_${userTg.value.id}`, "true");
-      } else if (err.response?.data?.detail) {
-        showMessage(err.response.data.detail, 'error');
-      }
+    })();
+
+    try {
+      return await createUserPromise;
     } finally {
-      isCreatingUser.value = false;
+      createUserPromise = null;
     }
   };
 
-  const getUser = async () => {
-    // Защита от одновременных вызовов
-    if (isLoading.value) {
-      console.log('getUser already running, skipping...');
-      return;
+  const getUser = async (): Promise<void> => {
+    if (getUserPromise) {
+      console.log('getUser already running, reusing the same request');
+      return getUserPromise;
     }
-    
-    // Очищаем предыдущие сообщения
-    clearAllMessages();
-    
-    try {
-      isLoading.value = true;
+
+    getUserPromise = (async () => {
+      clearAllMessages();
+      try {
+        isLoading.value = true;
       console.log('Getting user data for ID:', userTg.value.id);
       console.log('Network status:', navigator.onLine ? 'online' : 'offline');
       console.log('Base URL:', axios.defaults.baseURL);
@@ -655,8 +660,17 @@ export const useWalletStore = defineStore("wallet", () => {
         });
         return;
       }
-      
-      let response = await axios.get(`/user/${userTg.value.id}`);
+
+      let response;
+      try {
+        response = await axios.get(`/user/${userTg.value.id}`);
+      } catch (err: any) {
+        if (err.response?.status !== 404) throw err;
+
+        const created = await createUser();
+        if (!created) return;
+        response = await axios.get(`/user/${userTg.value.id}`);
+      }
 
       console.log('Received user data from server:', response.data);
       user.value = response.data;
@@ -679,10 +693,22 @@ export const useWalletStore = defineStore("wallet", () => {
       
       console.log('User data loaded successfully:', { balance: balance.value, userId: user.value.tg_id });
       
-    } catch (err) {
-        await createUser();
+      } catch (err: any) {
+        console.error('Error getting user:', err);
+        if (err.isNetworkError || (!err.response && err.request)) {
+          showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
+        } else if (err.response?.data?.detail) {
+          showMessage(err.response.data.detail, 'error');
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    })();
+
+    try {
+      await getUserPromise;
     } finally {
-      isLoading.value = false;
+      getUserPromise = null;
     }
   };
 

@@ -295,7 +295,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Отображаем основной контент с навбаром -->
-      <div v-else :key="`shell-branch-${currentRouteKey}`">
+      <div v-else class="app-shell" :key="`shell-branch-${currentRouteKey}`">
         <div class="content-wrapper" :key="`shell-${currentRouteKey}`">
           <div class="wrap-load" v-if="shouldShowGlobalLoader">
             <AppLoader />
@@ -315,7 +315,9 @@ onBeforeUnmount(() => {
   font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   width: 100%;
   background-color: #fff;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
 }
 
 * {
@@ -339,7 +341,7 @@ onBeforeUnmount(() => {
 html,
 body {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
 }
@@ -347,10 +349,21 @@ body {
 body,
 #app {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
   display: flex;
   flex-direction: column;
   background-color: var(--background, #f1f5f9);
+}
+
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  overflow: visible;
 }
 
 body.dark-theme,
@@ -495,6 +508,13 @@ body.dark-theme .wrap-load {
   flex-direction: column;
   flex: 1;
   min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .vue-devtools__panel {
@@ -678,8 +698,8 @@ body.dark-theme .pin-page--standalone {
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
-  overflow-y: auto; /* Добавляем прокрутку для маленьких экранов */
-  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+  min-height: 100dvh;
+  overflow: visible;
 }
 
 /* Исправления для маленьких экранов */

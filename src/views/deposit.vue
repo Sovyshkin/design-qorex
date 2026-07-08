@@ -5,24 +5,13 @@ import { useWalletStore } from "@/stores/walletStore.ts";
 import WalletScreen from "@/components/ui/WalletScreen.vue";
 import NavBar from "@/components/NavBar.vue";
 import usdtIcon from "@/assets/coin-usdt.svg";
-import tonIcon from "@/assets/coin-ton.svg";
-import ethereumIcon from "@/assets/coin-ethereum.svg";
-import bnbIcon from "@/assets/coin-bnb.svg";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
 const amount = ref("");
-const network = ref("USDT_TRC20");
 const loading = ref(false);
 const paymentUrl = ref("");
 const showPayment = ref(false);
-const networks = [
-  { id:"USDT_TRC20", name:"TRON", standard:"TRC20", icon:usdtIcon },
-  { id:"USDT_TON", name:"TON", standard:"TON Network", icon:tonIcon },
-  { id:"USDT_ERC20", name:"Ethereum", standard:"ERC20", icon:ethereumIcon },
-  { id:"USDT_BSC", name:"BNB Chain", standard:"BEP20", icon:bnbIcon },
-];
-const selectedNetwork = computed(() => networks.find((item) => item.id === network.value));
 const valid = computed(() => Number(amount.value) >= 1 && Number(amount.value) <= 10000 && !loading.value);
 const sanitize = () => { amount.value = String(amount.value).replace(/\D/g, "").slice(0, 5); };
 
@@ -31,7 +20,7 @@ const submit = async () => {
   loading.value = true;
   try {
     walletStore.amount = String(Math.floor(Number(amount.value)));
-    const url = await walletStore.createInvoice(network.value);
+    const url = await walletStore.createInvoice();
     if (!url) throw new Error("empty payment url");
     paymentUrl.value = url;
     showPayment.value = true;
@@ -73,23 +62,8 @@ const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl
       <div class="limits"><span>Min 1 USDT</span><span>Max 10 000 USDT</span></div>
     </section>
 
-    <section class="deposit-card">
-      <div class="card-heading">
-        <div><span class="eyebrow">{{ t("network") }}</span><h2>{{ t("select_network") }}</h2></div>
-        <span class="network-count">4</span>
-      </div>
-      <div class="network-grid">
-        <button v-for="item in networks" :key="item.id" class="network-card" :class="{active:network===item.id}" @click="network=item.id">
-          <img :src="item.icon" :alt="item.name">
-          <span><strong>{{ item.name }}</strong><small>{{ item.standard }}</small></span>
-          <i><svg viewBox="0 0 20 20"><path d="m5 10 3 3 7-7" /></svg></i>
-        </button>
-      </div>
-      <div class="network-note"><span>i</span><p>{{ selectedNetwork?.name }} · {{ selectedNetwork?.standard }}. {{ t("faq_tip_network") }}.</p></div>
-    </section>
-
     <button class="primary" :disabled="!valid" @click="submit"><span>{{ loading ? `${t('loading')}...` : t("continue") }}</span><b>→</b></button>
-    <div v-if="showPayment" class="scrim" @click.self="showPayment=false"><section class="payment-sheet"><span class="sheet-handle"/><div class="sheet-network"><img :src="selectedNetwork?.icon" alt=""><div><h2>{{ t("deposit_payment") }}</h2><p>{{ selectedNetwork?.name }} · {{ selectedNetwork?.standard }}</p></div></div><button class="primary" @click="openPayment"><span>{{ t("open_in_app") }}</span><b>↗</b></button><button class="secondary" @click="openInBrowser">{{ t("open_in_browser") }}</button><button class="secondary" @click="copyPayment">{{ t("copy") }}</button><button class="link" @click="showPayment=false">{{ t("cancel") }}</button></section></div>
+    <div v-if="showPayment" class="scrim" @click.self="showPayment=false"><section class="payment-sheet"><span class="sheet-handle"/><div class="sheet-network"><img :src="usdtIcon" alt="USDT"><div><h2>{{ t("deposit_payment") }}</h2><p>USDT</p></div></div><button class="primary" @click="openPayment"><span>{{ t("open_in_app") }}</span><b>↗</b></button><button class="secondary" @click="openInBrowser">{{ t("open_in_browser") }}</button><button class="secondary" @click="copyPayment">{{ t("copy") }}</button><button class="link" @click="showPayment=false">{{ t("cancel") }}</button></section></div>
   </WalletScreen>
   <NavBar embedded />
   </div>
