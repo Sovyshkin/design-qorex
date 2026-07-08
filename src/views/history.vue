@@ -42,7 +42,13 @@ const parseCustomDate = (dateString) => {
 
 const groupedHistory = computed(() => {
   const groups = {};
-  walletStore.history.forEach((item) => {
+  const sortedHistory = [...walletStore.history].sort(
+    (left, right) =>
+      parseCustomDate(right.datatime).getTime() -
+      parseCustomDate(left.datatime).getTime()
+  );
+
+  sortedHistory.forEach((item) => {
     const d = parseCustomDate(item.datatime);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const dateLocale = locale.value === "en" ? "en-US" : "ru-RU";
