@@ -161,10 +161,30 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.history-page { min-height: 100vh; background: #f1f5f9; }
-.history-header { padding: 18px 16px 10px; }
+.history-page {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+.history-header { flex: 0 0 auto; padding: 18px 16px 10px; }
 h1 { margin: 0; font-size: 28px; line-height: 1; color: #0f172a; font-weight: 600; }
-.history-content { padding: 0 16px 124px; display: grid; gap: 14px; }
+.history-content {
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 0 16px calc(116px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
 .history-group { display: grid; gap: 10px; }
 h2 { margin: 0; color: #64748b; font-size: 14px; font-weight: 500; }
 .history-item { width: 100%; border-radius: 18px; border: 1px solid #e2e8f0; background: #fff; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08); padding: 12px; display: flex; justify-content: space-between; align-items: center; }
