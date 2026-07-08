@@ -10,8 +10,6 @@ const { t } = useI18n();
 const walletStore = useWalletStore();
 const amount = ref("");
 const loading = ref(false);
-const paymentUrl = ref("");
-const showPayment = ref(false);
 const valid = computed(() => Number(amount.value) >= 1 && Number(amount.value) <= 10000 && !loading.value);
 const sanitize = () => { amount.value = String(amount.value).replace(/\D/g, "").slice(0, 5); };
 
@@ -22,26 +20,12 @@ const submit = async () => {
     walletStore.amount = String(Math.floor(Number(amount.value)));
     const url = await walletStore.createInvoice();
     if (!url) throw new Error("empty payment url");
-    paymentUrl.value = url;
-    showPayment.value = true;
+    window.location.assign(url);
   } catch (error) {
     walletStore.showMessage(error?.response?.data?.detail || t("error_occurred"), "error");
   } finally { loading.value = false; }
 };
 
-const openPayment = () => {
-  if (!paymentUrl.value) return;
-  showPayment.value = false;
-  // Cashinout does not support a nested iframe. Top-level navigation keeps the
-  // payment inside Telegram's current WebView and allows its scripts to run.
-  window.location.assign(paymentUrl.value);
-};
-const openInBrowser = () => {
-  if (!paymentUrl.value) return;
-  if (window.Telegram?.WebApp?.openLink) window.Telegram.WebApp.openLink(paymentUrl.value, { try_instant_view: false });
-  else window.open(paymentUrl.value, "_blank", "noopener,noreferrer");
-};
-const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl.value); walletStore.showMessage(t("copied"), "success", 1500); };
 </script>
 
 <template>
@@ -63,7 +47,6 @@ const copyPayment = async () => { await navigator.clipboard.writeText(paymentUrl
     </section>
 
     <button class="primary" :disabled="!valid" @click="submit"><span>{{ loading ? `${t('loading')}...` : t("continue") }}</span><b>→</b></button>
-    <div v-if="showPayment" class="scrim" @click.self="showPayment=false"><section class="payment-sheet"><span class="sheet-handle"/><div class="sheet-network"><img :src="usdtIcon" alt="USDT"><div><h2>{{ t("deposit_payment") }}</h2><p>USDT</p></div></div><button class="primary" @click="openPayment"><span>{{ t("open_in_app") }}</span><b>↗</b></button><button class="secondary" @click="openInBrowser">{{ t("open_in_browser") }}</button><button class="secondary" @click="copyPayment">{{ t("copy") }}</button><button class="link" @click="showPayment=false">{{ t("cancel") }}</button></section></div>
   </WalletScreen>
   <NavBar embedded />
   </div>
