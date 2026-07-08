@@ -25,6 +25,28 @@ const formatDateForTransaction = (date = new Date()) => {
   return `${day}.${month}.${year}-${hours}:${minutes}:${seconds}`;
 };
 
+const getBackendDateTimestamp = (value: unknown) => {
+  const rawValue = String(value || "").trim();
+  const match = rawValue.match(
+    /^(\d{2})\.(\d{2})\.(\d{4})[-T ](\d{2}):(\d{2}):(\d{2})$/
+  );
+
+  if (match) {
+    const [, day, month, year, hours, minutes, seconds] = match;
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hours),
+      Number(minutes),
+      Number(seconds)
+    ).getTime();
+  }
+
+  const fallbackTimestamp = new Date(rawValue).getTime();
+  return Number.isNaN(fallbackTimestamp) ? 0 : fallbackTimestamp;
+};
+
 const extractQrParam = (rawLink: string, key: string) => {
   if (!rawLink || typeof rawLink !== "string") {
     return "";
@@ -1082,8 +1104,8 @@ export const useWalletStore = defineStore("wallet", () => {
 
       const sortByNewest = (items: any[]) =>
         [...items].sort((a, b) => {
-          const left = new Date(String(a?.datatime || 0)).getTime();
-          const right = new Date(String(b?.datatime || 0)).getTime();
+          const left = getBackendDateTimestamp(a?.datatime);
+          const right = getBackendDateTimestamp(b?.datatime);
           return right - left;
         });
 

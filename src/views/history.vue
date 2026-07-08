@@ -6,11 +6,37 @@ import { computed, onActivated, onBeforeUnmount, onMounted } from "vue";
 import { getTransactionStatusMeta } from "@/utils/transactionStatus";
 
 const walletStore = useWalletStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const parseCustomDate = (dateString) => {
   if (!dateString) return new Date();
-  const parsedDate = new Date(String(dateString));
+
+  const value = String(dateString).trim();
+  const serverDateMatch = value.match(
+    /^(\d{2})\.(\d{2})\.(\d{4})[-T ](\d{2}):(\d{2}):(\d{2})$/
+  );
+
+  if (serverDateMatch) {
+    const [, day, month, year, hours, minutes, seconds] = serverDateMatch;
+    const parsedServerDate = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hours),
+      Number(minutes),
+      Number(seconds)
+    );
+
+    if (
+      parsedServerDate.getFullYear() === Number(year) &&
+      parsedServerDate.getMonth() === Number(month) - 1 &&
+      parsedServerDate.getDate() === Number(day)
+    ) {
+      return parsedServerDate;
+    }
+  }
+
+  const parsedDate = new Date(value);
   return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
 };
 
@@ -18,8 +44,9 @@ const groupedHistory = computed(() => {
   const groups = {};
   walletStore.history.forEach((item) => {
     const d = parseCustomDate(item.datatime);
-    const key = d.toLocaleDateString("ru-RU");
-    if (!groups[key]) groups[key] = { displayDate: d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" }), items: [] };
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const dateLocale = locale.value === "en" ? "en-US" : "ru-RU";
+    if (!groups[key]) groups[key] = { displayDate: d.toLocaleDateString(dateLocale, { day: "numeric", month: "long" }), items: [] };
     groups[key].items.push(item);
   });
   return groups;
