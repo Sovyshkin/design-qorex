@@ -1,14 +1,65 @@
 <script setup>
 import { useWalletStore } from "@/stores/walletStore";
 import { useI18n } from "vue-i18n";
-import { onActivated, onMounted } from "vue";
+import { computed, onActivated, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 const walletStore = useWalletStore();
 const { t } = useI18n();
 const router = useRouter();
+const cashback = ref(null);
+const cashbackLoading = ref(false);
+const cashbackError = ref("");
+const userId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id || "");
 
 const goRoute = (name) => router.push({ name });
+
+const cashbackPeriods = computed(() => {
+  const periods = cashback.value?.periods || {};
+  return [
+    { key: "daily", label: "День", caption: "30 000 ₽", data: periods.daily },
+    { key: "monthly", label: "Месяц", caption: "1 000 000 ₽", data: periods.monthly },
+    { key: "yearly", label: "Год", caption: "15 000 000 ₽", data: periods.yearly },
+  ];
+});
+
+const formatRub = (value) => `${walletStore.roundToHundredths(Number(value || 0))} ₽`;
+
+const periodProgress = (period) => {
+  const total = Number(period?.total_rub || 0);
+  const need = Number(period?.need_for_cb || 0);
+  if (!need) return 0;
+  return Math.min(100, Math.max(0, (total / need) * 100));
+};
+
+const periodStatus = (period) => {
+  if (period?.paid_now) return "Начислено сейчас";
+  if (period?.already_paid) return "Уже выплачено";
+  if (period?.threshold_reached) return "Доступно";
+  return "В процессе";
+};
+
+const loadCashback = async () => {
+  if (!userId.value) return;
+
+  cashbackLoading.value = true;
+  cashbackError.value = "";
+
+  try {
+    const result = await walletStore.getMyCashback();
+    if (result) {
+      cashback.value = result;
+      const paidNow = Object.values(result.periods || {}).some((period) => period?.paid_now);
+      if (paidNow) await walletStore.getUser();
+    } else {
+      cashbackError.value = "Не удалось загрузить кешбэк";
+    }
+  } catch (err) {
+    cashbackError.value = "Не удалось загрузить кешбэк";
+  } finally {
+    cashbackLoading.value = false;
+  }
+};
 
 const refreshMainData = async () => {
   try {
@@ -17,6 +68,7 @@ const refreshMainData = async () => {
 
     if (hasTelegramUser) {
       requests.unshift(walletStore.getUser());
+      requests.push(loadCashback());
     }
 
     await Promise.allSettled(requests);
@@ -27,6 +79,16 @@ const refreshMainData = async () => {
 
 onMounted(refreshMainData);
 onActivated(refreshMainData);
+
+watch(
+  userId,
+  (value, oldValue) => {
+    if (value && value !== oldValue) {
+      loadCashback();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -56,6 +118,46 @@ onActivated(refreshMainData);
         <button class="quick-action" @click="goRoute('deposit')"><i>↓</i><span>{{ t('deposit') }}</span></button>
         <button class="quick-action" @click="goRoute('transfer')"><i>↗</i><span>{{ t('transfer') }}</span></button>
         <button class="quick-action" @click="goRoute('withdraw')"><i>↑</i><span>{{ t('pay_out') }}</span></button>
+      </section>
+
+      <section class="cashback-block">
+        <div class="cashback-head">
+          <div>
+            <span>PeekPay Cashback</span>
+            <h3>Кешбэк</h3>
+          </div>
+          <button type="button" @click="loadCashback" :disabled="cashbackLoading">
+            {{ cashbackLoading ? "..." : "↻" }}
+          </button>
+        </div>
+
+        <div v-if="cashbackLoading && !cashback" class="cashback-state">Загружаем кешбэк...</div>
+        <div v-else-if="cashbackError && !cashback" class="cashback-state cashback-state--error">
+          {{ cashbackError }}
+        </div>
+        <div v-else class="cashback-list">
+          <article
+            v-for="period in cashbackPeriods"
+            :key="period.key"
+            class="cashback-row"
+            :class="{ 'is-reached': period.data?.threshold_reached }"
+          >
+            <div class="cashback-row__top">
+              <div>
+                <strong>{{ period.label }}</strong>
+                <small>Порог {{ formatRub(period.data?.need_for_cb || period.caption.replace(/\D/g, '')) }}</small>
+              </div>
+              <b>{{ formatRub(period.data?.cashback_amount) }}</b>
+            </div>
+            <div class="cashback-meter">
+              <span :style="{ width: `${periodProgress(period.data)}%` }"></span>
+            </div>
+            <div class="cashback-row__bottom">
+              <small>Оборот {{ formatRub(period.data?.total_rub) }}</small>
+              <small>{{ periodStatus(period.data) }}</small>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="assets-block">
@@ -108,6 +210,26 @@ h1 { width: 100%; margin: 0; color: #0f172a; font-size: 20px; line-height: 1.15;
 .quick-action { min-height: 58px; border-radius: 16px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06); display: grid; gap: 3px; place-items: center; padding: 7px 4px; }
 .quick-action i { width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: grid; place-items: center; font-style: normal; font-size: 16px; font-weight: 700; }
 .quick-action span { color: #0f172a; font-size: 12px; line-height: 14px; font-weight: 500; }
+
+.cashback-block { padding: 14px; display: grid; gap: 12px; border-radius: 22px; border: 1px solid #dbeafe; background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07); }
+.cashback-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 2px 0; }
+.cashback-head span { color: #2563eb; font-size: 11px; line-height: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.cashback-head h3 { margin: 3px 0 0; color: #0f172a; font-size: 19px; line-height: 22px; font-weight: 750; }
+.cashback-head button { width: 38px; height: 38px; border-radius: 13px; background: #eff6ff; color: #2563eb; font-size: 18px; font-weight: 800; }
+.cashback-head button:disabled { opacity: .55; }
+.cashback-state { min-height: 84px; display: grid; place-items: center; color: #64748b; font-size: 14px; font-weight: 650; text-align: center; }
+.cashback-state--error { color: #dc2626; }
+.cashback-list { display: grid; gap: 9px; }
+.cashback-row { padding: 12px; display: grid; gap: 9px; border-radius: 16px; background: #f1f5f9; border: 1px solid transparent; }
+.cashback-row.is-reached { background: #ecfdf5; border-color: #bbf7d0; }
+.cashback-row__top,
+.cashback-row__bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cashback-row__top div { min-width: 0; display: grid; gap: 2px; }
+.cashback-row strong { color: #0f172a; font-size: 15px; line-height: 18px; font-weight: 750; }
+.cashback-row b { flex: 0 0 auto; color: #16a34a; font-size: 17px; line-height: 20px; font-weight: 800; }
+.cashback-row small { min-width: 0; color: #64748b; font-size: 11px; line-height: 14px; font-weight: 600; }
+.cashback-meter { width: 100%; height: 7px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
+.cashback-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #22c55e); transition: width .25s ease; }
 
 .assets-block { background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); padding: 12px; }
 .assets-head h3 { margin: 2px 6px 10px; color: #0f172a; font-size: 18px; font-weight: 600; }
@@ -167,6 +289,35 @@ small { color: #64748b; font-size: 12px; }
 
 :global(.dark-theme) .quick-action span {
   color: #ffffff !important;
+}
+
+:global(.dark-theme) .cashback-block {
+  background: rgba(30, 39, 59, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32) !important;
+}
+
+:global(.dark-theme) .cashback-head h3,
+:global(.dark-theme) .cashback-row strong {
+  color: #ffffff !important;
+}
+
+:global(.dark-theme) .cashback-head button {
+  background: rgba(37, 98, 235, 0.16) !important;
+  color: #3882fa !important;
+}
+
+:global(.dark-theme) .cashback-row {
+  background: rgba(13, 27, 42, 0.72) !important;
+}
+
+:global(.dark-theme) .cashback-row.is-reached {
+  background: rgba(22, 163, 74, 0.14) !important;
+  border-color: rgba(34, 197, 94, 0.22) !important;
+}
+
+:global(.dark-theme) .cashback-meter {
+  background: rgba(148, 163, 184, 0.22) !important;
 }
 
 :global(.dark-theme) .assets-block {

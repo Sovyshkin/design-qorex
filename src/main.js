@@ -6,6 +6,7 @@ import { PiniaCookiesPlugin } from './plugins/pinia-cookies';
 import { createPinia } from 'pinia';
 import axios from 'axios'
 import { VueTelegramPlugin } from "vue-tg";
+import { clearBrowserAuth, getAccessToken, getTelegramInitData } from "@/utils/auth";
 import './assets/theme.css'; // Подключаем стили темы
 import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
@@ -33,31 +34,29 @@ window.addEventListener('unhandledrejection', (event) => {
   });
 });
 
-// Функция для получения Telegram initData
-const getTelegramInitData = () => {
-  if (window.Telegram?.WebApp?.initData) {
-    return window.Telegram.WebApp.initData;
-  }
-  console.warn('No Telegram initData available');
-  return null;
-};
-
-// Interceptor для добавления Telegram данных к каждому запросу
+// Interceptor для добавления авторизации к каждому запросу
 axios.interceptors.request.use(async (config) => {
   console.log('Interceptor called for URL:', config.url);
   
   try {
     const initData = getTelegramInitData();
+    const token = getAccessToken();
+    const isTelegramAuthRequest = String(config.url || "").includes("/auth/telegram");
+
+    config.headers = config.headers || {};
+
     if (initData) {
-      config.headers = config.headers || {};
       config.headers['X-Init-Data'] = initData;
       config.headers['X-Timestamp'] = Math.floor(Date.now() / 1000);
       console.log('Added Telegram auth headers');
+    } else if (token && !isTelegramAuthRequest && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('Added browser JWT auth header');
     } else {
-      console.warn('No Telegram initData available for request');
+      console.warn('No Telegram initData or browser JWT available for request');
     }
   } catch (error) {
-    console.error('Error getting Telegram data for request:', error);
+    console.error('Error getting auth data for request:', error);
   }
   
   console.log('Final headers:', config.headers);
@@ -65,6 +64,24 @@ axios.interceptors.request.use(async (config) => {
 }, (error) => {
   return Promise.reject(error);
 });
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const detail = String(error.response?.data?.detail || error.response?.data?.message || "");
+    const isExpiredBrowserToken =
+      error.response?.status === 401 && /token expired|expired/i.test(detail);
+
+    if (isExpiredBrowserToken) {
+      clearBrowserAuth();
+      if (window.location.pathname !== "/browser") {
+        window.location.assign("/browser");
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 const pinia = createPinia();
 pinia.use(PiniaCookiesPlugin);

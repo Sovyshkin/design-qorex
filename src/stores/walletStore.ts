@@ -9,6 +9,7 @@ import {
   isTransactionErrorStatus,
   normalizeTransactionStatus,
 } from "@/utils/transactionStatus";
+import { getSavedBrowserUser, getSavedTelegramData, normalizeTelegramUser } from "@/utils/auth";
 
 // Вспомогательная функция для форматирования даты в локальном часовом поясе
 const formatDateForTransaction = (date = new Date()) => {
@@ -178,6 +179,20 @@ export const useWalletStore = defineStore("wallet", () => {
   const history = ref([]);
 
   const transaction = ref<any>({});
+
+  const getTelegramDataForRequest = () => {
+    const webAppData = window.Telegram?.WebApp?.initDataUnsafe;
+
+    if (webAppData && Object.keys(webAppData).length) {
+      return webAppData;
+    }
+
+    return getSavedTelegramData();
+  };
+
+  const getCurrentTelegramId = () => {
+    return String(user.value?.tg_id || userTg.value?.id || "");
+  };
 
   const setHideBalanceActive = async (val: boolean) => {
     // Сначала обновляем локальное состояние
@@ -589,11 +604,14 @@ export const useWalletStore = defineStore("wallet", () => {
         }
       }
     } else {
-      console.log('Telegram WebApp not available, using fallback data');
-      // Fallback данные для разработки/тестирования вне Telegram
-      if (!userTg.value.id) {
-        // Используем тестовые данные, которые уже есть в коде
-        console.log('Using fallback user data:', userTg.value);
+      const savedBrowserUser = getSavedBrowserUser();
+
+      if (savedBrowserUser) {
+        userTg.value = normalizeTelegramUser(savedBrowserUser);
+        localStorage.setItem("user", JSON.stringify(userTg.value));
+        console.log('Set user data from browser auth:', userTg.value);
+      } else {
+        console.log('Telegram WebApp not available and browser auth user is empty');
       }
     }
   };
@@ -1396,6 +1414,8 @@ export const useWalletStore = defineStore("wallet", () => {
   const getMyReferrals = async () => {
     try {
       const tgId = user.value.tg_id || userTg.value.id;
+      if (!tgId) return [];
+
       let response = await axios.get(`/my_ref/${tgId}`);
 
       if (response.status === 200) {
@@ -1413,6 +1433,93 @@ export const useWalletStore = defineStore("wallet", () => {
       }
       
       return []; // Возвращаем пустой массив при ошибке
+    }
+  };
+
+  const serializeAuthParams = (params: Record<string, unknown>) => {
+    const query = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      query.set(
+        key,
+        typeof value === "object" && value !== null
+          ? JSON.stringify(value)
+          : String(value || "")
+      );
+    });
+
+    return query.toString();
+  };
+
+  const getMyCashback = async () => {
+    try {
+      const tgId = getCurrentTelegramId();
+      if (!tgId) return null;
+
+      const params = {
+        tg_id: tgId,
+        telegram_data: getTelegramDataForRequest(),
+      };
+
+      const response = await axios.get(
+        `/my_cash_back?${serializeAuthParams(params)}`
+      );
+
+      if (response.status === 200) {
+        return response.data;
+      }
+
+      return null;
+    } catch (err: any) {
+      console.error("Error getting cashback:", err);
+
+      if (err.code === "NETWORK_ERROR" || err.message === "Network Error") {
+        showMessage(t("network_error") || "Проблема с подключением к серверу", "error");
+      }
+
+      return null;
+    }
+  };
+
+  const updateMyReferralCode = async (refCode: string) => {
+    try {
+      const tgId = getCurrentTelegramId();
+      const normalizedCode = String(refCode || "").trim();
+
+      if (!tgId || !normalizedCode) {
+        showMessage("Введите реферальный код", "error");
+        return false;
+      }
+
+      const params = {
+        tg_id: tgId,
+        ref_str: normalizedCode.startsWith("referal_")
+          ? normalizedCode
+          : `referal_${normalizedCode}`,
+        telegram_data: getTelegramDataForRequest(),
+      };
+
+      const response = await axios.post(
+        `/update_my_ref?${serializeAuthParams(params)}`,
+        {}
+      );
+
+      if (response.status === 200) {
+        showMessage("Реферальный код сохранён", "success");
+        await getUser();
+        return true;
+      }
+
+      return false;
+    } catch (err: any) {
+      console.error("Error updating referral code:", err);
+      showMessage(
+        err.response?.data?.detail ||
+          err.response?.data?.message ||
+          "Не удалось сохранить реферальный код",
+        "error"
+      );
+      return false;
     }
   };
 
@@ -1797,6 +1904,8 @@ export const useWalletStore = defineStore("wallet", () => {
     qrTake,
     withdrawFunds,
     getMyReferrals,
+    getMyCashback,
+    updateMyReferralCode,
     enable2FA,
     verify2FACode,
     check2FAStatus,

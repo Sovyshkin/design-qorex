@@ -6,6 +6,7 @@ import AppLoader from "./components/AppLoader.vue";
 import AppMessage from "./components/AppMessage.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import { logThemeSnapshot } from "@/utils/pageDebug";
+import { getAccessToken } from "@/utils/auth";
 
 const router = useRouter();
 const walletStore = useWalletStore();
@@ -13,7 +14,7 @@ const accessDenied = ref(false);
 let bodyClassObserver = null;
 
 // Список публичных маршрутов, которые не требуют аутентификации
-const publicRoutes = ["enterPin", "createPin"];
+const publicRoutes = ["enterPin", "createPin", "browser"];
 
 // Упрощенный router guard - только для базовой навигации
 router.beforeEach(async (to, from, next) => {
@@ -24,10 +25,15 @@ router.beforeEach(async (to, from, next) => {
       storeLoading: walletStore.isLoading,
     });
 
-    // Разрешаем навигацию к PIN маршрутам
-    if (to.name === "enterPin" || to.name === "createPin") {
+    // Разрешаем навигацию к публичным маршрутам
+    if (to.name === "enterPin" || to.name === "createPin" || to.name === "browser") {
       walletStore.isLoading = false;
       return next();
+    }
+
+    if (!window.Telegram?.WebApp?.initData && !getAccessToken()) {
+      walletStore.isLoading = false;
+      return next({ name: "browser" });
     }
 
     // Если пользователь пытается попасть на createPin, но PIN уже есть
@@ -69,8 +75,7 @@ const initializeApp = async () => {
   try {
     await walletStore.getUserInfo();
 
-    if (window.Telegram && window.Telegram.WebApp) {
-      if (walletStore.userTg && walletStore.userTg.id) {
+    if (walletStore.userTg && walletStore.userTg.id) {
         if (!checkAccessByWhitelist(walletStore.userTg.id)) {
           accessDenied.value = true;
           walletStore.isLoading = false;
@@ -90,7 +95,6 @@ const initializeApp = async () => {
           });
           return; // Не сбрасываем isLoading если перенаправляем на PIN
         }
-      }
     }
 
     // Завершаем загрузку если не требуется PIN
@@ -135,7 +139,7 @@ const showContent = computed(() => {
   return !publicRoutes.includes(currentRoute.name);
 });
 
-const shelllessRoutes = ["enterPin", "createPin", "twoFactorAuth"];
+const shelllessRoutes = ["enterPin", "createPin", "twoFactorAuth", "browser"];
 const standaloneLoaderRoutes = ["enterPin", "createPin"];
 
 const showMainShell = computed(() => {

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore";
 import WalletScreen from "@/components/ui/WalletScreen.vue";
@@ -10,11 +10,24 @@ const referrals = ref([]);
 const loading = ref(true);
 const error = ref("");
 const copied = ref(false);
+const refCode = ref("");
+const savingRefCode = ref(false);
 const userId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id || "");
 const referralLink = computed(() => `https://t.me/peekpay_bot?startapp=referal_${userId.value}`);
 const earned = computed(() => referrals.value.reduce((sum, item) => sum + Number(item.referral_only_pay || 0), 0));
+const normalizedRefPreview = computed(() => {
+  const value = refCode.value.trim();
+  if (!value) return "referal_7752588136";
+  return value.startsWith("referal_") ? value : `referal_${value}`;
+});
 
 const load = async () => {
+  if (!userId.value) {
+    referrals.value = [];
+    loading.value = false;
+    return;
+  }
+
   loading.value = true;
   error.value = "";
   try { referrals.value = (await walletStore.getMyReferrals()) || []; }
@@ -31,7 +44,31 @@ const copyLink = async () => {
   } catch (_error) { walletStore.showMessage(t("error_occurred"), "error"); }
 };
 
+const saveReferralCode = async () => {
+  if (!refCode.value.trim()) {
+    walletStore.showMessage("Введите реферальный код", "error");
+    return;
+  }
+
+  savingRefCode.value = true;
+  try {
+    const saved = await walletStore.updateMyReferralCode(refCode.value);
+    if (saved) {
+      refCode.value = "";
+      await load();
+    }
+  } finally {
+    savingRefCode.value = false;
+  }
+};
+
 onMounted(load);
+
+watch(userId, (value, oldValue) => {
+  if (value && value !== oldValue) {
+    load();
+  }
+});
 </script>
 
 <template>
@@ -48,6 +85,24 @@ onMounted(load);
         <span>{{ referralLink }}</span>
         <span class="ref-link__copy">{{ copied ? "✓" : "▣" }}</span>
       </button>
+    </section>
+
+    <section class="ref-card ref-code-card">
+      <p class="ref-label">Реферальный код</p>
+      <div class="ref-code-form">
+        <input
+          v-model.trim="refCode"
+          type="text"
+          inputmode="text"
+          autocomplete="off"
+          placeholder="referal_7752588136"
+          @keyup.enter="saveReferralCode"
+        />
+        <button type="button" :disabled="savingRefCode" @click="saveReferralCode">
+          {{ savingRefCode ? "..." : "OK" }}
+        </button>
+      </div>
+      <small>Будет сохранено как {{ normalizedRefPreview }}</small>
     </section>
 
     <div class="ref-stats">
@@ -79,6 +134,12 @@ onMounted(load);
 .ref-link { min-width: 0; width: 100%; padding: 14px; display: grid !important; grid-template-columns: minmax(0,1fr) 46px; align-items: center; gap: 10px; border: 1px solid var(--screen-border); border-radius: 16px; background: var(--screen-soft) !important; text-align: left; }
 .ref-link span:first-child { overflow-wrap: anywhere; color: var(--screen-text) !important; font-size: 14px; font-weight: 600; }
 .ref-link__copy { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 20px; }
+.ref-code-card small { color: var(--screen-muted) !important; font-size: 12px; line-height: 16px; font-weight: 600; }
+.ref-code-form { width: 100%; display: grid !important; grid-template-columns: minmax(0,1fr) 58px; gap: 10px; }
+.ref-code-form input { width: 100%; min-width: 0; height: 52px; padding: 0 14px; border: 1px solid var(--screen-border) !important; border-radius: 16px; background: var(--screen-soft) !important; color: var(--screen-text) !important; font-size: 14px; font-weight: 650; }
+.ref-code-form input::placeholder { color: var(--screen-muted) !important; opacity: .75; }
+.ref-code-form button { height: 52px; border-radius: 16px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 13px; font-weight: 800; }
+.ref-code-form button:disabled { opacity: .55; }
 .ref-stats { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
 .ref-stats div { padding: 16px; border-radius: 20px; border: 1px solid var(--screen-border); background: var(--screen-card) !important; }
 .ref-stats span { display: block; color: var(--screen-muted) !important; font-size: 13px; }
