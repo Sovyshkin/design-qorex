@@ -6,6 +6,7 @@ import { useWalletStore } from "@/stores/walletStore.ts";
 import {
   getAccessToken,
   getSavedBrowserUser,
+  isTelegramWebView,
   normalizeTelegramUser,
   saveBrowserAuth,
 } from "@/utils/auth";
@@ -78,6 +79,11 @@ const continueSession = async () => {
 };
 
 onMounted(async () => {
+  if (isTelegramWebView()) {
+    router.replace({ name: "main", query: { auth: "telegram_missing" } });
+    return;
+  }
+
   if (hasToken.value) {
     await continueSession();
   }

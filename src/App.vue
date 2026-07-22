@@ -6,11 +6,12 @@ import AppLoader from "./components/AppLoader.vue";
 import AppMessage from "./components/AppMessage.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import { logThemeSnapshot } from "@/utils/pageDebug";
-import { getAccessToken } from "@/utils/auth";
+import { getAccessToken, getTelegramInitData, isTelegramWebView } from "@/utils/auth";
 
 const router = useRouter();
 const walletStore = useWalletStore();
 const accessDenied = ref(false);
+const telegramAuthMissing = ref(false);
 let bodyClassObserver = null;
 
 // Список публичных маршрутов, которые не требуют аутентификации
@@ -25,15 +26,28 @@ router.beforeEach(async (to, from, next) => {
       storeLoading: walletStore.isLoading,
     });
 
+    const hasMiniAppAuth = Boolean(getTelegramInitData());
+    const hasBrowserAuth = Boolean(getAccessToken());
+    const isTelegramRuntime = isTelegramWebView();
+
+    telegramAuthMissing.value = isTelegramRuntime && !hasMiniAppAuth && !hasBrowserAuth;
+
+    if (to.name === "browser" && isTelegramRuntime) {
+      walletStore.isLoading = false;
+      return next({ name: "main", query: { auth: "telegram_missing" } });
+    }
+
     // Разрешаем навигацию к публичным маршрутам
     if (to.name === "enterPin" || to.name === "createPin" || to.name === "browser") {
       walletStore.isLoading = false;
       return next();
     }
 
-    if (!window.Telegram?.WebApp?.initData && !getAccessToken()) {
+    if (!hasMiniAppAuth && !hasBrowserAuth) {
       walletStore.isLoading = false;
-      return next({ name: "browser" });
+      return isTelegramRuntime
+        ? next()
+        : next({ name: "browser" });
     }
 
     // Если пользователь пытается попасть на createPin, но PIN уже есть
@@ -74,6 +88,9 @@ const isAppInitialized = ref(false);
 const initializeApp = async () => {
   try {
     await walletStore.getUserInfo();
+
+    telegramAuthMissing.value =
+      isTelegramWebView() && !getTelegramInitData() && !getAccessToken();
 
     if (walletStore.userTg && walletStore.userTg.id) {
         if (!checkAccessByWhitelist(walletStore.userTg.id)) {
@@ -277,6 +294,17 @@ onBeforeUnmount(() => {
         <p>Приложение находится в режиме тестирования.</p>
         <p class="sub-text">
           Доступ разрешен только авторизованным пользователям.
+        </p>
+      </div>
+    </div>
+
+    <div class="access-denied" v-else-if="telegramAuthMissing">
+      <div class="access-denied-content">
+        <img class="auth-warning-logo" src="/assets/peekpay-logo-150.png" alt="PeekPay" />
+        <h1>Нет данных Telegram</h1>
+        <p>Мини-приложение открыто без данных авторизации.</p>
+        <p class="sub-text">
+          Закройте это окно и откройте PeekPay заново из кнопки бота.
         </p>
       </div>
     </div>
@@ -546,6 +574,15 @@ h1 {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   max-width: 400px;
   width: 100%;
+}
+
+.auth-warning-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  margin: 0 auto 14px;
+  object-fit: contain;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
 }
 
 .lock-icon {

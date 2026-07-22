@@ -72,3 +72,18 @@ export const getSavedTelegramData = () => {
 export const isTelegramMiniApp = () => {
   return Boolean(getTelegramInitData());
 };
+
+export const isTelegramWebView = () => {
+  const userAgent = navigator.userAgent || "";
+  const platform = window.Telegram?.WebApp?.platform;
+
+  return Boolean(
+    window.TelegramWebviewProxy ||
+      /Telegram/i.test(userAgent) ||
+      (platform && platform !== "unknown")
+  );
+};
+
+export const shouldUseBrowserAuth = () => {
+  return !isTelegramWebView();
+};
