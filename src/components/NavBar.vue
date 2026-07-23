@@ -34,7 +34,24 @@ const handleScannerClick = (navigate) => {
 </script>
 
 <template>
-  <nav class="wallet-nav-wrap" :class="{ 'is-embedded': embedded }">
+  <Teleport v-if="!embedded" to="body">
+    <nav class="wallet-nav-wrap" :class="{ 'is-embedded': embedded }">
+      <div class="wallet-nav">
+        <router-link v-for="item in navItems" :key="item.id" :to="item.path" custom v-slot="{ navigate, isActive }">
+          <button v-if="item.id === 'scanner'" class="wallet-tab center-scan" :class="{ active: isActive }" @click="handleScannerClick(navigate)">
+            <img :src="`/assets/${item.icon}.svg`" alt="scan" />
+          </button>
+          <button v-else class="wallet-tab" :class="{ active: isActive }" @click="navigate">
+            <img :src="`/assets/${item.icon}${item.isPng ? '.png' : '.svg'}`" class="wallet-icon" alt="icon" />
+            <span>{{ item.name }}</span>
+            <span class="active-dot"></span>
+          </button>
+        </router-link>
+      </div>
+    </nav>
+  </Teleport>
+
+  <nav v-else class="wallet-nav-wrap is-embedded">
     <div class="wallet-nav">
       <router-link v-for="item in navItems" :key="item.id" :to="item.path" custom v-slot="{ navigate, isActive }">
         <button v-if="item.id === 'scanner'" class="wallet-tab center-scan" :class="{ active: isActive }" @click="handleScannerClick(navigate)">

@@ -359,7 +359,9 @@ onBeforeUnmount(() => {
   background-color: #fff;
   min-height: 100vh;
   min-height: 100dvh;
-  height: auto;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 * {
@@ -393,7 +395,8 @@ body,
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  height: auto;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--background, #f1f5f9);
@@ -401,11 +404,11 @@ body,
 
 html {
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 body {
-  overflow: visible;
+  overflow: hidden;
 }
 
 body.dark-theme,
@@ -549,18 +552,21 @@ body.dark-theme .wrap-load {
   display: flex;
   flex-direction: column;
   flex: 1;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
   min-height: 100vh;
   min-height: 100dvh;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .app-shell {
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .vue-devtools__panel {
@@ -776,10 +782,13 @@ body.dark-theme .pin-page--standalone {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
   padding-bottom: calc(132px + var(--tg-content-safe-area-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px));
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Исправления для маленьких экранов */
