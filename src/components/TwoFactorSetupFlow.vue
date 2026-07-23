@@ -17,30 +17,46 @@ const submitting = ref(false);
 const error = ref("");
 
 const brandOtpAuthUrl = (rawKey) => {
-  const url = new URL(rawKey);
-  const decodedLabel = decodeURIComponent(url.pathname.replace(/^\/totp\//, ""));
-  const account = decodedLabel.includes(":")
-    ? decodedLabel.slice(decodedLabel.indexOf(":") + 1)
-    : decodedLabel;
+  try {
+    const url = new URL(rawKey);
+    const decodedLabel = decodeURIComponent(url.pathname.replace(/^\/totp\//, ""));
+    const account = decodedLabel.includes(":")
+      ? decodedLabel.slice(decodedLabel.indexOf(":") + 1)
+      : decodedLabel;
 
-  url.pathname = `/totp/${encodeURIComponent(`PeekPay:${account}`)}`;
-  url.searchParams.set("issuer", "PeekPay");
-  return url.toString();
+    url.pathname = `/totp/${encodeURIComponent(`PeekPay:${account}`)}`;
+    url.searchParams.set("issuer", "PeekPay");
+    return url.toString();
+  } catch (_error) {
+    return rawKey;
+  }
 };
 
 const createQrDataUrl = (value) => {
-  const size = 320;
-  const matrix = new QRCodeWriter().encode(value, BarcodeFormat.QR_CODE, size, size);
-  let path = "";
+  try {
+    const size = 320;
+    const matrix = new QRCodeWriter().encode(value, BarcodeFormat.QR_CODE, size, size);
+    if (!matrix || typeof matrix.get !== "function") return "";
 
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      if (matrix.get(x, y)) path += `M${x} ${y}h1v1h-1z`;
+    let path = "";
+    for (let y = 0; y < size; y += 1) {
+      for (let x = 0; x < size; x += 1) {
+        if (matrix.get(x, y)) path += `M${x} ${y}h1v1h-1z`;
+      }
     }
-  }
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  } catch (cause) {
+    console.warn("2FA QR generation failed:", cause);
+    return "";
+  }
+};
+
+const normalizeQrImage = (value) => {
+  if (!value) return "";
+  if (String(value).startsWith("data:image")) return value;
+  return `data:image/png;base64,${value}`;
 };
 
 const initialize = async () => {
@@ -54,7 +70,7 @@ const initialize = async () => {
     }
     if (!result?.success || !result?.key) throw new Error(result?.detail || t("2fa_setup_failed"));
     authKey.value = brandOtpAuthUrl(result.key);
-    qrSource.value = createQrDataUrl(authKey.value);
+    qrSource.value = normalizeQrImage(result.qrImage) || createQrDataUrl(authKey.value);
     phase.value = "setup";
   } catch (cause) {
     error.value = cause?.message || t("error_occurred");
@@ -93,7 +109,12 @@ onMounted(initialize);
           <ol><li>{{t('install_authenticator') || 'Установите Google Authenticator или аналогичное приложение'}}</li><li>{{t('scan_qr_code') || 'Отсканируйте QR-код или откройте его в приложении'}}</li><li>{{t('enter_6_digit_code')}}</li></ol>
         </section>
         <section class="secure-card secure-card--center">
-          <span class="secure-card__step">02</span><div class="secure-qr"><img :src="qrSource" alt="2FA QR code"></div>
+          <span class="secure-card__step">02</span>
+          <div v-if="qrSource" class="secure-qr"><img :src="qrSource" alt="2FA QR code"></div>
+          <div v-else class="secure-qr secure-qr--fallback">
+            <strong>QR недоступен</strong>
+            <small>Откройте приложение или скопируйте ключ ниже</small>
+          </div>
           <button class="secure-secondary" @click="openAuthenticator">{{t('open_in_app') || 'Открыть в приложении'}}</button>
           <button class="secure-key" @click="copyKey"><span>{{authKey}}</span><b>▣</b></button>
         </section>
@@ -108,6 +129,6 @@ onMounted(initialize);
 
 <style scoped>
 .secure-setup{--s-bg:#f1f5f9;--s-card:#fff;--s-soft:#eff6ff;--s-text:#0f172a;--s-muted:#64748b;--s-border:#e2e8f0;--s-primary:#2563eb;display:block!important;width:100%;min-height:100vh;min-height:100dvh;position:relative;z-index:5;overflow-x:hidden;background:radial-gradient(640px 280px at 50% -12%,#dbeafe,transparent 68%),var(--s-bg)!important;color:var(--s-text)!important;opacity:1!important;visibility:visible!important;transform:none!important}.secure-setup__header{min-height:78px;padding:max(14px,env(safe-area-inset-top)) 16px 10px;display:grid!important;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:8px;background:transparent!important}.secure-setup__header h1{margin:0;color:var(--s-text)!important;font-size:clamp(21px,6vw,27px);line-height:1.15;font-weight:750;text-align:center}.secure-setup__body{width:100%;padding:8px 16px calc(42px + env(safe-area-inset-bottom));display:grid!important;gap:14px;background:transparent!important}
-.secure-card,.secure-state{width:100%;padding:20px;display:block!important;border:1px solid var(--s-border);border-radius:24px;background:var(--s-card)!important;box-shadow:0 14px 34px rgba(15,23,42,.08);opacity:1!important;visibility:visible!important;transform:none!important}.secure-card__step{display:inline-grid;place-items:center;min-width:42px;height:30px;margin-bottom:13px;border-radius:10px;background:var(--s-soft);color:var(--s-primary)!important;font-size:12px;font-weight:800}.secure-card h2,.secure-state h2{margin:0 0 12px;color:var(--s-text)!important;font-size:20px;font-weight:750}.secure-card ol{padding-left:25px;display:grid!important;gap:12px}.secure-card li{list-style:decimal;color:var(--s-muted)!important;font-size:14px;line-height:1.45;font-weight:550}.secure-card li::marker{color:var(--s-primary);font-weight:800}.secure-card--center{text-align:center}.secure-qr{width:min(240px,100%);aspect-ratio:1;margin:0 auto 14px;padding:14px;display:grid!important;place-items:center;border:1px solid var(--s-border);border-radius:22px;background:#fff!important}.secure-qr img{display:block!important;width:100%;height:100%;object-fit:contain;opacity:1!important;visibility:visible!important}.secure-secondary,.secure-primary{width:100%;min-height:54px;padding:0 16px;border-radius:16px;font-weight:750}.secure-secondary{background:var(--s-soft)!important;color:var(--s-primary)!important}.secure-primary{background:linear-gradient(135deg,#2563eb,#3b82f6)!important;color:#fff!important;box-shadow:0 14px 28px rgba(37,99,235,.22)}.secure-primary:disabled{opacity:.45}.secure-key{width:100%;margin-top:9px;padding:12px;display:grid!important;grid-template-columns:minmax(0,1fr) 30px;gap:8px;border:1px solid var(--s-border);border-radius:14px;background:var(--s-soft)!important}.secure-key span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--s-muted)!important;font-size:11px}.secure-key b{color:var(--s-primary)!important}.secure-card input{width:100%;height:58px;margin-bottom:12px;border:1px solid var(--s-border)!important;border-radius:16px;background:var(--s-soft)!important;color:var(--s-text)!important;font-size:24px;font-weight:750;letter-spacing:.32em;text-align:center}.secure-state{min-height:300px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}.secure-state p{color:var(--s-muted)!important}.secure-spinner{width:42px;height:42px;border:4px solid var(--s-border);border-top-color:var(--s-primary);border-radius:50%;animation:secure-spin .8s linear infinite}.secure-error,.secure-success{width:64px;height:64px;display:grid;place-items:center;border-radius:20px;font-size:32px;font-weight:800}.secure-error{background:#fee2e2;color:#ef4444!important}.secure-success{background:#d1fae5;color:#10b981!important}
+.secure-card,.secure-state{width:100%;padding:20px;display:block!important;border:1px solid var(--s-border);border-radius:24px;background:var(--s-card)!important;box-shadow:0 14px 34px rgba(15,23,42,.08);opacity:1!important;visibility:visible!important;transform:none!important}.secure-card__step{display:inline-grid;place-items:center;min-width:42px;height:30px;margin-bottom:13px;border-radius:10px;background:var(--s-soft);color:var(--s-primary)!important;font-size:12px;font-weight:800}.secure-card h2,.secure-state h2{margin:0 0 12px;color:var(--s-text)!important;font-size:20px;font-weight:750}.secure-card ol{padding-left:25px;display:grid!important;gap:12px}.secure-card li{list-style:decimal;color:var(--s-muted)!important;font-size:14px;line-height:1.45;font-weight:550}.secure-card li::marker{color:var(--s-primary);font-weight:800}.secure-card--center{text-align:center}.secure-qr{width:min(240px,100%);aspect-ratio:1;margin:0 auto 14px;padding:14px;display:grid!important;place-items:center;border:1px solid var(--s-border);border-radius:22px;background:#fff!important}.secure-qr img{display:block!important;width:100%;height:100%;object-fit:contain;opacity:1!important;visibility:visible!important}.secure-qr--fallback{background:var(--s-soft)!important}.secure-qr--fallback strong{color:var(--s-text)!important;font-size:18px;font-weight:750}.secure-qr--fallback small{max-width:170px;color:var(--s-muted)!important;font-size:13px;line-height:17px;font-weight:600}.secure-secondary,.secure-primary{width:100%;min-height:54px;padding:0 16px;border-radius:16px;font-weight:750}.secure-secondary{background:var(--s-soft)!important;color:var(--s-primary)!important}.secure-primary{background:linear-gradient(135deg,#2563eb,#3b82f6)!important;color:#fff!important;box-shadow:0 14px 28px rgba(37,99,235,.22)}.secure-primary:disabled{opacity:.45}.secure-key{width:100%;margin-top:9px;padding:12px;display:grid!important;grid-template-columns:minmax(0,1fr) 30px;gap:8px;border:1px solid var(--s-border);border-radius:14px;background:var(--s-soft)!important}.secure-key span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--s-muted)!important;font-size:11px}.secure-key b{color:var(--s-primary)!important}.secure-card input{width:100%;height:58px;margin-bottom:12px;border:1px solid var(--s-border)!important;border-radius:16px;background:var(--s-soft)!important;color:var(--s-text)!important;font-size:24px;font-weight:750;letter-spacing:.32em;text-align:center}.secure-state{min-height:300px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}.secure-state p{color:var(--s-muted)!important}.secure-spinner{width:42px;height:42px;border:4px solid var(--s-border);border-top-color:var(--s-primary);border-radius:50%;animation:secure-spin .8s linear infinite}.secure-error,.secure-success{width:64px;height:64px;display:grid;place-items:center;border-radius:20px;font-size:32px;font-weight:800}.secure-error{background:#fee2e2;color:#ef4444!important}.secure-success{background:#d1fae5;color:#10b981!important}
 .secure-setup.is-dark{--s-bg:#0d1b2a;--s-card:#1e273b;--s-soft:#17243a;--s-text:#fff;--s-muted:#94a3b8;--s-border:rgba(255,255,255,.08);background:radial-gradient(680px 300px at 50% -14%,rgba(37,98,235,.2),transparent 66%),linear-gradient(180deg,#07111f,#0d1b2a)!important}.secure-setup.is-dark .secure-setup__header,.secure-setup.is-dark .secure-setup__body{background:transparent!important}@keyframes secure-spin{to{transform:rotate(360deg)}}
 </style>

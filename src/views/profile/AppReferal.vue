@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useWalletStore } from "@/stores/walletStore";
 import WalletScreen from "@/components/ui/WalletScreen.vue";
+import copyMinimalIcon from "@/assets/copy-minimal.svg";
 
 const { t } = useI18n();
 const walletStore = useWalletStore();
@@ -115,11 +116,17 @@ watch(userId, (value, oldValue) => {
       <p class="ref-label">{{ t("referal_link") }}</p>
       <button class="ref-link" type="button" @click="copyLink">
         <span>{{ referralLink }}</span>
-        <span class="ref-link__copy">{{ copied ? "✓" : "▣" }}</span>
+        <span class="ref-link__copy">
+          <span v-if="copied" class="ref-link__done">✓</span>
+          <img v-else :src="copyMinimalIcon" alt="" aria-hidden="true" />
+        </span>
       </button>
       <button class="ref-link ref-link--code" type="button" @click="copyReferralCode" :disabled="!userId">
         <span>{{ referralCode }}</span>
-        <span class="ref-link__copy">{{ codeCopied ? "✓" : "▣" }}</span>
+        <span class="ref-link__copy">
+          <span v-if="codeCopied" class="ref-link__done">✓</span>
+          <img v-else :src="copyMinimalIcon" alt="" aria-hidden="true" />
+        </span>
       </button>
     </section>
 
@@ -170,7 +177,9 @@ watch(userId, (value, oldValue) => {
 .ref-link { min-width: 0; width: 100%; padding: 11px 12px; display: grid !important; grid-template-columns: minmax(0,1fr) 42px; align-items: center; gap: 9px; border: 1px solid var(--screen-border); border-radius: 15px; background: var(--screen-soft) !important; text-align: left; }
 .ref-link--code span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ref-link span:first-child { overflow-wrap: anywhere; color: var(--screen-text) !important; font-size: 13px; line-height: 18px; font-weight: 600; }
-.ref-link__copy { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 18px; }
+.ref-link__copy { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; box-shadow: 0 10px 20px rgba(37,99,235,.22); }
+.ref-link__copy img { width: 22px; height: 22px; display: block; }
+.ref-link__done { color: #fff !important; font-size: 18px; line-height: 1; font-weight: 800; }
 .ref-code-card small { color: var(--screen-muted) !important; font-size: 12px; line-height: 16px; font-weight: 600; }
 .ref-code-form { width: 100%; display: grid !important; grid-template-columns: minmax(0,1fr) 54px; gap: 9px; }
 .ref-code-form input { width: 100%; min-width: 0; height: 48px; padding: 0 13px; border: 1px solid var(--screen-border) !important; border-radius: 15px; background: var(--screen-soft) !important; color: var(--screen-text) !important; font-size: 13px; font-weight: 650; }
