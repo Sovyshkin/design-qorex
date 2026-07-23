@@ -138,6 +138,26 @@ watch(
         <button class="quick-action" @click="goRoute('withdraw')"><i>↑</i><span>{{ t('pay_out') }}</span></button>
       </section>
 
+      <section class="assets-block">
+        <div class="assets-head">
+          <h3>{{ t('actives') }}</h3>
+        </div>
+        <button class="asset-row" @click="goRoute('history')">
+          <div class="asset-left">
+            <div class="asset-icon">₮</div>
+            <div class="asset-meta"><strong>USDT</strong><small>{{ walletStore.roundToHundredths(walletStore.usdt_price) }} ₽</small></div>
+          </div>
+          <div class="asset-right" v-if="!walletStore.hideBalanceActive">
+            <strong>{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</strong>
+            <small>{{ walletStore.roundToHundredths(walletStore.balance_rub) }} ₽</small>
+          </div>
+          <div class="asset-right" v-else>
+            <strong>********</strong>
+            <small>********</small>
+          </div>
+        </button>
+      </section>
+
       <section class="cashback-block">
         <div class="cashback-head">
           <div>
@@ -176,26 +196,6 @@ watch(
             </div>
           </article>
         </div>
-      </section>
-
-      <section class="assets-block">
-        <div class="assets-head">
-          <h3>{{ t('actives') }}</h3>
-        </div>
-        <button class="asset-row" @click="goRoute('history')">
-          <div class="asset-left">
-            <div class="asset-icon">₮</div>
-            <div class="asset-meta"><strong>USDT</strong><small>{{ walletStore.roundToHundredths(walletStore.usdt_price) }} ₽</small></div>
-          </div>
-          <div class="asset-right" v-if="!walletStore.hideBalanceActive">
-            <strong>{{ walletStore.roundToHundredths(walletStore.balance) }} USDT</strong>
-            <small>{{ walletStore.roundToHundredths(walletStore.balance_rub) }} ₽</small>
-          </div>
-          <div class="asset-right" v-else>
-            <strong>********</strong>
-            <small>********</small>
-          </div>
-        </button>
       </section>
     </main>
   </div>

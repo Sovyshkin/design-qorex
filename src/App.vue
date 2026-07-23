@@ -180,6 +180,15 @@ const usesEmbeddedNav = computed(
   () => ["deposit", "withdraw"].includes(router.currentRoute.value.name)
 );
 
+const showFloatingNav = computed(() => {
+  return (
+    !accessDenied.value &&
+    !telegramAuthMissing.value &&
+    showMainShell.value &&
+    !usesEmbeddedNav.value
+  );
+});
+
 const standaloneShellStyle = computed(() =>
   walletStore.isDarkTheme
     ? {
@@ -336,9 +345,10 @@ onBeforeUnmount(() => {
             <component :is="Component" :key="currentRouteKey" />
           </router-view>
         </div>
-        <NavBar v-if="!usesEmbeddedNav" class="navbar-fixed" />
       </div>
     </template>
+
+    <NavBar v-if="showFloatingNav" class="navbar-fixed app-bottom-nav" />
   </main>
 </template>
 
@@ -541,6 +551,8 @@ body.dark-theme .wrap-load {
   flex: 1;
   min-height: 100vh;
   min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .app-shell {
@@ -703,6 +715,26 @@ body.dark-theme .pin-page--standalone {
   z-index: 2147483000 !important;
   transform: translateZ(0) !important;
   isolation: isolate;
+}
+
+.app-bottom-nav,
+.app-bottom-nav.wallet-nav-wrap {
+  position: fixed !important;
+  top: auto !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: calc(8px + var(--tg-content-safe-area-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px)) !important;
+  width: 100% !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 2147483647 !important;
+  pointer-events: none !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
+.app-bottom-nav .wallet-nav {
+  pointer-events: auto !important;
 }
 
 /* Глобальные анимации приложения */
