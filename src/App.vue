@@ -547,6 +547,8 @@ body.dark-theme .wrap-load {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+  position: relative;
+  overflow: visible;
 }
 
 .vue-devtools__panel {
@@ -694,12 +696,13 @@ body.dark-theme .pin-page--standalone {
 .navbar-fixed {
   position: fixed !important;
   top: auto !important;
-  bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  bottom: calc(8px + var(--tg-content-safe-area-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px)) !important;
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
   z-index: 2147483000 !important;
   transform: translateZ(0) !important;
+  isolation: isolate;
 }
 
 /* Глобальные анимации приложения */
@@ -743,7 +746,7 @@ body.dark-theme .pin-page--standalone {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(132px + var(--tg-content-safe-area-inset-bottom, 0px) + env(safe-area-inset-bottom, 0px));
   overflow: visible;
 }
 

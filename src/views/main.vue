@@ -110,7 +110,7 @@ watch(
 </script>
 
 <template>
-  <div class="home-page">
+  <div class="home-page" :class="{ 'is-dark': walletStore.isDarkTheme }">
     <header class="home-header">
       <div class="home-user">
         <div class="home-avatar" :class="{ 'brand-avatar': !walletStore.userTg.photo_url }">
@@ -275,40 +275,48 @@ small { color: #64748b; font-size: 12px; }
   small { font-size: 11px; }
 }
 
+.home-page.is-dark,
 :global(.dark-theme) .home-page {
   background:
     radial-gradient(760px 340px at 50% -16%, rgba(37, 98, 235, 0.2), transparent 62%),
     linear-gradient(180deg, #07111f 0%, #0d1b2a 100%) !important;
 }
 
+.home-page.is-dark .home-avatar,
 :global(.dark-theme) .home-avatar {
   background: rgba(30, 39, 59, 0.9) !important;
   border-color: rgba(56, 130, 250, 0.28) !important;
 }
 
+.home-page.is-dark .home-user h1,
 :global(.dark-theme) .home-user h1 {
   color: #ffffff !important;
 }
 
+.home-page.is-dark .home-user p,
 :global(.dark-theme) .home-user p {
   color: #94a3b8 !important;
 }
 
+.home-page.is-dark .quick-action,
 :global(.dark-theme) .quick-action {
   background: rgba(30, 39, 59, 0.9) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28) !important;
 }
 
+.home-page.is-dark .quick-action i,
 :global(.dark-theme) .quick-action i {
   background: rgba(37, 98, 235, 0.16) !important;
   color: #3882fa !important;
 }
 
+.home-page.is-dark .quick-action span,
 :global(.dark-theme) .quick-action span {
   color: #ffffff !important;
 }
 
+.home-page.is-dark .cashback-block,
 :global(body.dark-theme) .cashback-block,
 :global(.dark-theme) .cashback-block {
   background: linear-gradient(180deg, rgba(30, 39, 59, 0.98), rgba(15, 23, 42, 0.98)) !important;
@@ -316,11 +324,14 @@ small { color: #64748b; font-size: 12px; }
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
 }
 
+.home-page.is-dark .cashback-head span,
 :global(body.dark-theme) .cashback-head span,
 :global(.dark-theme) .cashback-head span {
   color: #60a5fa !important;
 }
 
+.home-page.is-dark .cashback-head h3,
+.home-page.is-dark .cashback-row strong,
 :global(body.dark-theme) .cashback-head h3,
 :global(body.dark-theme) .cashback-row strong,
 :global(.dark-theme) .cashback-head h3,
@@ -328,57 +339,68 @@ small { color: #64748b; font-size: 12px; }
   color: #f8fafc !important;
 }
 
+.home-page.is-dark .cashback-row small,
 :global(body.dark-theme) .cashback-row small,
 :global(.dark-theme) .cashback-row small {
   color: #94a3b8 !important;
 }
 
+.home-page.is-dark .cashback-head button,
 :global(body.dark-theme) .cashback-head button,
 :global(.dark-theme) .cashback-head button {
   background: rgba(37, 98, 235, 0.18) !important;
   color: #93c5fd !important;
 }
 
+.home-page.is-dark .cashback-row,
 :global(body.dark-theme) .cashback-row,
 :global(.dark-theme) .cashback-row {
   background: rgba(15, 23, 42, 0.82) !important;
   border-color: rgba(148, 163, 184, 0.1) !important;
 }
 
+.home-page.is-dark .cashback-row.is-reached,
 :global(body.dark-theme) .cashback-row.is-reached,
 :global(.dark-theme) .cashback-row.is-reached {
   background: rgba(22, 163, 74, 0.16) !important;
   border-color: rgba(34, 197, 94, 0.24) !important;
 }
 
+.home-page.is-dark .cashback-meter,
 :global(body.dark-theme) .cashback-meter,
 :global(.dark-theme) .cashback-meter {
   background: rgba(148, 163, 184, 0.2) !important;
 }
 
+.home-page.is-dark .assets-block,
 :global(.dark-theme) .assets-block {
   background: rgba(30, 39, 59, 0.96) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32) !important;
 }
 
+.home-page.is-dark .assets-head h3,
 :global(.dark-theme) .assets-head h3 {
   color: #ffffff !important;
 }
 
+.home-page.is-dark .asset-row,
 :global(.dark-theme) .asset-row {
   background: rgba(13, 27, 42, 0.72) !important;
 }
 
+.home-page.is-dark .asset-icon,
 :global(.dark-theme) .asset-icon {
   background: rgba(37, 98, 235, 0.18) !important;
   color: #ffffff !important;
 }
 
+.home-page.is-dark strong,
 :global(.dark-theme) strong {
   color: #ffffff !important;
 }
 
+.home-page.is-dark small,
 :global(.dark-theme) small {
   color: #94a3b8 !important;
 }
