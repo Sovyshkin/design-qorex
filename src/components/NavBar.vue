@@ -53,7 +53,7 @@ const handleScannerClick = (navigate) => {
 </template>
 
 <style scoped>
-.wallet-nav-wrap { position: fixed !important; top: auto !important; left: 0 !important; right: 0 !important; bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important; width: 100% !important; z-index: 5000 !important; padding: 0 14px; pointer-events: none; transform: none !important; }
+.wallet-nav-wrap { position: fixed !important; top: auto !important; left: 0 !important; right: 0 !important; bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important; width: 100% !important; z-index: 2147483000 !important; padding: 0 14px; pointer-events: none; transform: translateZ(0) !important; }
 .wallet-nav-wrap.is-embedded { position: relative !important; inset: auto !important; width: 100% !important; margin: 4px 0 0; padding: 0; z-index: 10 !important; }
 .wallet-nav { height: 76px; border-radius: 26px; border: 1px solid var(--border, #e2e8f0); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); box-shadow: 0 14px 30px rgba(15,23,42,.14); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; pointer-events: auto; }
 .wallet-tab { position: relative; width: 58px; min-height: 56px; border-radius: 18px; display: grid; place-items: center; gap: 3px; color: var(--textSecondary, #64748b); transition: transform .18s ease, color .18s ease; }

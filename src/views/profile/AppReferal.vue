@@ -10,9 +10,11 @@ const referrals = ref([]);
 const loading = ref(true);
 const error = ref("");
 const copied = ref(false);
+const codeCopied = ref(false);
 const refCode = ref("");
 const savingRefCode = ref(false);
 const userId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id || "");
+const referralCode = computed(() => `referal_${userId.value || ""}`);
 const referralLink = computed(() => `https://t.me/peekpay_bot?startapp=referal_${userId.value}`);
 const earned = computed(() => referrals.value.reduce((sum, item) => sum + Number(item.referral_only_pay || 0), 0));
 const normalizedRefPreview = computed(() => {
@@ -37,11 +39,41 @@ const load = async () => {
 
 const copyLink = async () => {
   try {
-    await navigator.clipboard.writeText(referralLink.value);
+    await copyText(referralLink.value);
     copied.value = true;
     walletStore.showMessage(t("copied"), "success", 1500);
     setTimeout(() => (copied.value = false), 1500);
   } catch (_error) { walletStore.showMessage(t("error_occurred"), "error"); }
+};
+
+const copyText = async (text) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const input = document.createElement("textarea");
+  input.value = text;
+  input.setAttribute("readonly", "");
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand("copy");
+  document.body.removeChild(input);
+};
+
+const copyReferralCode = async () => {
+  if (!userId.value) return;
+
+  try {
+    await copyText(referralCode.value);
+    codeCopied.value = true;
+    walletStore.showMessage(t("copied"), "success", 1500);
+    setTimeout(() => (codeCopied.value = false), 1500);
+  } catch (_error) {
+    walletStore.showMessage(t("error_occurred"), "error");
+  }
 };
 
 const saveReferralCode = async () => {
@@ -85,6 +117,10 @@ watch(userId, (value, oldValue) => {
         <span>{{ referralLink }}</span>
         <span class="ref-link__copy">{{ copied ? "✓" : "▣" }}</span>
       </button>
+      <button class="ref-link ref-link--code" type="button" @click="copyReferralCode" :disabled="!userId">
+        <span>{{ referralCode }}</span>
+        <span class="ref-link__copy">{{ codeCopied ? "✓" : "▣" }}</span>
+      </button>
     </section>
 
     <section class="ref-card ref-code-card">
@@ -124,26 +160,27 @@ watch(userId, (value, oldValue) => {
 </template>
 
 <style scoped>
-.ref-hero { min-height: 224px; position: relative; overflow: hidden; display: flex !important; flex-direction: column; justify-content: flex-end; padding: 24px; border-radius: 26px; background: linear-gradient(145deg,#3b82f6,#1e40af) !important; box-shadow: 0 20px 44px rgba(37,99,235,.28); }
-.ref-hero__eyebrow { position: relative; z-index: 1; color: #dbeafe !important; font-size: 11px; letter-spacing: .14em; font-weight: 800; }
-.ref-hero h2 { position: relative; z-index: 1; max-width: 330px; margin: 12px 0 0; color: #fff !important; font-size: clamp(28px,8vw,40px); line-height: 1.03; font-weight: 750; }
+.ref-hero { min-height: 196px; position: relative; overflow: hidden; display: flex !important; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 24px; background: linear-gradient(145deg,#3b82f6,#1e40af) !important; box-shadow: 0 18px 38px rgba(37,99,235,.26); }
+.ref-hero__eyebrow { position: relative; z-index: 1; color: #dbeafe !important; font-size: 10px; letter-spacing: .13em; font-weight: 800; }
+.ref-hero h2 { position: relative; z-index: 1; max-width: 310px; margin: 10px 0 0; color: #fff !important; font-size: clamp(24px,7vw,34px); line-height: 1.05; font-weight: 750; }
 .ref-hero :deep(span) { color: #fff !important; font: inherit !important; }
-.ref-hero__orb { position: absolute; width: 190px; height: 190px; right: -42px; top: -60px; border-radius: 50%; background: rgba(255,255,255,.16); }
-.ref-card { padding: 18px; display: grid !important; gap: 10px; border-radius: 22px; border: 1px solid var(--screen-border); background: var(--screen-card) !important; box-shadow: 0 12px 30px rgba(15,23,42,.08); }
-.ref-label { color: var(--screen-muted) !important; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 750; }
-.ref-link { min-width: 0; width: 100%; padding: 14px; display: grid !important; grid-template-columns: minmax(0,1fr) 46px; align-items: center; gap: 10px; border: 1px solid var(--screen-border); border-radius: 16px; background: var(--screen-soft) !important; text-align: left; }
-.ref-link span:first-child { overflow-wrap: anywhere; color: var(--screen-text) !important; font-size: 14px; font-weight: 600; }
-.ref-link__copy { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 20px; }
+.ref-hero__orb { position: absolute; width: 172px; height: 172px; right: -42px; top: -58px; border-radius: 50%; background: rgba(255,255,255,.16); }
+.ref-card { padding: 15px; display: grid !important; gap: 9px; border-radius: 20px; border: 1px solid var(--screen-border); background: var(--screen-card) !important; box-shadow: 0 12px 30px rgba(15,23,42,.08); }
+.ref-label { color: var(--screen-muted) !important; font-size: 10px; line-height: 14px; letter-spacing: .08em; text-transform: uppercase; font-weight: 750; }
+.ref-link { min-width: 0; width: 100%; padding: 11px 12px; display: grid !important; grid-template-columns: minmax(0,1fr) 42px; align-items: center; gap: 9px; border: 1px solid var(--screen-border); border-radius: 15px; background: var(--screen-soft) !important; text-align: left; }
+.ref-link--code span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ref-link span:first-child { overflow-wrap: anywhere; color: var(--screen-text) !important; font-size: 13px; line-height: 18px; font-weight: 600; }
+.ref-link__copy { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 18px; }
 .ref-code-card small { color: var(--screen-muted) !important; font-size: 12px; line-height: 16px; font-weight: 600; }
-.ref-code-form { width: 100%; display: grid !important; grid-template-columns: minmax(0,1fr) 58px; gap: 10px; }
-.ref-code-form input { width: 100%; min-width: 0; height: 52px; padding: 0 14px; border: 1px solid var(--screen-border) !important; border-radius: 16px; background: var(--screen-soft) !important; color: var(--screen-text) !important; font-size: 14px; font-weight: 650; }
+.ref-code-form { width: 100%; display: grid !important; grid-template-columns: minmax(0,1fr) 54px; gap: 9px; }
+.ref-code-form input { width: 100%; min-width: 0; height: 48px; padding: 0 13px; border: 1px solid var(--screen-border) !important; border-radius: 15px; background: var(--screen-soft) !important; color: var(--screen-text) !important; font-size: 13px; font-weight: 650; }
 .ref-code-form input::placeholder { color: var(--screen-muted) !important; opacity: .75; }
-.ref-code-form button { height: 52px; border-radius: 16px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 13px; font-weight: 800; }
+.ref-code-form button { height: 48px; border-radius: 15px; background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff !important; font-size: 12px; font-weight: 800; }
 .ref-code-form button:disabled { opacity: .55; }
 .ref-stats { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ref-stats div { padding: 16px; border-radius: 20px; border: 1px solid var(--screen-border); background: var(--screen-card) !important; }
-.ref-stats span { display: block; color: var(--screen-muted) !important; font-size: 13px; }
-.ref-stats strong { display: block; margin-top: 6px; color: var(--screen-text) !important; font-size: 22px; font-weight: 750; }
+.ref-stats div { padding: 14px; border-radius: 18px; border: 1px solid var(--screen-border); background: var(--screen-card) !important; }
+.ref-stats span { display: block; color: var(--screen-muted) !important; font-size: 12px; }
+.ref-stats strong { display: block; margin-top: 5px; color: var(--screen-text) !important; font-size: 19px; font-weight: 750; }
 .ref-list { min-height: 160px; }
 .ref-state { min-height: 130px; display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: var(--screen-muted) !important; text-align: center; }
 .ref-state h3 { color: var(--screen-text) !important; font-size: 18px; font-weight: 700; }.ref-state p { color: var(--screen-muted) !important; font-size: 14px; }.ref-state button { color: var(--screen-primary) !important; font-weight: 700; }

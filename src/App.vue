@@ -692,11 +692,14 @@ body.dark-theme .pin-page--standalone {
 
 /* Фиксированный навбар */
 .navbar-fixed {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  position: fixed !important;
+  top: auto !important;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 2147483000 !important;
+  transform: translateZ(0) !important;
 }
 
 /* Глобальные анимации приложения */
@@ -740,6 +743,7 @@ body.dark-theme .pin-page--standalone {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
   overflow: visible;
 }
 

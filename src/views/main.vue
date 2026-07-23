@@ -14,13 +14,31 @@ const userId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id 
 
 const goRoute = (name) => router.push({ name });
 
+const getCashbackAmount = (periodKey, periodData = {}) => {
+  const legacyKeys = {
+    daily: "cash_back_d",
+    monthly: "cash_back_m",
+    yearly: "cash_back_y",
+  };
+
+  return (
+    periodData.cashback_amount ??
+    periodData.cashback_calculated ??
+    cashback.value?.[legacyKeys[periodKey]] ??
+    0
+  );
+};
+
 const cashbackPeriods = computed(() => {
   const periods = cashback.value?.periods || {};
   return [
-    { key: "daily", label: "День", caption: "30 000 ₽", data: periods.daily },
-    { key: "monthly", label: "Месяц", caption: "1 000 000 ₽", data: periods.monthly },
-    { key: "yearly", label: "Год", caption: "15 000 000 ₽", data: periods.yearly },
-  ];
+    { key: "daily", label: "День", caption: 30000, data: periods.daily || {} },
+    { key: "monthly", label: "Месяц", caption: 1000000, data: periods.monthly || {} },
+    { key: "yearly", label: "Год", caption: 15000000, data: periods.yearly || {} },
+  ].map((period) => ({
+    ...period,
+    cashbackAmount: getCashbackAmount(period.key, period.data),
+  }));
 });
 
 const formatRub = (value) => `${walletStore.roundToHundredths(Number(value || 0))} ₽`;
@@ -145,9 +163,9 @@ watch(
             <div class="cashback-row__top">
               <div>
                 <strong>{{ period.label }}</strong>
-                <small>Порог {{ formatRub(period.data?.need_for_cb || period.caption.replace(/\D/g, '')) }}</small>
+                <small>Порог {{ formatRub(period.data?.need_for_cb || period.caption) }}</small>
               </div>
-              <b>{{ formatRub(period.data?.cashback_amount) }}</b>
+              <b>{{ formatRub(period.cashbackAmount) }}</b>
             </div>
             <div class="cashback-meter">
               <span :style="{ width: `${periodProgress(period.data)}%` }"></span>
@@ -291,33 +309,51 @@ small { color: #64748b; font-size: 12px; }
   color: #ffffff !important;
 }
 
+:global(body.dark-theme) .cashback-block,
 :global(.dark-theme) .cashback-block {
-  background: rgba(30, 39, 59, 0.96) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32) !important;
+  background: linear-gradient(180deg, rgba(30, 39, 59, 0.98), rgba(15, 23, 42, 0.98)) !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34) !important;
 }
 
+:global(body.dark-theme) .cashback-head span,
+:global(.dark-theme) .cashback-head span {
+  color: #60a5fa !important;
+}
+
+:global(body.dark-theme) .cashback-head h3,
+:global(body.dark-theme) .cashback-row strong,
 :global(.dark-theme) .cashback-head h3,
 :global(.dark-theme) .cashback-row strong {
-  color: #ffffff !important;
+  color: #f8fafc !important;
 }
 
+:global(body.dark-theme) .cashback-row small,
+:global(.dark-theme) .cashback-row small {
+  color: #94a3b8 !important;
+}
+
+:global(body.dark-theme) .cashback-head button,
 :global(.dark-theme) .cashback-head button {
-  background: rgba(37, 98, 235, 0.16) !important;
-  color: #3882fa !important;
+  background: rgba(37, 98, 235, 0.18) !important;
+  color: #93c5fd !important;
 }
 
+:global(body.dark-theme) .cashback-row,
 :global(.dark-theme) .cashback-row {
-  background: rgba(13, 27, 42, 0.72) !important;
+  background: rgba(15, 23, 42, 0.82) !important;
+  border-color: rgba(148, 163, 184, 0.1) !important;
 }
 
+:global(body.dark-theme) .cashback-row.is-reached,
 :global(.dark-theme) .cashback-row.is-reached {
-  background: rgba(22, 163, 74, 0.14) !important;
-  border-color: rgba(34, 197, 94, 0.22) !important;
+  background: rgba(22, 163, 74, 0.16) !important;
+  border-color: rgba(34, 197, 94, 0.24) !important;
 }
 
+:global(body.dark-theme) .cashback-meter,
 :global(.dark-theme) .cashback-meter {
-  background: rgba(148, 163, 184, 0.22) !important;
+  background: rgba(148, 163, 184, 0.2) !important;
 }
 
 :global(.dark-theme) .assets-block {

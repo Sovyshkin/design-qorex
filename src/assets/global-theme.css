@@ -1852,11 +1852,16 @@ body.dark-theme .back-button:active {
 /* Final profile/navbar guard: keeps the floating nav anchored and prevents legacy yellow SVG overrides from leaking into profile icons. */
 .wallet-nav-wrap {
   position: fixed !important;
+  top: auto !important;
   left: 0 !important;
   right: 0 !important;
   bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
-  z-index: 5000 !important;
+  width: 100% !important;
+  z-index: 2147483000 !important;
+  padding: 0 14px !important;
   pointer-events: none;
+  transform: translateZ(0) !important;
+  will-change: transform;
 }
 
 .wallet-nav-wrap .wallet-nav {
