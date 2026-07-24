@@ -142,10 +142,13 @@ const onTelegramAuth = async (user) => {
       data: error.response?.data,
       message: error.message,
     });
+    const isTimeout = error.code === "ECONNABORTED" || /timeout/i.test(String(error.message || ""));
     errorMessage.value =
       error.response?.data?.detail ||
       error.response?.data?.message ||
-      "Не удалось войти через Telegram. Попробуйте ещё раз.";
+      (isTimeout
+        ? "Сервер авторизации не ответил. Попробуйте ещё раз."
+        : "Не удалось войти через Telegram. Попробуйте ещё раз.");
   } finally {
     isLoading.value = false;
   }
@@ -187,7 +190,7 @@ const mountTelegramWidget = async () => {
   script.setAttribute("data-telegram-login", botUsername);
   script.setAttribute("data-size", "large");
   script.setAttribute("data-radius", "14");
-  script.setAttribute("data-userpic", "true");
+  script.setAttribute("data-userpic", "false");
   script.setAttribute("data-auth-url", `${window.location.origin}/browser`);
   script.setAttribute("data-request-access", "write");
   script.onload = () => {
@@ -271,12 +274,8 @@ onBeforeUnmount(() => {
         <div class="telegram-login-shell">
           <div class="telegram-login-visual" aria-hidden="true">
             <span class="telegram-login-icon">▸</span>
-            <span>Войти как {{ walletStore.userTg.first_name || "Вадим" }}</span>
-            <img
-              v-if="walletStore.userTg.photo_url"
-              :src="walletStore.userTg.photo_url"
-              alt=""
-            />
+            <span>{{ walletStore.userTg.first_name ? `Войти как ${walletStore.userTg.first_name}` : "Войти через Telegram" }}</span>
+            <img :src="walletStore.userTg.photo_url || '/assets/peekpay-logo-150.png'" alt="" />
           </div>
           <div ref="widgetRoot" class="telegram-widget"></div>
         </div>
