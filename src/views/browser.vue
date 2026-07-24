@@ -18,8 +18,56 @@ const isLoading = ref(false);
 const errorMessage = ref("");
 const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "peekpay_bot";
 const hasToken = computed(() => Boolean(getAccessToken()));
+let widgetObserver = null;
+
+const logBrowserAuth = (label, payload = {}) => {
+  console.log(`[PeekPay Browser Auth] ${label}`, {
+    ...payload,
+    botUsername,
+    href: window.location.href,
+    origin: window.location.origin,
+    hostname: window.location.hostname,
+    protocol: window.location.protocol,
+    pathname: window.location.pathname,
+    userAgent: navigator.userAgent,
+    hasTelegramObject: Boolean(window.Telegram),
+    hasTelegramWebApp: Boolean(window.Telegram?.WebApp),
+    telegramPlatform: window.Telegram?.WebApp?.platform,
+    telegramInitDataLength: window.Telegram?.WebApp?.initData?.length || 0,
+  });
+};
+
+const inspectWidgetDom = (reason = "inspect") => {
+  if (!widgetRoot.value) return;
+
+  const iframe = widgetRoot.value.querySelector("iframe");
+  const script = widgetRoot.value.querySelector("script");
+  logBrowserAuth(`widget DOM ${reason}`, {
+    rootText: widgetRoot.value.innerText || "",
+    rootHtmlLength: widgetRoot.value.innerHTML.length,
+    hasScript: Boolean(script),
+    scriptSrc: script?.src || "",
+    hasIframe: Boolean(iframe),
+    iframeSrc: iframe?.src || "",
+    iframeTitle: iframe?.title || "",
+  });
+};
+
+const handleWidgetMessage = (event) => {
+  const origin = String(event.origin || "");
+  if (!origin.includes("telegram.org") && !origin.includes("oauth.telegram.org")) return;
+
+  logBrowserAuth("message from Telegram widget", {
+    messageOrigin: event.origin,
+    messageData: event.data,
+  });
+};
 
 const loadUserSession = async (telegramUser) => {
+  logBrowserAuth("load user session", {
+    telegramUserId: telegramUser?.id,
+    telegramUsername: telegramUser?.username,
+  });
   walletStore.userTg = normalizeTelegramUser(telegramUser);
   await walletStore.getUser();
   await walletStore.getPrice();
@@ -30,9 +78,19 @@ const onTelegramAuth = async (user) => {
   try {
     isLoading.value = true;
     errorMessage.value = "";
+    logBrowserAuth("Telegram widget auth callback", {
+      user,
+      hasHash: Boolean(user?.hash),
+      authDate: user?.auth_date,
+    });
 
     const response = await axios.post("/auth/telegram", user, {
       headers: { "Content-Type": "application/json" },
+    });
+    logBrowserAuth("backend /auth/telegram response", {
+      status: response.status,
+      hasToken: Boolean(response.data?.access_token),
+      responseKeys: Object.keys(response.data || {}),
     });
 
     const token = response.data?.access_token;
@@ -44,6 +102,11 @@ const onTelegramAuth = async (user) => {
     await loadUserSession(user);
   } catch (error) {
     console.error("Browser Telegram auth failed:", error);
+    logBrowserAuth("backend /auth/telegram failed", {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
     errorMessage.value =
       error.response?.data?.detail ||
       error.response?.data?.message ||
@@ -55,10 +118,33 @@ const onTelegramAuth = async (user) => {
 
 const mountTelegramWidget = async () => {
   await nextTick();
-  if (!widgetRoot.value || !botUsername) return;
+  logBrowserAuth("mount widget requested", {
+    hasWidgetRoot: Boolean(widgetRoot.value),
+    envBotUsername: import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "",
+  });
+
+  if (!widgetRoot.value || !botUsername) {
+    logBrowserAuth("mount widget skipped", {
+      hasWidgetRoot: Boolean(widgetRoot.value),
+      hasBotUsername: Boolean(botUsername),
+    });
+    return;
+  }
 
   widgetRoot.value.innerHTML = "";
   window.onTelegramAuth = onTelegramAuth;
+  window.addEventListener("message", handleWidgetMessage);
+
+  if (widgetObserver) {
+    widgetObserver.disconnect();
+  }
+
+  widgetObserver = new MutationObserver(() => inspectWidgetDom("changed"));
+  widgetObserver.observe(widgetRoot.value, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
 
   const script = document.createElement("script");
   script.async = true;
@@ -68,18 +154,44 @@ const mountTelegramWidget = async () => {
   script.setAttribute("data-radius", "12");
   script.setAttribute("data-onauth", "onTelegramAuth(user)");
   script.setAttribute("data-request-access", "write");
+  script.onload = () => {
+    logBrowserAuth("Telegram widget script loaded");
+    setTimeout(() => inspectWidgetDom("after script load + 300ms"), 300);
+    setTimeout(() => inspectWidgetDom("after script load + 1500ms"), 1500);
+  };
+  script.onerror = (event) => {
+    logBrowserAuth("Telegram widget script failed", { event });
+  };
+  logBrowserAuth("Telegram widget script append", {
+    dataTelegramLogin: script.getAttribute("data-telegram-login"),
+    dataOnauth: script.getAttribute("data-onauth"),
+    dataRequestAccess: script.getAttribute("data-request-access"),
+    src: script.src,
+  });
   widgetRoot.value.appendChild(script);
+  inspectWidgetDom("after append");
 };
 
 const continueSession = async () => {
   const savedUser = getSavedBrowserUser();
+  logBrowserAuth("continue saved session", {
+    hasSavedUser: Boolean(savedUser?.id),
+    savedUserId: savedUser?.id,
+  });
   if (savedUser?.id) {
     await loadUserSession(savedUser);
   }
 };
 
 onMounted(async () => {
+  logBrowserAuth("page mounted", {
+    hasToken: hasToken.value,
+    isTelegramWebView: isTelegramWebView(),
+    expectedBotFatherDomain: window.location.hostname,
+  });
+
   if (isTelegramWebView()) {
+    logBrowserAuth("redirect Telegram WebView away from browser login");
     router.replace({ name: "main", query: { auth: "telegram_missing" } });
     return;
   }
@@ -93,6 +205,11 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   if (window.onTelegramAuth === onTelegramAuth) {
     delete window.onTelegramAuth;
+  }
+  window.removeEventListener("message", handleWidgetMessage);
+  if (widgetObserver) {
+    widgetObserver.disconnect();
+    widgetObserver = null;
   }
 });
 </script>
