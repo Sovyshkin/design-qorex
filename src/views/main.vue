@@ -12,6 +12,10 @@ const cashbackLoading = ref(false);
 const cashbackError = ref("");
 const userId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id || "");
 const isDarkHome = computed(() => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") return true;
+  if (savedTheme === "light") return false;
+
   const telegramScheme = String(window.Telegram?.WebApp?.colorScheme || "").toLowerCase();
   return walletStore.isDarkTheme || telegramScheme === "dark";
 });
