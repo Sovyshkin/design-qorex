@@ -284,8 +284,8 @@ onBeforeUnmount(() => {
   place-items: center;
   padding: 24px 16px;
   background:
-    radial-gradient(760px 320px at 50% -16%, rgba(37, 99, 235, 0.28), transparent 62%),
-    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%);
+    radial-gradient(820px 360px at 50% -12%, rgba(96, 165, 250, 0.46), transparent 64%),
+    linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #1e40af 100%);
 }
 
 .auth-panel {
@@ -294,10 +294,12 @@ onBeforeUnmount(() => {
   justify-items: center;
   gap: 22px;
   padding: 34px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  background: rgba(30, 39, 59, 0.94);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+  background: #1c1c1c;
+  box-shadow:
+    0 26px 76px rgba(15, 23, 42, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   text-align: center;
 }
 
@@ -323,7 +325,7 @@ onBeforeUnmount(() => {
 
 .auth-copy p {
   margin: 0;
-  color: #94a3b8;
+  color: #a8b3c7;
   font-size: 15px;
   line-height: 1.45;
 }
@@ -331,8 +333,10 @@ onBeforeUnmount(() => {
 .widget-box {
   width: 100%;
   min-height: 76px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -343,6 +347,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-inline: auto;
   padding: 0;
   border-radius: 14px;
   background: transparent;
@@ -358,7 +363,7 @@ onBeforeUnmount(() => {
   min-width: 238px !important;
   max-width: 100% !important;
   height: 46px !important;
-  margin: 0 auto !important;
+  margin-inline: auto !important;
   border: 0 !important;
   border-radius: 14px !important;
   background: #111827 !important;
