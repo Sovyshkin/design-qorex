@@ -284,8 +284,8 @@ onBeforeUnmount(() => {
   place-items: center;
   padding: 24px 16px;
   background:
-    radial-gradient(760px 320px at 50% -16%, rgba(37, 99, 235, 0.18), transparent 62%),
-    #f1f5f9;
+    radial-gradient(760px 320px at 50% -16%, rgba(37, 99, 235, 0.28), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0d1b2a 100%);
 }
 
 .auth-panel {
@@ -294,10 +294,10 @@ onBeforeUnmount(() => {
   justify-items: center;
   gap: 22px;
   padding: 34px 22px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+  background: rgba(30, 39, 59, 0.94);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
 
@@ -305,7 +305,7 @@ onBeforeUnmount(() => {
   width: 82px;
   height: 82px;
   border-radius: 24px;
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.26);
 }
 
 .auth-copy {
@@ -315,7 +315,7 @@ onBeforeUnmount(() => {
 
 .auth-copy h1 {
   margin: 0;
-  color: #0f172a;
+  color: #f8fafc;
   font-size: 32px;
   line-height: 1.1;
   font-weight: 800;
@@ -323,7 +323,7 @@ onBeforeUnmount(() => {
 
 .auth-copy p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 15px;
   line-height: 1.45;
 }
@@ -346,7 +346,9 @@ onBeforeUnmount(() => {
   padding: 0;
   border-radius: 14px;
   background: transparent;
-  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow: visible;
 }
 
@@ -359,7 +361,7 @@ onBeforeUnmount(() => {
   margin: 0 auto !important;
   border: 0 !important;
   border-radius: 14px !important;
-  background: #54a9eb !important;
+  background: #111827 !important;
 }
 
 .auth-status,
@@ -371,11 +373,11 @@ onBeforeUnmount(() => {
 }
 
 .auth-status {
-  color: #2563eb;
+  color: #93c5fd;
 }
 
 .auth-error {
-  color: #dc2626;
+  color: #fca5a5;
 }
 
 :global(.dark-theme) .browser-auth {
