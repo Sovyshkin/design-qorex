@@ -402,13 +402,6 @@ export const useWalletStore = defineStore("wallet", () => {
     }))
   );
 
-  // Инициализация темы из localStorage
-  const initTheme = () => {
-    const savedTheme = localStorage.getItem("theme");
-    isDarkTheme.value = savedTheme === "dark";
-    applyTheme(isDarkTheme.value);
-  };
-
   // Применение темы к документу
   const applyTheme = (dark: boolean) => {
     if (typeof document === "undefined") return;
@@ -422,11 +415,55 @@ export const useWalletStore = defineStore("wallet", () => {
     }
   };
 
+  const getTelegramDarkTheme = () => {
+    const webApp = window.Telegram?.WebApp;
+    const colorScheme = String(webApp?.colorScheme || "").toLowerCase();
+
+    if (colorScheme === "dark") return true;
+    if (colorScheme === "light") return false;
+
+    const bgColor = String(webApp?.themeParams?.bg_color || "").toLowerCase();
+    return ["#000000", "#0d1b2a", "#17212b", "#18222d", "#1c1c1d"].includes(bgColor);
+  };
+
+  const getPreferredDarkTheme = () => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") return true;
+    if (savedTheme === "light") return false;
+
+    if (window.Telegram?.WebApp) {
+      return getTelegramDarkTheme();
+    }
+
+    return Boolean(window.matchMedia?.("(prefers-color-scheme: dark)")?.matches);
+  };
+
+  const setDarkTheme = (dark: boolean, persist = true) => {
+    isDarkTheme.value = dark;
+    if (persist) {
+      localStorage.setItem("theme", dark ? "dark" : "light");
+    }
+    applyTheme(dark);
+  };
+
+  // Инициализация темы из localStorage, Telegram или системной темы
+  const initTheme = () => {
+    setDarkTheme(getPreferredDarkTheme(), Boolean(localStorage.getItem("theme")));
+
+    const webApp = window.Telegram?.WebApp;
+    if (webApp?.onEvent) {
+      webApp.onEvent("themeChanged", () => {
+        const savedTheme = localStorage.getItem("theme");
+        if (!savedTheme) {
+          setDarkTheme(getTelegramDarkTheme(), false);
+        }
+      });
+    }
+  };
+
   // Переключение темы
   const toggleTheme = () => {
-    isDarkTheme.value = !isDarkTheme.value;
-    localStorage.setItem("theme", isDarkTheme.value ? "dark" : "light");
-    applyTheme(isDarkTheme.value);
+    setDarkTheme(!isDarkTheme.value, true);
   };
 
   // Вызываем инициализацию темы

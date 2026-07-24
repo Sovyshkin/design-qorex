@@ -11,6 +11,10 @@ const cashback = ref(null);
 const cashbackLoading = ref(false);
 const cashbackError = ref("");
 const userId = computed(() => walletStore.user?.tg_id || walletStore.userTg?.id || "");
+const isDarkHome = computed(() => {
+  const telegramScheme = String(window.Telegram?.WebApp?.colorScheme || "").toLowerCase();
+  return walletStore.isDarkTheme || telegramScheme === "dark";
+});
 
 const goRoute = (name) => router.push({ name });
 
@@ -110,7 +114,7 @@ watch(
 </script>
 
 <template>
-  <div class="home-page" :class="{ 'is-dark': walletStore.isDarkTheme }">
+  <div class="home-page" :class="{ 'is-dark': isDarkHome }">
     <header class="home-header">
       <div class="home-user">
         <div class="home-avatar" :class="{ 'brand-avatar': !walletStore.userTg.photo_url }">
