@@ -268,7 +268,18 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="widget-box">
-        <div ref="widgetRoot" class="telegram-widget"></div>
+        <div class="telegram-login-shell">
+          <div class="telegram-login-visual" aria-hidden="true">
+            <span class="telegram-login-icon">▸</span>
+            <span>Войти как {{ walletStore.userTg.first_name || "Вадим" }}</span>
+            <img
+              v-if="walletStore.userTg.photo_url"
+              :src="walletStore.userTg.photo_url"
+              alt=""
+            />
+          </div>
+          <div ref="widgetRoot" class="telegram-widget"></div>
+        </div>
         <div v-if="isLoading" class="auth-status">Авторизация...</div>
         <div v-else-if="errorMessage" class="auth-error">{{ errorMessage }}</div>
       </div>
@@ -283,9 +294,16 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   padding: 24px 16px;
-  background:
-    radial-gradient(820px 360px at 50% -12%, rgba(96, 165, 250, 0.46), transparent 64%),
-    linear-gradient(135deg, #3b82f6 0%, #2563eb 48%, #1e40af 100%);
+  background: #1e273bf5 !important;
+  background-color: #1e273bf5 !important;
+}
+
+:global(.standalone-shell.pin-page--standalone:has(.browser-auth)),
+:global(.pin-page--standalone:has(.browser-auth)),
+:global(body:not(.dark-theme) main.browser-auth),
+:global(body:not(.dark-theme) .browser-auth) {
+  background: #1e273bf5 !important;
+  background-color: #1e273bf5 !important;
 }
 
 .auth-panel {
@@ -332,7 +350,7 @@ onBeforeUnmount(() => {
 
 .widget-box {
   width: 100%;
-  min-height: 76px;
+  min-height: 82px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -340,33 +358,84 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-.telegram-widget {
-  width: fit-content;
-  max-width: 100%;
-  min-height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.telegram-login-shell {
+  position: relative;
+  width: min(100%, 300px);
+  height: 50px;
   margin-inline: auto;
-  padding: 0;
-  border-radius: 14px;
-  background: transparent;
+  display: grid;
+  place-items: center;
+}
+
+.telegram-login-visual {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 12px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #54a9eb, #3b82f6);
   box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.28),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-  overflow: visible;
+    0 16px 34px rgba(37, 99, 235, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.telegram-login-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: #ffffff !important;
+  font-size: 26px;
+  line-height: 1;
+  transform: rotate(-32deg) translateY(-1px);
+}
+
+.telegram-login-visual span:not(.telegram-login-icon) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ffffff !important;
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.telegram-login-visual img {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.42);
+}
+
+.telegram-widget {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  opacity: 0.01;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 2;
 }
 
 .telegram-widget :deep(iframe) {
   display: block !important;
-  width: auto !important;
-  min-width: 238px !important;
-  max-width: 100% !important;
-  height: 46px !important;
-  margin-inline: auto !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 !important;
   border: 0 !important;
-  border-radius: 14px !important;
-  background: #111827 !important;
+  border-radius: 16px !important;
+  background: transparent !important;
 }
 
 .auth-status,
