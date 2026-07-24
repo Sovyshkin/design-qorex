@@ -120,6 +120,7 @@ const onTelegramAuth = async (user) => {
 
     const response = await axios.post("/auth/telegram", user, {
       headers: { "Content-Type": "application/json" },
+      timeout: 45000,
     });
     logBrowserAuth("backend /auth/telegram response", {
       status: response.status,
@@ -147,7 +148,7 @@ const onTelegramAuth = async (user) => {
       error.response?.data?.detail ||
       error.response?.data?.message ||
       (isTimeout
-        ? "Сервер авторизации не ответил. Попробуйте ещё раз."
+        ? "Сервер авторизации не ответил. Попробуйте ещё раз через несколько секунд."
         : "Не удалось войти через Telegram. Попробуйте ещё раз.");
   } finally {
     isLoading.value = false;
@@ -240,6 +241,11 @@ onMounted(async () => {
 
   if (authFromUrl) {
     clearTelegramAuthQuery();
+    if (authFromUrl.photo_url) {
+      errorMessage.value = "Обновили формат входа. Нажмите кнопку ещё раз.";
+      await mountTelegramWidget();
+      return;
+    }
     await onTelegramAuth(authFromUrl);
     return;
   }
@@ -272,15 +278,32 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="widget-box">
-        <div class="telegram-login-shell">
+        <div class="telegram-login-shell" :class="{ 'telegram-login-shell--loading': isLoading }">
           <div class="telegram-login-visual" aria-hidden="true">
-            <span class="telegram-login-icon">▸</span>
-            <span>{{ walletStore.userTg.first_name ? `Войти как ${walletStore.userTg.first_name}` : "Войти через Telegram" }}</span>
-            <img :src="walletStore.userTg.photo_url || '/assets/peekpay-logo-150.png'" alt="" />
+            <span class="telegram-login-icon">
+              <span v-if="isLoading" class="telegram-login-spinner"></span>
+              <template v-else>▸</template>
+            </span>
+            <span>
+              {{
+                isLoading
+                  ? "Проверяем Telegram"
+                  : walletStore.userTg.first_name
+                    ? `Войти как ${walletStore.userTg.first_name}`
+                    : "Войти через Telegram"
+              }}
+            </span>
           </div>
-          <div ref="widgetRoot" class="telegram-widget"></div>
+          <div ref="widgetRoot" class="telegram-widget" :class="{ 'telegram-widget--disabled': isLoading }"></div>
         </div>
-        <div v-if="isLoading" class="auth-status">Авторизация...</div>
+        <div v-if="isLoading" class="auth-status">
+          <span class="auth-progress">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          Авторизуем браузерную версию
+        </div>
         <div v-else-if="errorMessage" class="auth-error">{{ errorMessage }}</div>
       </div>
     </section>
@@ -370,11 +393,11 @@ onBeforeUnmount(() => {
 .telegram-login-visual {
   position: absolute;
   inset: 0;
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 38px;
+  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px 6px 12px;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 18px;
   border-radius: 16px;
   background: linear-gradient(135deg, #54a9eb, #3b82f6);
   box-shadow:
@@ -382,6 +405,14 @@ onBeforeUnmount(() => {
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
   color: #ffffff;
   overflow: hidden;
+}
+
+.telegram-login-shell--loading .telegram-login-visual {
+  background:
+    linear-gradient(135deg, rgba(84, 169, 235, 0.96), rgba(59, 130, 246, 0.96)),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  background-size: 100% 100%, 180% 100%;
+  animation: authButtonPulse 1.45s ease-in-out infinite;
 }
 
 .telegram-login-icon {
@@ -395,6 +426,15 @@ onBeforeUnmount(() => {
   transform: rotate(-32deg) translateY(-1px);
 }
 
+.telegram-login-spinner {
+  width: 19px;
+  height: 19px;
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  border-top-color: #ffffff;
+  border-radius: 999px;
+  animation: authSpinner 0.75s linear infinite;
+}
+
 .telegram-login-visual span:not(.telegram-login-icon) {
   min-width: 0;
   overflow: hidden;
@@ -404,14 +444,6 @@ onBeforeUnmount(() => {
   font-size: 15px;
   line-height: 18px;
   font-weight: 700;
-}
-
-.telegram-login-visual img {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.42);
 }
 
 .telegram-widget {
@@ -424,6 +456,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
   cursor: pointer;
   z-index: 2;
+}
+
+.telegram-widget--disabled {
+  pointer-events: none;
 }
 
 .telegram-widget :deep(iframe) {
@@ -447,11 +483,72 @@ onBeforeUnmount(() => {
 }
 
 .auth-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   color: #93c5fd;
 }
 
 .auth-error {
   color: #fca5a5;
+}
+
+.auth-progress {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.auth-progress span {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.38;
+  animation: authDot 1.05s ease-in-out infinite;
+}
+
+.auth-progress span:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.auth-progress span:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
+@keyframes authSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes authDot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.32;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes authButtonPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 16px 34px rgba(37, 99, 235, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  50% {
+    box-shadow:
+      0 20px 44px rgba(59, 130, 246, 0.44),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
 }
 
 :global(.dark-theme) .browser-auth {

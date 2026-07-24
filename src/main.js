@@ -52,7 +52,7 @@ axios.interceptors.request.use(async (config) => {
     } else if (token && !isTelegramAuthRequest && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('Added browser JWT auth header');
-    } else {
+    } else if (!isTelegramAuthRequest) {
       console.warn('No Telegram initData or browser JWT available for request');
     }
   } catch (error) {
