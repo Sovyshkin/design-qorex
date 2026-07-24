@@ -241,11 +241,6 @@ onMounted(async () => {
 
   if (authFromUrl) {
     clearTelegramAuthQuery();
-    if (authFromUrl.photo_url) {
-      errorMessage.value = "Обновили формат входа. Нажмите кнопку ещё раз.";
-      await mountTelegramWidget();
-      return;
-    }
     await onTelegramAuth(authFromUrl);
     return;
   }
