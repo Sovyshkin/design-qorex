@@ -239,6 +239,7 @@ onMounted(async () => {
   }
 
   if (authFromUrl) {
+    clearTelegramAuthQuery();
     await onTelegramAuth(authFromUrl);
     return;
   }
