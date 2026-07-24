@@ -19,6 +19,16 @@ const errorMessage = ref("");
 const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "peekpay_bot";
 const hasToken = computed(() => Boolean(getAccessToken()));
 let widgetObserver = null;
+const telegramAuthFields = [
+  "id",
+  "first_name",
+  "last_name",
+  "username",
+  "photo_url",
+  "auth_date",
+  "hash",
+  "lang",
+];
 
 const logBrowserAuth = (label, payload = {}) => {
   console.log(`[PeekPay Browser Auth] ${label}`, {
@@ -57,10 +67,34 @@ const handleWidgetMessage = (event) => {
   const origin = String(event.origin || "");
   if (!origin.includes("telegram.org") && !origin.includes("oauth.telegram.org")) return;
 
+  const messageData = typeof event.data === "string" ? event.data : "";
   logBrowserAuth("message from Telegram widget", {
     messageOrigin: event.origin,
     messageData: event.data,
   });
+
+  if (messageData.includes("unauthorized")) {
+    errorMessage.value = "Telegram не вернул данные авторизации. Нажмите кнопку ещё раз и подтвердите вход.";
+  }
+};
+
+const getTelegramAuthFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("id") || !params.get("hash") || !params.get("auth_date")) {
+    return null;
+  }
+
+  return telegramAuthFields.reduce((authData, key) => {
+    const value = params.get(key);
+    if (value !== null) authData[key] = value;
+    return authData;
+  }, {});
+};
+
+const clearTelegramAuthQuery = () => {
+  const url = new URL(window.location.href);
+  telegramAuthFields.forEach((key) => url.searchParams.delete(key));
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
 };
 
 const loadUserSession = async (telegramUser) => {
@@ -99,6 +133,7 @@ const onTelegramAuth = async (user) => {
     }
 
     saveBrowserAuth(token, user);
+    clearTelegramAuthQuery();
     await loadUserSession(user);
   } catch (error) {
     console.error("Browser Telegram auth failed:", error);
@@ -152,7 +187,8 @@ const mountTelegramWidget = async () => {
   script.setAttribute("data-telegram-login", botUsername);
   script.setAttribute("data-size", "large");
   script.setAttribute("data-radius", "12");
-  script.setAttribute("data-onauth", "onTelegramAuth(user)");
+  script.setAttribute("data-userpic", "true");
+  script.setAttribute("data-auth-url", `${window.location.origin}/browser`);
   script.setAttribute("data-request-access", "write");
   script.onload = () => {
     logBrowserAuth("Telegram widget script loaded");
@@ -164,7 +200,8 @@ const mountTelegramWidget = async () => {
   };
   logBrowserAuth("Telegram widget script append", {
     dataTelegramLogin: script.getAttribute("data-telegram-login"),
-    dataOnauth: script.getAttribute("data-onauth"),
+    dataAuthUrl: script.getAttribute("data-auth-url"),
+    dataUserpic: script.getAttribute("data-userpic"),
     dataRequestAccess: script.getAttribute("data-request-access"),
     src: script.src,
   });
@@ -184,8 +221,10 @@ const continueSession = async () => {
 };
 
 onMounted(async () => {
+  const authFromUrl = getTelegramAuthFromUrl();
   logBrowserAuth("page mounted", {
     hasToken: hasToken.value,
+    hasTelegramAuthQuery: Boolean(authFromUrl),
     isTelegramWebView: isTelegramWebView(),
     expectedBotFatherDomain: window.location.hostname,
   });
@@ -193,6 +232,11 @@ onMounted(async () => {
   if (isTelegramWebView()) {
     logBrowserAuth("redirect Telegram WebView away from browser login");
     router.replace({ name: "main", query: { auth: "telegram_missing" } });
+    return;
+  }
+
+  if (authFromUrl) {
+    await onTelegramAuth(authFromUrl);
     return;
   }
 
@@ -285,6 +329,7 @@ onBeforeUnmount(() => {
 }
 
 .widget-box {
+  width: 100%;
   min-height: 76px;
   display: grid;
   place-items: center;
@@ -292,9 +337,32 @@ onBeforeUnmount(() => {
 }
 
 .telegram-widget {
-  min-height: 44px;
-  display: grid;
+  width: min(100%, 348px);
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   place-items: center;
+  padding: 5px 8px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(42, 171, 238, 0.98), rgba(37, 99, 235, 0.98));
+  box-shadow:
+    0 14px 30px rgba(37, 99, 235, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.telegram-widget :deep(iframe) {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 48px !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
 }
 
 .auth-status,
