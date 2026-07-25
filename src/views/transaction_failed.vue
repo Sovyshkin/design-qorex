@@ -45,6 +45,8 @@ const goHistory = () => router.push({ name: "history" });
 
 const pageStyle = computed(() => ({
   minHeight: "100vh",
+  height: "100dvh",
+  overflowY: "auto",
   background: isDark.value
     ? "radial-gradient(720px 320px at 50% -18%, rgba(37, 98, 235, 0.18), transparent 62%), linear-gradient(180deg, #07111f 0%, #0d1b2a 100%)"
     : "radial-gradient(560px 220px at 50% -16%, rgba(59, 130, 246, 0.18), transparent 70%), #f1f5f9",
@@ -152,6 +154,7 @@ onMounted(() => {
 <style scoped>
 .failed-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background:
     radial-gradient(560px 220px at 50% -16%, rgba(59, 130, 246, 0.18), transparent 70%),
     #f1f5f9;

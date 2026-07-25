@@ -4,6 +4,10 @@ import { useRouter, useRoute } from "vue-router";
 import { ref, onMounted } from "vue";
 import { useWalletStore } from "@/stores/walletStore";
 import { getTransactionStatusMeta } from "@/utils/transactionStatus";
+import {
+  getCashbackTransactionLabel,
+  isCashbackTransaction,
+} from "@/utils/cashbackTransaction";
 import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
@@ -84,6 +88,33 @@ const formatDateTime = (dateInput) => {
 
 const getTransactionStatus = (boolSuccess) =>
   getTransactionStatusMeta(boolSuccess, t);
+
+const transactionTitle = () => {
+  const type = walletStore.transaction.type_trans;
+  if (isCashbackTransaction(type)) return getCashbackTransactionLabel(type);
+  return type === "transfer" ? t("transfer_transaction") : t(type);
+};
+
+const transactionSign = () => {
+  const type = walletStore.transaction.type_trans;
+  return ["buy", "output", "transfer"].includes(type) ? "-" : "+";
+};
+
+const transactionPrimaryAmount = () => {
+  if (isCashbackTransaction(walletStore.transaction.type_trans)) {
+    return `${transactionSign()}${walletStore.roundToHundredths(walletStore.transaction.amount)} ₽`;
+  }
+
+  return `${transactionSign()}${walletStore.roundToHundredths(walletStore.transaction.amount)} USDT`;
+};
+
+const transactionSecondaryAmount = () => {
+  if (isCashbackTransaction(walletStore.transaction.type_trans)) {
+    return "Возврат комиссии";
+  }
+
+  return `${transactionSign()}${walletStore.roundToHundredths(walletStore.transaction.amountRub)} ₽`;
+};
 
 // Проверяем, можно ли показать кнопку просмотра счета
 const canViewInvoice = (transactionType, transactionId) => {
@@ -171,7 +202,7 @@ onMounted(() => {
   <div class="transaction-page" :class="{ 'is-dark': walletStore.isDarkTheme }">
     <header class="header">
       <BackButton @click="goBack()" />
-      <h1>{{ walletStore.transaction.type_trans === 'transfer' ? t('transfer_transaction') : t(walletStore.transaction.type_trans) }}</h1>
+      <h1>{{ transactionTitle() }}</h1>
       <div class="emp"></div>
     </header>
 
@@ -180,6 +211,11 @@ onMounted(() => {
         <div class="wrap-img">
           <img
             v-if="walletStore.transaction.type_trans === 'referal'"
+            src="../assets/referal.svg"
+            alt="transaction-type"
+          />
+          <img
+            v-else-if="isCashbackTransaction(walletStore.transaction.type_trans)"
             src="../assets/referal.svg"
             alt="transaction-type"
           />
@@ -200,28 +236,8 @@ onMounted(() => {
           />
         </div>
         <div class="transaction-amounts">
-          <span class="amount-usdt"
-            >{{
-              walletStore.transaction.type_trans === "buy"
-                ? "-"
-                : walletStore.transaction.type_trans === "output"
-                ? "-"
-                : walletStore.transaction.type_trans === "transfer"
-                ? "-"
-                : "+"
-            }}{{ walletStore.roundToHundredths(walletStore.transaction.amount) }} USDT</span
-          >
-          <span class="amount-rub"
-            >{{
-              walletStore.transaction.type_trans === "buy"
-                ? "-"
-                : walletStore.transaction.type_trans === "output"
-                ? "-"
-                : walletStore.transaction.type_trans === "transfer"
-                ? "-"
-                : "+"
-            }}{{ walletStore.roundToHundredths(walletStore.transaction.amountRub) }} ₽</span
-          >
+          <span class="amount-usdt">{{ transactionPrimaryAmount() }}</span>
+          <span class="amount-rub">{{ transactionSecondaryAmount() }}</span>
         </div>
       </div>
 
@@ -280,8 +296,7 @@ onMounted(() => {
         <div class="detail-item">
           <span class="detail-label">{{ t("currency_pair") }}:</span>
           <span class="detail-value">
-            USDT /
-            RUB
+            {{ isCashbackTransaction(walletStore.transaction.type_trans) ? "RUB" : "USDT / RUB" }}
           </span>
         </div>
 

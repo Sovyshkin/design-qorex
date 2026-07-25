@@ -49,6 +49,24 @@ const cashbackPeriods = computed(() => {
   }));
 });
 
+const cashbackRules = [
+  {
+    label: "День",
+    threshold: "30 000 ₽",
+    text: "сделайте выплат на сумму от 30 000 ₽ за день, и комиссия сервиса вернется на кошелек.",
+  },
+  {
+    label: "Месяц",
+    threshold: "1 000 000 ₽",
+    text: "сделайте выплат на сумму от 1 000 000 ₽ за месяц, и комиссия за месяц вернется на кошелек.",
+  },
+  {
+    label: "Год",
+    threshold: "15 000 000 ₽",
+    text: "сделайте выплат на сумму от 15 000 000 ₽ за год, и комиссия за год вернется на кошелек.",
+  },
+];
+
 const formatRub = (value) => `${walletStore.roundToHundredths(Number(value || 0))} ₽`;
 
 const periodProgress = (period) => {
@@ -204,6 +222,19 @@ watch(
             </div>
           </article>
         </div>
+
+        <div class="cashback-rules">
+          <div class="cashback-rules__head">
+            <strong>Как работает кешбэк</strong>
+            <span>Возврат комиссии</span>
+          </div>
+          <div class="cashback-rules__list">
+            <div v-for="rule in cashbackRules" :key="rule.label" class="cashback-rule">
+              <span>{{ rule.label }}</span>
+              <p><b>От {{ rule.threshold }}</b> — {{ rule.text }}</p>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   </div>
@@ -256,6 +287,15 @@ h1 { width: 100%; margin: 0; color: #0f172a; font-size: 20px; line-height: 1.15;
 .cashback-row small { min-width: 0; color: #64748b; font-size: 11px; line-height: 14px; font-weight: 600; }
 .cashback-meter { width: 100%; height: 7px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
 .cashback-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #22c55e); transition: width .25s ease; }
+.cashback-rules { display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: #eef6ff; border: 1px solid #dbeafe; }
+.cashback-rules__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.cashback-rules__head strong { color: #0f172a; font-size: 14px; line-height: 17px; font-weight: 750; }
+.cashback-rules__head span { flex: 0 0 auto; color: #2563eb; font-size: 10px; line-height: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+.cashback-rules__list { display: grid; gap: 8px; }
+.cashback-rule { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; align-items: start; text-align: left; }
+.cashback-rule > span { min-height: 24px; display: inline-grid; place-items: center; border-radius: 999px; background: #dbeafe; color: #2563eb; font-size: 11px; line-height: 13px; font-weight: 800; }
+.cashback-rule p { margin: 0; color: #475569; font-size: 12px; line-height: 16px; font-weight: 600; }
+.cashback-rule b { color: #0f172a; font-weight: 800; }
 
 .assets-block { background: #fff; border: 1px solid #e2e8f0; border-radius: 22px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); padding: 12px; }
 .assets-head h3 { margin: 2px 6px 10px; color: #0f172a; font-size: 18px; font-weight: 600; }
@@ -378,6 +418,41 @@ small { color: #64748b; font-size: 12px; }
 :global(body.dark-theme) .cashback-meter,
 :global(.dark-theme) .cashback-meter {
   background: rgba(148, 163, 184, 0.2) !important;
+}
+
+.home-page.is-dark .cashback-rules,
+:global(body.dark-theme) .cashback-rules,
+:global(.dark-theme) .cashback-rules {
+  background: rgba(37, 98, 235, 0.1) !important;
+  border-color: rgba(96, 165, 250, 0.18) !important;
+}
+
+.home-page.is-dark .cashback-rules__head strong,
+.home-page.is-dark .cashback-rule b,
+:global(body.dark-theme) .cashback-rules__head strong,
+:global(body.dark-theme) .cashback-rule b,
+:global(.dark-theme) .cashback-rules__head strong,
+:global(.dark-theme) .cashback-rule b {
+  color: #f8fafc !important;
+}
+
+.home-page.is-dark .cashback-rules__head span,
+:global(body.dark-theme) .cashback-rules__head span,
+:global(.dark-theme) .cashback-rules__head span {
+  color: #60a5fa !important;
+}
+
+.home-page.is-dark .cashback-rule > span,
+:global(body.dark-theme) .cashback-rule > span,
+:global(.dark-theme) .cashback-rule > span {
+  background: rgba(37, 98, 235, 0.2) !important;
+  color: #93c5fd !important;
+}
+
+.home-page.is-dark .cashback-rule p,
+:global(body.dark-theme) .cashback-rule p,
+:global(.dark-theme) .cashback-rule p {
+  color: #94a3b8 !important;
 }
 
 .home-page.is-dark .assets-block,

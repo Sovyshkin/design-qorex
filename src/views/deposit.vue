@@ -22,7 +22,13 @@ const submit = async () => {
     if (!url) throw new Error("empty payment url");
     window.location.assign(url);
   } catch (error) {
-    walletStore.showMessage(error?.response?.data?.detail || t("error_occurred"), "error");
+    const isTimeout =
+      error?.code === "ECONNABORTED" || /timeout/i.test(String(error?.message || ""));
+    walletStore.showMessage(
+      error?.response?.data?.detail ||
+        (isTimeout ? t("error_timer") : t("error_occurred")),
+      "error"
+    );
   } finally { loading.value = false; }
 };
 

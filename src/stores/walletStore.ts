@@ -9,6 +9,7 @@ import {
   isTransactionErrorStatus,
   normalizeTransactionStatus,
 } from "@/utils/transactionStatus";
+import { isCashbackTransaction } from "@/utils/cashbackTransaction";
 import { getSavedBrowserUser, getSavedTelegramData, normalizeTelegramUser } from "@/utils/auth";
 
 // Вспомогательная функция для форматирования даты в локальном часовом поясе
@@ -345,8 +346,17 @@ export const useWalletStore = defineStore("wallet", () => {
 
   const isNetworkError = (error: any) => {
     // Настоящая сетевая ошибка - когда запрос был отправлен, но ответа не получено
-    return error.isNetworkError || (!error.response && error.request) || error.code === 'NETWORK_ERROR';
+    return (
+      error.isNetworkError ||
+      (!error.response && error.request) ||
+      error.code === "NETWORK_ERROR" ||
+      error.code === "ECONNABORTED" ||
+      /timeout/i.test(String(error.message || ""))
+    );
   };
+
+  const isTimeoutError = (error: any) =>
+    error?.code === "ECONNABORTED" || /timeout/i.test(String(error?.message || ""));
 
   const clearAllMessages = () => {
     errMessage.value = "";
@@ -949,7 +959,9 @@ export const useWalletStore = defineStore("wallet", () => {
       }
     } catch (err) {
       console.error('Error creating invoice:', err);
-      if (isNetworkError(err)) {
+      if (isTimeoutError(err)) {
+        showMessage(t('error_timer') || 'Истекло время запроса', 'error');
+      } else if (isNetworkError(err)) {
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
       } else if (err.response?.status === 400) {
         showMessage(t('invalid_amount') || 'Некорректная сумма', 'error');
@@ -1128,7 +1140,9 @@ export const useWalletStore = defineStore("wallet", () => {
         await getPrice();
       }
       transaction.value = { ...item };
-      transaction.value.amountRub = getRub(item.amount);
+      transaction.value.amountRub = isCashbackTransaction(item?.type_trans)
+        ? item.amount
+        : getRub(item.amount);
 
       router.push({ name: "transaction" });
     } catch (err) {
@@ -1231,6 +1245,8 @@ export const useWalletStore = defineStore("wallet", () => {
   };
 
   const qrTake = async (link: string) => {
+    let shouldShowFailedRoute = false;
+
     try {
       clearAllMessages();
       loaderScan.value = true;
@@ -1243,7 +1259,7 @@ export const useWalletStore = defineStore("wallet", () => {
       if (!rawLink) {
         transactionErrorMessage.value =
           t("invalid_qr_code") || "Некорректный QR-код";
-        router.push({ name: "transaction_failed" });
+        shouldShowFailedRoute = true;
         return;
       }
 
@@ -1301,7 +1317,7 @@ export const useWalletStore = defineStore("wallet", () => {
             response.data?.detail ||
             response.data?.message ||
             t("transaction_error");
-          router.push({ name: "transaction_failed" });
+          shouldShowFailedRoute = true;
           return;
         }
 
@@ -1313,7 +1329,7 @@ export const useWalletStore = defineStore("wallet", () => {
             response.data?.detail ||
             response.data?.message ||
             t("transaction_error");
-          router.push({ name: "transaction_failed" });
+          shouldShowFailedRoute = true;
           return;
         }
         
@@ -1339,7 +1355,10 @@ export const useWalletStore = defineStore("wallet", () => {
       console.error('Error processing QR code:', err);
       const detailMessage = err.response?.data?.detail;
       
-      if (isNetworkError(err)) {
+      if (isTimeoutError(err)) {
+        transactionErrorMessage.value = t("error_timer") || "Истекло время запроса";
+        showMessage(t("error_timer") || "Истекло время запроса", "error");
+      } else if (isNetworkError(err)) {
         transactionErrorMessage.value =
           t('network_error') || 'Проблема с подключением к серверу';
         showMessage(t('network_error') || 'Проблема с подключением к серверу', 'error');
@@ -1364,10 +1383,13 @@ export const useWalletStore = defineStore("wallet", () => {
           t('qr_processing_failed') || 'Не удалось обработать QR-код';
         showMessage(t('qr_processing_failed') || 'Не удалось обработать QR-код', 'error');
       }
-      
-      router.push({ name: "transaction_failed" });
+
+      shouldShowFailedRoute = true;
     } finally {
       loaderScan.value = false;
+      if (shouldShowFailedRoute) {
+        router.replace({ name: "transaction_failed" });
+      }
     }
   };
 

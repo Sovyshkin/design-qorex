@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick, onErrorCaptured } from "vue";
 import { useRouter } from "vue-router";
 import NavBar from "./components/NavBar.vue";
 import AppLoader from "./components/AppLoader.vue";
@@ -12,6 +12,7 @@ const router = useRouter();
 const walletStore = useWalletStore();
 const accessDenied = ref(false);
 const telegramAuthMissing = ref(false);
+const renderError = ref("");
 let bodyClassObserver = null;
 
 // Список публичных маршрутов, которые не требуют аутентификации
@@ -123,6 +124,14 @@ const initializeApp = async () => {
     isAppInitialized.value = true;
   }
 };
+
+onErrorCaptured((error) => {
+  renderError.value =
+    error?.message || walletStore.transactionErrorMessage || "Не удалось отобразить экран";
+  walletStore.isLoading = false;
+  walletStore.loaderScan = false;
+  return false;
+});
 
 onMounted(() => {
   initializeApp();
@@ -315,6 +324,21 @@ onBeforeUnmount(() => {
         <p class="sub-text">
           Закройте это окно и откройте PeekPay заново из кнопки бота.
         </p>
+      </div>
+    </div>
+
+    <div class="access-denied app-fallback" v-else-if="renderError">
+      <div class="access-denied-content">
+        <img class="auth-warning-logo" src="/assets/peekpay-logo-150.png" alt="PeekPay" />
+        <h1>Не удалось открыть экран</h1>
+        <p>{{ renderError }}</p>
+        <button
+          class="fallback-action"
+          type="button"
+          @click="renderError = ''; router.replace({ name: 'main' })"
+        >
+          Вернуться на главную
+        </button>
       </div>
     </div>
 
@@ -629,6 +653,18 @@ h1 {
   font-size: 14px;
   color: #999;
   margin-top: 20px;
+}
+
+.fallback-action {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+  color: #ffffff !important;
+  font-size: 15px;
+  font-weight: 750;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.24);
 }
 
 @keyframes pulse {

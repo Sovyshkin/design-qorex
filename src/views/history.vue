@@ -4,6 +4,10 @@ import { useWalletStore } from "@/stores/walletStore";
 import { useI18n } from "vue-i18n";
 import { computed, onActivated, onBeforeUnmount, onMounted } from "vue";
 import { getTransactionStatusMeta } from "@/utils/transactionStatus";
+import {
+  getCashbackTransactionLabel,
+  isCashbackTransaction,
+} from "@/utils/cashbackTransaction";
 
 const walletStore = useWalletStore();
 const { t, locale } = useI18n();
@@ -61,7 +65,19 @@ const groupedHistory = computed(() => {
 const getTransactionStatus = (boolSuccess) =>
   getTransactionStatusMeta(boolSuccess, t);
 
+const getHistoryTitle = (item) => {
+  if (isCashbackTransaction(item?.type_trans)) {
+    return getCashbackTransactionLabel(item.type_trans);
+  }
+
+  return item.type_trans === "transfer"
+    ? t("transfer_transaction")
+    : t(item.type_trans || "buy");
+};
+
 const getHistoryIconType = (type) => {
+  if (isCashbackTransaction(type)) return "reward";
+
   switch (String(type || "").toLowerCase()) {
     case "input":
     case "receiving":
@@ -76,6 +92,26 @@ const getHistoryIconType = (type) => {
     default:
       return "exchange";
   }
+};
+
+const formatHistoryAmount = (item) => {
+  if (walletStore.hideBalanceActive) return "********";
+
+  if (isCashbackTransaction(item?.type_trans)) {
+    return `+${walletStore.roundToHundredths(item.amount)} ₽`;
+  }
+
+  return `${walletStore.roundToHundredths(item.amount)} USDT`;
+};
+
+const formatHistoryRub = (item) => {
+  if (walletStore.hideBalanceActive) return "********";
+
+  if (isCashbackTransaction(item?.type_trans)) {
+    return "Начисление кешбэка";
+  }
+
+  return `${walletStore.roundToHundredths(walletStore.getRub(item.amount))} ₽`;
 };
 
 const refreshHistoryData = async () => {
@@ -175,15 +211,13 @@ onBeforeUnmount(() => {
                 </svg>
               </div>
               <div class="row-meta">
-                <strong>{{ item.type_trans === 'transfer' ? t('transfer_transaction') : t(item.type_trans || 'buy') }}</strong>
+                <strong>{{ getHistoryTitle(item) }}</strong>
                 <span :class="`state ${getTransactionStatus(item.bool_suecess).class}`">{{ getTransactionStatus(item.bool_suecess).text }}</span>
               </div>
             </div>
             <div class="row-right">
-              <strong v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(item.amount) }} USDT</strong>
-              <strong v-else>********</strong>
-              <small v-if="!walletStore.hideBalanceActive">{{ walletStore.roundToHundredths(walletStore.getRub(item.amount)) }} ₽</small>
-              <small v-else>********</small>
+              <strong>{{ formatHistoryAmount(item) }}</strong>
+              <small>{{ formatHistoryRub(item) }}</small>
             </div>
           </button>
         </section>
