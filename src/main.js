@@ -69,13 +69,20 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     const detail = String(error.response?.data?.detail || error.response?.data?.message || "");
+    const hasMiniAppAuth = Boolean(getTelegramInitData());
+    const hasBrowserAuth = Boolean(getAccessToken());
+    const isTelegramAuthRequest = String(error.config?.url || "").includes("/auth/telegram");
     const isExpiredBrowserToken =
-      error.response?.status === 401 && /token expired|expired/i.test(detail);
+      error.response?.status === 401 &&
+      !hasMiniAppAuth &&
+      hasBrowserAuth &&
+      !isTelegramAuthRequest &&
+      (/token expired|expired|unauthorized/i.test(detail) || !detail);
 
     if (isExpiredBrowserToken) {
       clearBrowserAuth();
       if (window.location.pathname !== "/browser") {
-        window.location.assign("/browser");
+        window.location.assign("/browser?reauth=1");
       }
     }
 

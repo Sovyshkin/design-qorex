@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import {
+  clearBrowserAuth,
   getAccessToken,
   getSavedBrowserUser,
   isTelegramWebView,
@@ -18,6 +19,14 @@ const isLoading = ref(false);
 const errorMessage = ref("");
 const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "peekpay_bot";
 const hasToken = computed(() => Boolean(getAccessToken()));
+const isReauth = computed(() => new URLSearchParams(window.location.search).get("reauth") === "1");
+const loginButtonText = computed(() => {
+  if (isLoading.value) return "Проверяем Telegram";
+  if (isReauth.value) return "Войти через Telegram";
+  return walletStore.userTg.first_name
+    ? `Войти как ${walletStore.userTg.first_name}`
+    : "Войти через Telegram";
+});
 let widgetObserver = null;
 const telegramAuthFields = [
   "id",
@@ -94,7 +103,14 @@ const getTelegramAuthFromUrl = () => {
 const clearTelegramAuthQuery = () => {
   const url = new URL(window.location.href);
   telegramAuthFields.forEach((key) => url.searchParams.delete(key));
+  url.searchParams.delete("reauth");
   window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+};
+
+const resetBrowserSession = () => {
+  clearBrowserAuth();
+  walletStore.userTg = normalizeTelegramUser({});
+  walletStore.user = {};
 };
 
 const loadUserSession = async (telegramUser) => {
@@ -239,13 +255,17 @@ onMounted(async () => {
     return;
   }
 
+  if (isReauth.value && !authFromUrl) {
+    resetBrowserSession();
+  }
+
   if (authFromUrl) {
     clearTelegramAuthQuery();
     await onTelegramAuth(authFromUrl);
     return;
   }
 
-  if (hasToken.value) {
+  if (hasToken.value && !isReauth.value) {
     await continueSession();
   }
   await mountTelegramWidget();
@@ -280,13 +300,7 @@ onBeforeUnmount(() => {
               <template v-else>▸</template>
             </span>
             <span>
-              {{
-                isLoading
-                  ? "Проверяем Telegram"
-                  : walletStore.userTg.first_name
-                    ? `Войти как ${walletStore.userTg.first_name}`
-                    : "Войти через Telegram"
-              }}
+              {{ loginButtonText }}
             </span>
           </div>
           <div ref="widgetRoot" class="telegram-widget" :class="{ 'telegram-widget--disabled': isLoading }"></div>

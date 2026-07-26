@@ -32,6 +32,7 @@ export const clearBrowserAuth = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(BROWSER_USER_KEY);
   localStorage.removeItem(BROWSER_TELEGRAM_DATA_KEY);
+  localStorage.removeItem(LEGACY_USER_KEY);
 };
 
 export const getSavedBrowserUser = () => {
