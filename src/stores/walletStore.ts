@@ -10,6 +10,7 @@ import {
   normalizeTransactionStatus,
 } from "@/utils/transactionStatus";
 import { isCashbackTransaction } from "@/utils/cashbackTransaction";
+import { normalizeTransactionType } from "@/utils/transactionType";
 import { getSavedBrowserUser, getSavedTelegramData, normalizeTelegramUser } from "@/utils/auth";
 
 // Вспомогательная функция для форматирования даты в локальном часовом поясе
@@ -78,6 +79,33 @@ const extractQrParam = (rawLink: string, key: string) => {
       return match[1];
     }
   }
+};
+
+const safeQueryValue = (value: unknown, fallback = "") => {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
+
+  return String(value);
+};
+
+const safeAmountRub = (amountUsdt: unknown, usdtPrice: unknown) => {
+  const parsedAmount = Number(amountUsdt);
+  const parsedPrice = Number(usdtPrice);
+
+  if (!Number.isFinite(parsedAmount) || !Number.isFinite(parsedPrice)) {
+    return "0";
+  }
+
+  return String(parsedAmount * parsedPrice);
+};
+
+const normalizeTransferResponseType = (type: unknown) => {
+  const normalizedType = normalizeTransactionType(type);
+
+  return normalizedType === "transfer" || normalizedType === "receiving"
+    ? normalizedType
+    : "transfer";
 };
 
 export const useWalletStore = defineStore("wallet", () => {
@@ -1800,22 +1828,13 @@ export const useWalletStore = defineStore("wallet", () => {
     try {
       loaderScan.value = true;
 
-      // Используем правильный tg_id из авторизованных данных пользователя
       const tgId = user.value.tg_id || userTg.value.id;
-      
-      const requestParams = {
+      const queryString = new URLSearchParams({
         tg_id: String(tgId),
         key: String(twoFactorCode),
         amount: String(amount),
-        wallet: String(recipientWallet)
-      };
-
-      console.log('Transfer request params:', requestParams);
-
-      // Строим query строку вручную, чтобы избежать кодирования = в wallet
-      let queryString = `tg_id=${requestParams.tg_id}&key=${requestParams.key}&amount=${requestParams.amount}&wallet=${requestParams.wallet}`;
-      
-      console.log('Query string:', queryString);
+        wallet: String(recipientWallet),
+      }).toString();
 
       let response = await axios.post(
         `/transfer_cash_wallet?${queryString}`,
@@ -1823,22 +1842,16 @@ export const useWalletStore = defineStore("wallet", () => {
       );
 
       if (response.status === 200) {
-        console.log('Transfer response:', response.data);
-        
-        // Проверяем разные варианты успешного ответа
         if (response.data.message === "Balance updated successfully") {
-          // Успешный перевод, обновляем баланс асинхронно
           setTimeout(() => getUser(), 500);
 
-          let amount_rub = parseFloat(amount) * usdt_price.value;
-          
-          // Перенаправляем на страницу транзакции с данными перевода
+          loaderScan.value = false;
           router.push({
             name: "transaction",
             query: {
-              id: Date.now().toString(), // Временный ID если нет в ответе
-              amount_rub: amount_rub.toString(),
-              amount_usdt: amount,
+              id: String(Date.now()),
+              amount_rub: safeAmountRub(amount, usdt_price.value),
+              amount_usdt: safeQueryValue(amount, "0"),
               datatime: formatDateForTransaction(),
               type_trans: "transfer",
               bool_suecess: "1",
@@ -1846,45 +1859,51 @@ export const useWalletStore = defineStore("wallet", () => {
           });
           return true;
         } else if (response.data.more_detail) {
-          // Стандартный ответ с деталями транзакции
-          let { id, datatime } = response.data.more_detail || {};
-          let { type_trans, bool_suecess } = response.data;
-          let amount_usdt = response.data.more_detail?.amount || amount;
+          const details = response.data.more_detail || {};
+          const id = safeQueryValue(details.id, String(Date.now()));
+          const datatime = safeQueryValue(details.datatime, formatDateForTransaction());
+          const bool_suecess = safeQueryValue(
+            response.data?.bool_suecess ?? response.data?.success ?? "1",
+            "1"
+          );
+          const amount_usdt = safeQueryValue(details.amount, amount);
+          const type_trans = normalizeTransferResponseType(response.data?.type_trans);
 
           if (normalizeTransactionStatus(bool_suecess) === "error") {
             transactionErrorMessage.value =
               response.data?.detail ||
               response.data?.message ||
               t("transfer_failed");
-            router.push({ name: "transaction_failed" });
+            loaderScan.value = false;
+            router.replace({ name: "transaction_failed" });
             return false;
           }
 
-          // Обновляем баланс асинхронно
           setTimeout(() => getUser(), 500);
 
-          let amount_rub = parseFloat(amount_usdt) * usdt_price.value;
-
-          // Перенаправляем на страницу транзакции
+          loaderScan.value = false;
           router.push({
             name: "transaction",
             query: {
               id,
-              amount_rub,
+              amount_rub: safeAmountRub(amount_usdt, usdt_price.value),
               amount_usdt,
               datatime,
-              type_trans: type_trans || "transfer",
+              type_trans,
               bool_suecess,
             },
           });
           return true;
         }
       }
+      transactionErrorMessage.value =
+        response.data?.detail ||
+        response.data?.message ||
+        t("transfer_failed");
+      loaderScan.value = false;
+      router.replace({ name: "transaction_failed" });
       return false;
     } catch (err) {
-      console.error('Transfer error:', err.response?.status, err.response?.data);
-      
-      // Сначала проверяем сетевые ошибки
       if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
         transactionErrorMessage.value = t('network_error') || 'Проблема с подключением к серверу';
       } else if (
@@ -1912,7 +1931,8 @@ export const useWalletStore = defineStore("wallet", () => {
         transactionErrorMessage.value = t("transfer_failed");
         showMessage(t("transfer_failed"), "error");
       }
-      router.push({ name: "transaction_failed" });
+      loaderScan.value = false;
+      router.replace({ name: "transaction_failed" });
       return false;
     } finally {
       loaderScan.value = false;

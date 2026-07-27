@@ -40,8 +40,13 @@ const submit = async () => {
   if (!valid.value) return;
   if (recipient.value.trim() === ownWallet.value.trim()) return walletStore.showMessage(t("cannot_transfer_to_self"), "error");
   sending.value = true;
-  try { await walletStore.transferFunds(recipient.value.trim(), amount.value, code.value); }
-  finally { sending.value = false; }
+  try {
+    await walletStore.transferFunds(recipient.value.trim(), amount.value, code.value);
+  } catch (_error) {
+    walletStore.showMessage(t("transfer_failed"), "error");
+  } finally {
+    sending.value = false;
+  }
 };
 onMounted(initialize);
 </script>

@@ -5,9 +5,9 @@ import { useI18n } from "vue-i18n";
 import { computed, onActivated, onBeforeUnmount, onMounted } from "vue";
 import { getTransactionStatusMeta } from "@/utils/transactionStatus";
 import {
-  getCashbackTransactionLabel,
   isCashbackTransaction,
 } from "@/utils/cashbackTransaction";
+import { getTransactionTypeLabel } from "@/utils/transactionType";
 
 const walletStore = useWalletStore();
 const { t, locale } = useI18n();
@@ -66,13 +66,7 @@ const getTransactionStatus = (boolSuccess) =>
   getTransactionStatusMeta(boolSuccess, t);
 
 const getHistoryTitle = (item) => {
-  if (isCashbackTransaction(item?.type_trans)) {
-    return getCashbackTransactionLabel(item.type_trans);
-  }
-
-  return item.type_trans === "transfer"
-    ? t("transfer_transaction")
-    : t(item.type_trans || "buy");
+  return getTransactionTypeLabel(item?.type_trans || "buy", t);
 };
 
 const getHistoryIconType = (type) => {

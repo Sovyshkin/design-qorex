@@ -15,11 +15,23 @@ const isDark = computed(() => {
   return !!walletStore.isDarkTheme;
 });
 
+const getReadableErrorMessage = (message) => {
+  const normalizedMessage = String(message || "").trim();
+
+  if (!normalizedMessage || /^\d+$/.test(normalizedMessage)) {
+    return t("failed_text");
+  }
+
+  return normalizedMessage;
+};
+
 const errorMessage = computed(
   () =>
-    walletStore.transactionErrorMessage ||
-    walletStore.errMessage ||
-    t("failed_text")
+    getReadableErrorMessage(
+      walletStore.transactionErrorMessage ||
+        walletStore.errMessage ||
+        t("failed_text")
+    )
 );
 
 const errorHint = computed(() => {

@@ -125,9 +125,21 @@ const initializeApp = async () => {
   }
 };
 
+const getReadableRenderError = (error) => {
+  const message =
+    typeof error === "string"
+      ? error
+      : error?.message || walletStore.transactionErrorMessage || "";
+
+  if (!message || /^\d+$/.test(String(message).trim())) {
+    return "Данные операции пришли в неожиданном формате. Вернитесь на главную и попробуйте снова.";
+  }
+
+  return message;
+};
+
 onErrorCaptured((error) => {
-  renderError.value =
-    error?.message || walletStore.transactionErrorMessage || "Не удалось отобразить экран";
+  renderError.value = getReadableRenderError(error);
   walletStore.isLoading = false;
   walletStore.loaderScan = false;
   return false;

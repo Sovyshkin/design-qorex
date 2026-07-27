@@ -5,9 +5,12 @@ import { ref, onMounted } from "vue";
 import { useWalletStore } from "@/stores/walletStore";
 import { getTransactionStatusMeta } from "@/utils/transactionStatus";
 import {
-  getCashbackTransactionLabel,
   isCashbackTransaction,
 } from "@/utils/cashbackTransaction";
+import {
+  getTransactionTypeLabel,
+  normalizeTransactionType,
+} from "@/utils/transactionType";
 import BackButton from "@/components/ui/BackButton.vue";
 
 const { t } = useI18n();
@@ -90,9 +93,7 @@ const getTransactionStatus = (boolSuccess) =>
   getTransactionStatusMeta(boolSuccess, t);
 
 const transactionTitle = () => {
-  const type = walletStore.transaction.type_trans;
-  if (isCashbackTransaction(type)) return getCashbackTransactionLabel(type);
-  return type === "transfer" ? t("transfer_transaction") : t(type);
+  return getTransactionTypeLabel(walletStore.transaction.type_trans || "buy", t);
 };
 
 const transactionSign = () => {
@@ -116,6 +117,16 @@ const transactionSecondaryAmount = () => {
   return `${transactionSign()}${walletStore.roundToHundredths(walletStore.transaction.amountRub)} ₽`;
 };
 
+const transactionIconType = () => {
+  const type = normalizeTransactionType(walletStore.transaction.type_trans);
+
+  if (isCashbackTransaction(type) || type === "referal") return "reward";
+  if (type === "receiving" || type === "input") return "deposit";
+  if (type === "transfer") return "transfer";
+  if (type === "output") return "output";
+  return "buy";
+};
+
 // Проверяем, можно ли показать кнопку просмотра счета
 const canViewInvoice = (transactionType, transactionId) => {
   // Показываем только для пополнений с страницы deposit (только input) и если ID не содержит символ _
@@ -123,6 +134,16 @@ const canViewInvoice = (transactionType, transactionId) => {
   return transactionType === 'input' && 
          transactionId && 
          !transactionId.toString().includes('_');
+};
+
+const routeQueryValue = (value, fallback = "") => {
+  const normalizedValue = Array.isArray(value) ? value[0] : value;
+
+  if (normalizedValue === undefined || normalizedValue === null || normalizedValue === "") {
+    return fallback;
+  }
+
+  return String(normalizedValue);
 };
 
 // Открываем модальное окно для выбора способа просмотра счета
@@ -188,12 +209,12 @@ const copyPaymentLink = () => {
 onMounted(() => {
   let { id, amount_usdt, amount_rub, datatime, type_trans, bool_suecess } = route.query
   if (id && amount_usdt && amount_rub && datatime && type_trans && bool_suecess) {
-    walletStore.transaction.id = id
-    walletStore.transaction.amount = walletStore.roundToHundredths(amount_usdt)
-    walletStore.transaction.amountRub = walletStore.roundToHundredths(amount_rub)
-    walletStore.transaction.datatime = datatime
-    walletStore.transaction.type_trans = type_trans
-    walletStore.transaction.bool_suecess = bool_suecess
+    walletStore.transaction.id = routeQueryValue(id, Date.now().toString())
+    walletStore.transaction.amount = walletStore.roundToHundredths(routeQueryValue(amount_usdt, "0"))
+    walletStore.transaction.amountRub = walletStore.roundToHundredths(routeQueryValue(amount_rub, "0"))
+    walletStore.transaction.datatime = routeQueryValue(datatime)
+    walletStore.transaction.type_trans = normalizeTransactionType(routeQueryValue(type_trans, "buy")) || "buy"
+    walletStore.transaction.bool_suecess = routeQueryValue(bool_suecess, "0")
   }
 })
 </script>
@@ -210,28 +231,23 @@ onMounted(() => {
       <div class="transaction-header">
         <div class="wrap-img">
           <img
-            v-if="walletStore.transaction.type_trans === 'referal'"
+            v-if="transactionIconType() === 'reward'"
             src="../assets/referal.svg"
             alt="transaction-type"
           />
           <img
-            v-else-if="isCashbackTransaction(walletStore.transaction.type_trans)"
-            src="../assets/referal.svg"
-            alt="transaction-type"
-          />
-          <img
-            v-else-if="walletStore.transaction.type_trans === 'receiving'"
+            v-else-if="transactionIconType() === 'deposit'"
             src="../assets/deposit.svg"
             alt="transaction-type"
           />
           <img
-            v-else-if="walletStore.transaction.type_trans === 'transfer'"
+            v-else-if="transactionIconType() === 'transfer'"
             src="../assets/send.png"
             alt="transaction-type"
           />
           <img
             v-else
-            :src="`../assets/type-${walletStore.transaction.type_trans}.svg`"
+            :src="`../assets/type-${transactionIconType()}.svg`"
             alt="transaction-type"
           />
         </div>
