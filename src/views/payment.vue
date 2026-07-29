@@ -40,13 +40,31 @@ const router = useRouter();
 const route = useRoute();
 const walletStore = useWalletStore();
 
-const paymentUrl = ref(route.query.url || '');
+const getQueryString = (value) => {
+  const normalizedValue = Array.isArray(value) ? value[0] : value;
+  return typeof normalizedValue === 'string' ? normalizedValue : '';
+};
+
+const isValidPaymentUrl = (value) => {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:';
+  } catch (_error) {
+    return false;
+  }
+};
+
+const paymentUrl = ref(getQueryString(route.query.url));
 const copyStatus = ref('');
 
 const goBack = () => router.back();
 
 const openPayment = () => {
-  if (!paymentUrl.value) return;
+  if (!isValidPaymentUrl(paymentUrl.value)) {
+    walletStore.showMessage('Ошибка: не получена ссылка для оплаты', 'error');
+    return;
+  }
+
   try {
     if (window.Telegram?.WebApp?.openLink) {
       window.Telegram.WebApp.openLink(paymentUrl.value, { try_instant_view: false });
@@ -59,7 +77,11 @@ const openPayment = () => {
 };
 
 const copyPaymentLink = async () => {
-  if (!paymentUrl.value) return;
+  if (!isValidPaymentUrl(paymentUrl.value)) {
+    walletStore.showMessage('Ошибка: не получена ссылка для оплаты', 'error');
+    return;
+  }
+
   copyStatus.value = 'copying';
   try {
     await navigator.clipboard.writeText(paymentUrl.value);
@@ -74,7 +96,7 @@ const copyPaymentLink = async () => {
 };
 
 onMounted(() => {
-  if (!paymentUrl.value) {
+  if (!isValidPaymentUrl(paymentUrl.value)) {
     walletStore.showMessage('Ошибка: не получена ссылка для оплаты', 'error');
     setTimeout(() => router.back(), 2000);
   }

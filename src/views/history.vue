@@ -223,6 +223,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .history-page {
+  --history-bottom-space: calc(
+    172px +
+    var(--tg-content-safe-area-inset-bottom, 0px) +
+    env(safe-area-inset-bottom, 0px)
+  );
   width: 100%;
   height: 100vh;
   height: 100dvh;
@@ -237,7 +242,8 @@ h1 { margin: 0; font-size: 28px; line-height: 1; color: #0f172a; font-weight: 60
 .history-content {
   min-height: 0;
   flex: 1 1 auto;
-  padding: 0 16px calc(116px + env(safe-area-inset-bottom, 0px));
+  padding: 0 16px var(--history-bottom-space) !important;
+  scroll-padding-bottom: var(--history-bottom-space) !important;
   display: grid;
   align-content: start;
   gap: 14px;

@@ -1,12 +1,14 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import WalletScreen from "@/components/ui/WalletScreen.vue";
 import NavBar from "@/components/NavBar.vue";
 import usdtIcon from "@/assets/coin-usdt.svg";
 
 const { t } = useI18n();
+const router = useRouter();
 const walletStore = useWalletStore();
 const amount = ref("");
 const loading = ref(false);
@@ -20,7 +22,7 @@ const submit = async () => {
     walletStore.amount = String(Math.floor(Number(amount.value)));
     const url = await walletStore.createInvoice();
     if (!url) throw new Error("empty payment url");
-    window.location.assign(url);
+    await router.push({ name: "payment", query: { url } });
   } catch (error) {
     const isTimeout =
       error?.code === "ECONNABORTED" || /timeout/i.test(String(error?.message || ""));
