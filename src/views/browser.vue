@@ -261,6 +261,14 @@ const registerEmailUser = async (emailValue) => {
   });
 };
 
+const sendEmailCode = async (emailValue) => {
+  const response = await axios.patch(`/send_code?email=${encodeURIComponent(emailValue)}`, null, {
+    timeout: 30000,
+  });
+
+  return getGeneratedUserId(response.data);
+};
+
 const checkCodeTimer = async (emailValue) => {
   await axios.patch(`/check_timer_code?email=${encodeURIComponent(emailValue)}`, null, {
     timeout: 30000,
@@ -278,11 +286,12 @@ const requestCode = async () => {
 
   try {
     const user = await registerEmailUser(normalizedEmail.value);
-    pendingUser.value = user;
     sentToEmail.value = normalizedEmail.value;
-    await axios.patch(`/send_code?email=${encodeURIComponent(normalizedEmail.value)}`, null, {
-      timeout: 30000,
-    });
+    const idFromCodeRequest = await sendEmailCode(normalizedEmail.value);
+    pendingUser.value = {
+      ...user,
+      id: idFromCodeRequest || user.id,
+    };
     step.value = "code";
     code.value = "";
   } catch (error) {
@@ -310,10 +319,11 @@ const confirmCode = async () => {
 
   try {
     await checkCodeTimer(sentToEmail.value);
+    const idQuery = user?.id ? `&tg_id=${encodeURIComponent(user.id)}` : "";
     const response = await axios.patch(
       `/check_code?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
         cleanedCode.value
-      )}`,
+      )}${idQuery}`,
       null,
       { timeout: 30000 }
     );
