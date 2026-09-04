@@ -87,7 +87,7 @@ const getNameFromEmail = (emailValue) => {
   return readableName.charAt(0).toUpperCase() + readableName.slice(1);
 };
 
-const buildEmailUserPayload = (emailValue) => {
+const buildEmailUserPayload = (emailValue, generatedId = "") => {
   const username =
     emailValue
       .split("@")[0]
@@ -105,7 +105,7 @@ const buildEmailUserPayload = (emailValue) => {
     balance: "0",
     pincode: "",
     boolpin: false,
-    tg_id: "",
+    tg_id: generatedId,
     referal: Boolean(referralId),
     whoreferal: referralId || "",
     visibility_balance: true,
@@ -250,10 +250,10 @@ const selectAuthMethod = async (method) => {
   }
 };
 
-const registerEmailUser = async (emailValue) => {
-  const payload = buildEmailUserPayload(emailValue);
+const registerEmailUser = async (emailValue, generatedId) => {
+  const payload = buildEmailUserPayload(emailValue, generatedId);
   const response = await axios.post("/new_user_e", payload, { timeout: 45000 });
-  const id = getGeneratedUserId(response.data);
+  const id = getGeneratedUserId(response.data) || generatedId;
 
   return normalizeTelegramUser({
     ...payload,
@@ -270,9 +270,13 @@ const sendEmailCode = async (emailValue) => {
 };
 
 const checkCodeTimer = async (emailValue) => {
-  await axios.patch(`/check_timer_code?email=${encodeURIComponent(emailValue)}`, null, {
+  const response = await axios.patch(`/check_timer_code?email=${encodeURIComponent(emailValue)}`, null, {
     timeout: 30000,
   });
+
+  if (Number(response.data?.timer) <= 0) {
+    throw new Error("Время действия кода истекло. Запросите новый код.");
+  }
 };
 
 const requestCode = async () => {
@@ -285,13 +289,15 @@ const requestCode = async () => {
   errorMessage.value = "";
 
   try {
-    const user = await registerEmailUser(normalizedEmail.value);
-    sentToEmail.value = normalizedEmail.value;
     const idFromCodeRequest = await sendEmailCode(normalizedEmail.value);
-    pendingUser.value = {
-      ...user,
-      id: idFromCodeRequest || user.id,
-    };
+
+    if (!idFromCodeRequest) {
+      throw new Error("Сервер не вернул id пользователя после отправки кода.");
+    }
+
+    const user = await registerEmailUser(normalizedEmail.value, idFromCodeRequest);
+    sentToEmail.value = normalizedEmail.value;
+    pendingUser.value = user;
     step.value = "code";
     code.value = "";
   } catch (error) {
@@ -318,26 +324,23 @@ const confirmCode = async () => {
   errorMessage.value = "";
 
   try {
+    if (!user?.id) {
+      throw new Error("Не найден id пользователя. Запросите код ещё раз.");
+    }
+
     await checkCodeTimer(sentToEmail.value);
-    const idQuery = user?.id ? `&tg_id=${encodeURIComponent(user.id)}` : "";
-    const response = await axios.patch(
+    await axios.patch(
       `/check_code?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
         cleanedCode.value
-      )}${idQuery}`,
+      )}&tg_id=${encodeURIComponent(user.id)}`,
       null,
       { timeout: 30000 }
     );
-    const verifiedUserId = getGeneratedUserId(response.data) || user?.id || "";
-
-    if (!verifiedUserId) {
-      errorMessage.value = "Почта подтверждена, но сервер не вернул данные пользователя.";
-      return;
-    }
 
     const verifiedUser = normalizeTelegramUser({
       ...user,
       email: sentToEmail.value,
-      id: verifiedUserId,
+      id: user.id,
     });
 
     saveBrowserEmailAuth(verifiedUser);
