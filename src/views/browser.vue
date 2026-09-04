@@ -1,13 +1,15 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import {
   clearBrowserAuth,
+  getAccessToken,
   getSavedBrowserUser,
   isTelegramWebView,
   normalizeTelegramUser,
+  saveBrowserAuth,
   saveBrowserEmailAuth,
 } from "@/utils/auth";
 
@@ -21,6 +23,21 @@ const isLoading = ref(false);
 const errorMessage = ref("");
 const pendingUser = ref(null);
 const sentToEmail = ref("");
+const authMethod = ref("email");
+const widgetRoot = ref(null);
+const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "peekpay_bot";
+let telegramWidgetMounted = false;
+let widgetObserver = null;
+const telegramAuthFields = [
+  "id",
+  "first_name",
+  "last_name",
+  "username",
+  "photo_url",
+  "auth_date",
+  "hash",
+  "lang",
+];
 
 const normalizedEmail = computed(() => email.value.trim().toLowerCase());
 const cleanedCode = computed(() => code.value.replace(/\D/g, "").slice(0, 6));
@@ -36,6 +53,11 @@ const actionText = computed(() => {
   }
 
   return step.value === "email" ? "Получить код" : "Войти";
+});
+
+const telegramButtonText = computed(() => {
+  if (isLoading.value && authMethod.value === "telegram") return "Проверяем Telegram";
+  return "Войти через Telegram";
 });
 
 const getReferralId = () => {
@@ -123,6 +145,109 @@ const getBackendMessage = (error) => {
     error?.message ||
     ""
   );
+};
+
+const getTelegramAuthFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("id") || !params.get("hash") || !params.get("auth_date")) {
+    return null;
+  }
+
+  return telegramAuthFields.reduce((authData, key) => {
+    const value = params.get(key);
+    if (value !== null) authData[key] = value;
+    return authData;
+  }, {});
+};
+
+const clearTelegramAuthQuery = () => {
+  const url = new URL(window.location.href);
+  telegramAuthFields.forEach((key) => url.searchParams.delete(key));
+  url.searchParams.delete("reauth");
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+};
+
+const loadUserSession = async (browserUser) => {
+  walletStore.userTg = normalizeTelegramUser(browserUser);
+  walletStore.user = {};
+  await walletStore.getUser();
+  await walletStore.getPrice();
+  router.replace({ name: "main" });
+};
+
+const onTelegramAuth = async (user) => {
+  isLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    const response = await axios.post("/auth/telegram", user, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 45000,
+    });
+    const token = response.data?.access_token;
+
+    if (!token) {
+      throw new Error("Сервер не вернул токен авторизации");
+    }
+
+    saveBrowserAuth(token, user);
+    clearTelegramAuthQuery();
+    await loadUserSession(user);
+  } catch (error) {
+    const isTimeout = error.code === "ECONNABORTED" || /timeout/i.test(String(error.message || ""));
+    errorMessage.value =
+      getBackendMessage(error) ||
+      (isTimeout
+        ? "Сервер авторизации не ответил. Попробуйте ещё раз."
+        : "Не удалось войти через Telegram. Попробуйте ещё раз.");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const mountTelegramWidget = async () => {
+  await nextTick();
+
+  if (!widgetRoot.value || telegramWidgetMounted || !botUsername) return;
+
+  widgetRoot.value.innerHTML = "";
+  window.onTelegramAuth = onTelegramAuth;
+
+  if (widgetObserver) {
+    widgetObserver.disconnect();
+  }
+
+  widgetObserver = new MutationObserver(() => {
+    const iframe = widgetRoot.value?.querySelector("iframe");
+    if (iframe) {
+      iframe.setAttribute("title", "Telegram authorization");
+    }
+  });
+  widgetObserver.observe(widgetRoot.value, {
+    childList: true,
+    subtree: true,
+  });
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://telegram.org/js/telegram-widget.js?22";
+  script.setAttribute("data-telegram-login", botUsername);
+  script.setAttribute("data-size", "large");
+  script.setAttribute("data-radius", "16");
+  script.setAttribute("data-userpic", "false");
+  script.setAttribute("data-auth-url", `${window.location.origin}/browser`);
+  script.setAttribute("data-request-access", "write");
+  widgetRoot.value.appendChild(script);
+  telegramWidgetMounted = true;
+};
+
+const selectAuthMethod = async (method) => {
+  authMethod.value = method;
+  errorMessage.value = "";
+
+  if (method === "telegram") {
+    await mountTelegramWidget();
+  }
 };
 
 const registerEmailUser = async (emailValue) => {
@@ -239,6 +364,8 @@ const editEmail = () => {
 };
 
 onMounted(async () => {
+  const authFromUrl = getTelegramAuthFromUrl();
+
   if (isTelegramWebView()) {
     router.replace({ name: "main", query: { auth: "telegram_missing" } });
     return;
@@ -250,12 +377,35 @@ onMounted(async () => {
     return;
   }
 
+  if (authFromUrl) {
+    authMethod.value = "telegram";
+    clearTelegramAuthQuery();
+    await onTelegramAuth(authFromUrl);
+    return;
+  }
+
+  if (getAccessToken()) {
+    const savedUser = getSavedBrowserUser();
+    if (savedUser?.id) {
+      await loadUserSession(savedUser);
+    }
+    return;
+  }
+
   const savedUser = getSavedBrowserUser();
   if (savedUser?.id) {
-    walletStore.userTg = normalizeTelegramUser(savedUser);
-    await walletStore.getUser();
-    await walletStore.getPrice();
-    router.replace({ name: "main" });
+    await loadUserSession(savedUser);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (window.onTelegramAuth === onTelegramAuth) {
+    delete window.onTelegramAuth;
+  }
+
+  if (widgetObserver) {
+    widgetObserver.disconnect();
+    widgetObserver = null;
   }
 });
 </script>
@@ -267,10 +417,27 @@ onMounted(async () => {
 
       <div class="auth-copy">
         <h1>PeekPay</h1>
-        <p>Войдите по email, чтобы открыть браузерную версию кошелька.</p>
+        <p>Выберите удобный способ входа в браузерную версию кошелька.</p>
       </div>
 
-      <form class="email-auth-form" @submit.prevent="submit">
+      <div class="auth-switch" role="tablist" aria-label="Способ входа">
+        <button
+          type="button"
+          :class="{ active: authMethod === 'email' }"
+          @click="selectAuthMethod('email')"
+        >
+          Email
+        </button>
+        <button
+          type="button"
+          :class="{ active: authMethod === 'telegram' }"
+          @click="selectAuthMethod('telegram')"
+        >
+          Telegram
+        </button>
+      </div>
+
+      <form v-if="authMethod === 'email'" class="email-auth-form" @submit.prevent="submit">
         <label v-if="step === 'email'" class="auth-field">
           <span>Email</span>
           <input
@@ -312,6 +479,21 @@ onMounted(async () => {
         </p>
         <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
       </form>
+
+      <div v-else class="telegram-auth-form">
+        <div class="telegram-login-shell" :class="{ 'telegram-login-shell--loading': isLoading }">
+          <div class="telegram-login-visual" aria-hidden="true">
+            <span v-if="isLoading" class="auth-spinner"></span>
+            <span v-else class="telegram-mark">TG</span>
+            <span>{{ telegramButtonText }}</span>
+          </div>
+          <div ref="widgetRoot" class="telegram-widget" :class="{ 'telegram-widget--disabled': isLoading }"></div>
+        </div>
+        <p class="auth-hint">
+          Этот способ может зависеть от доступности Telegram в вашем браузере.
+        </p>
+        <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
+      </div>
     </section>
   </main>
 </template>
@@ -323,16 +505,16 @@ onMounted(async () => {
   display: grid;
   place-items: center;
   padding: 24px 16px;
-  background: #1e273bf5 !important;
-  background-color: #1e273bf5 !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 :global(.standalone-shell.pin-page--standalone:has(.browser-auth)),
 :global(.pin-page--standalone:has(.browser-auth)),
 :global(body main.browser-auth),
 :global(body .browser-auth) {
-  background: #1e273bf5 !important;
-  background-color: #1e273bf5 !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 .auth-panel {
@@ -382,6 +564,37 @@ onMounted(async () => {
   width: 100%;
   display: grid;
   gap: 14px;
+}
+
+.auth-switch {
+  width: 100%;
+  min-height: 44px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.46);
+}
+
+.auth-switch button {
+  min-height: 36px;
+  border-radius: 12px;
+  color: #8ea0bb;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.auth-switch button.active {
+  background: linear-gradient(135deg, rgba(84, 169, 235, 0.96), rgba(59, 130, 246, 0.96));
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
 }
 
 .auth-field {
@@ -489,6 +702,81 @@ onMounted(async () => {
   border-top-color: #ffffff;
   border-radius: 999px;
   animation: authSpinner 0.75s linear infinite;
+}
+
+.telegram-auth-form {
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+
+.telegram-login-shell {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+}
+
+.telegram-login-visual {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(84, 169, 235, 0.96), rgba(59, 130, 246, 0.96)),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  color: #ffffff;
+  box-shadow:
+    0 16px 34px rgba(37, 99, 235, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.telegram-login-shell--loading .telegram-login-visual {
+  animation: authButtonPulse 1.45s ease-in-out infinite;
+}
+
+.telegram-login-visual span {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+.telegram-mark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+}
+
+.telegram-widget {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  opacity: 0.01;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.telegram-widget--disabled {
+  pointer-events: none;
+}
+
+.telegram-widget :deep(iframe) {
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 56px !important;
+  border: 0 !important;
 }
 
 .auth-hint,
