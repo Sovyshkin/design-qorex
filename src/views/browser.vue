@@ -118,7 +118,7 @@ const getGeneratedUserId = (data) => {
   if (typeof data === "string" || typeof data === "number") {
     const directValue = String(data).trim();
     const match = directValue.match(/\d{4,}/);
-    return match?.[0] || directValue;
+    return match?.[0] || "";
   }
 
   const candidates = [
@@ -255,10 +255,6 @@ const registerEmailUser = async (emailValue) => {
   const response = await axios.post("/new_user_e", payload, { timeout: 45000 });
   const id = getGeneratedUserId(response.data);
 
-  if (!id) {
-    throw new Error("Сервер не вернул id пользователя");
-  }
-
   return normalizeTelegramUser({
     ...payload,
     id,
@@ -304,12 +300,6 @@ const requestCode = async () => {
 const confirmCode = async () => {
   const user = pendingUser.value;
 
-  if (!user?.id) {
-    step.value = "email";
-    errorMessage.value = "Сначала запросите код на email.";
-    return;
-  }
-
   if (cleanedCode.value.length !== 6) {
     errorMessage.value = "Введите 6 цифр из письма.";
     return;
@@ -320,20 +310,28 @@ const confirmCode = async () => {
 
   try {
     await checkCodeTimer(sentToEmail.value);
-    await axios.patch(
+    const response = await axios.patch(
       `/check_code?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
         cleanedCode.value
-      )}&tg_id=${encodeURIComponent(user.id)}`,
+      )}`,
       null,
       { timeout: 30000 }
     );
+    const verifiedUserId = getGeneratedUserId(response.data) || user?.id || "";
 
-    saveBrowserEmailAuth(user);
-    walletStore.userTg = normalizeTelegramUser(user);
-    walletStore.user = {};
-    await walletStore.getUser();
-    await walletStore.getPrice();
-    router.replace({ name: "main" });
+    if (!verifiedUserId) {
+      errorMessage.value = "Почта подтверждена, но сервер не вернул данные пользователя.";
+      return;
+    }
+
+    const verifiedUser = normalizeTelegramUser({
+      ...user,
+      email: sentToEmail.value,
+      id: verifiedUserId,
+    });
+
+    saveBrowserEmailAuth(verifiedUser);
+    await loadUserSession(verifiedUser);
   } catch (error) {
     const isTimeout = error.code === "ECONNABORTED" || /timeout/i.test(String(error.message || ""));
     errorMessage.value =
@@ -417,7 +415,7 @@ onBeforeUnmount(() => {
 
       <div class="auth-copy">
         <h1>PeekPay</h1>
-        <p>Выберите удобный способ входа в браузерную версию кошелька.</p>
+        <p>Войдите или зарегистрируйтесь в браузерной версии кошелька.</p>
       </div>
 
       <div class="auth-switch" role="tablist" aria-label="Способ входа">
