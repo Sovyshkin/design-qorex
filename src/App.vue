@@ -5,8 +5,13 @@ import NavBar from "./components/NavBar.vue";
 import AppLoader from "./components/AppLoader.vue";
 import AppMessage from "./components/AppMessage.vue";
 import { useWalletStore } from "@/stores/walletStore.ts";
-import { logThemeSnapshot } from "@/utils/pageDebug";
-import { getAccessToken, getTelegramInitData, isTelegramWebView } from "@/utils/auth";
+import {
+  getAccessToken,
+  getBrowserAuthProvider,
+  getSavedBrowserUser,
+  getTelegramInitData,
+  isTelegramWebView,
+} from "@/utils/auth";
 
 const router = useRouter();
 const walletStore = useWalletStore();
@@ -21,14 +26,8 @@ const publicRoutes = ["enterPin", "createPin", "browser"];
 // Упрощенный router guard - только для базовой навигации
 router.beforeEach(async (to, from, next) => {
   try {
-    console.log("[PeekPay Router beforeEach]", {
-      from: { name: from.name, path: from.fullPath },
-      to: { name: to.name, path: to.fullPath },
-      storeLoading: walletStore.isLoading,
-    });
-
     const hasMiniAppAuth = Boolean(getTelegramInitData());
-    const hasBrowserAuth = Boolean(getAccessToken());
+    const hasBrowserAuth = Boolean(getAccessToken()) || Boolean(getSavedBrowserUser()?.id);
     const isTelegramRuntime = isTelegramWebView();
 
     telegramAuthMissing.value = isTelegramRuntime && !hasMiniAppAuth && !hasBrowserAuth;
@@ -59,14 +58,9 @@ router.beforeEach(async (to, from, next) => {
 
     next();
   } catch (error) {
-    console.error("Router guard error:", error);
     next();
   } finally {
     walletStore.isLoading = false;
-    console.log("[PeekPay Router beforeEach done]", {
-      to: { name: to.name, path: to.fullPath },
-      storeLoading: walletStore.isLoading,
-    });
   }
 });
 
@@ -94,7 +88,8 @@ const initializeApp = async () => {
       isTelegramWebView() && !getTelegramInitData() && !getAccessToken();
 
     if (walletStore.userTg && walletStore.userTg.id) {
-        if (!checkAccessByWhitelist(walletStore.userTg.id)) {
+        const isEmailBrowserAuth = getBrowserAuthProvider() === "email";
+        if (!isEmailBrowserAuth && !checkAccessByWhitelist(walletStore.userTg.id)) {
           accessDenied.value = true;
           walletStore.isLoading = false;
           return;
@@ -118,7 +113,6 @@ const initializeApp = async () => {
     // Завершаем загрузку если не требуется PIN
     walletStore.isLoading = false;
   } catch (err) {
-    console.error("Ошибка инициализации приложения:", err);
     walletStore.isLoading = false; // Завершаем загрузку при ошибке
   } finally {
     isAppInitialized.value = true;
@@ -147,28 +141,6 @@ onErrorCaptured((error) => {
 
 onMounted(() => {
   initializeApp();
-  nextTick(() => {
-    logThemeSnapshot("App mounted", {
-      route: router.currentRoute.value.fullPath,
-      showMainShell: showMainShell.value,
-      showContent: showContent.value,
-    });
-  });
-
-  if (typeof document !== "undefined") {
-    bodyClassObserver = new MutationObserver(() => {
-      logThemeSnapshot("Body class mutated", {
-        route: router.currentRoute.value.fullPath,
-        showMainShell: showMainShell.value,
-        showContent: showContent.value,
-      });
-    });
-
-    bodyClassObserver.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-  }
 });
 
 // Компьютед свойство для отображения контента
@@ -263,38 +235,12 @@ const resetAppScroll = () => {
 };
 
 watch(
-  () => ({
-    routeName: router.currentRoute.value.name,
-    routePath: router.currentRoute.value.fullPath,
-    storeLoading: walletStore.isLoading,
-    showContent: showContent.value,
-    showMainShell: showMainShell.value,
-    shouldShowGlobalLoader: shouldShowGlobalLoader.value,
-  }),
-  (state) => {
-    console.log("[PeekPay App Render State]", state);
-  },
-  { immediate: true }
-);
-
-watch(
   () => router.currentRoute.value.fullPath,
   async (fullPath) => {
     await nextTick();
     resetAppScroll();
-    logThemeSnapshot("Route changed", {
-      route: fullPath,
-      routeName: router.currentRoute.value.name,
-      showMainShell: showMainShell.value,
-      showContent: showContent.value,
-      isLoading: walletStore.isLoading,
-    });
     setTimeout(() => {
       resetAppScroll();
-      logThemeSnapshot("Route changed + 300ms", {
-        route: fullPath,
-        routeName: router.currentRoute.value.name,
-      });
     }, 300);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

@@ -1,6 +1,7 @@
 const ACCESS_TOKEN_KEY = "access_token";
 const BROWSER_USER_KEY = "telegram_browser_user";
 const BROWSER_TELEGRAM_DATA_KEY = "telegram_browser_auth_data";
+const BROWSER_AUTH_PROVIDER_KEY = "browser_auth_provider";
 const LEGACY_USER_KEY = "user";
 
 export const getTelegramInitData = () => {
@@ -19,6 +20,7 @@ export const saveBrowserAuth = (token, telegramUser) => {
   if (token) {
     localStorage.setItem(ACCESS_TOKEN_KEY, token);
   }
+  localStorage.setItem(BROWSER_AUTH_PROVIDER_KEY, "telegram");
 
   if (telegramUser) {
     const user = normalizeTelegramUser(telegramUser);
@@ -28,11 +30,26 @@ export const saveBrowserAuth = (token, telegramUser) => {
   }
 };
 
+export const saveBrowserEmailAuth = (emailUser) => {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.setItem(BROWSER_AUTH_PROVIDER_KEY, "email");
+
+  const user = normalizeTelegramUser(emailUser);
+  localStorage.setItem(BROWSER_TELEGRAM_DATA_KEY, JSON.stringify({ user, auth_provider: "email" }));
+  localStorage.setItem(BROWSER_USER_KEY, JSON.stringify(user));
+  localStorage.setItem(LEGACY_USER_KEY, JSON.stringify(user));
+};
+
 export const clearBrowserAuth = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(BROWSER_USER_KEY);
   localStorage.removeItem(BROWSER_TELEGRAM_DATA_KEY);
+  localStorage.removeItem(BROWSER_AUTH_PROVIDER_KEY);
   localStorage.removeItem(LEGACY_USER_KEY);
+};
+
+export const getBrowserAuthProvider = () => {
+  return localStorage.getItem(BROWSER_AUTH_PROVIDER_KEY) || "";
 };
 
 export const getSavedBrowserUser = () => {
@@ -54,6 +71,7 @@ export const normalizeTelegramUser = (user = {}) => ({
   last_name: user.last_name || "",
   username: user.username || "",
   id: String(user.id || ""),
+  email: user.email || "",
   photo_url: user.photo_url || "",
 });
 

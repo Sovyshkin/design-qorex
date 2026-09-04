@@ -13,31 +13,8 @@ import './assets/global-theme.css'; // Подключаем глобальные
 axios.defaults.baseURL = "https://back.peekpay.ru";
 axios.defaults.timeout = 12000;
 
-window.addEventListener('error', (event) => {
-  console.error('[PeekPay Global Error]', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    error: event.error,
-    stack: event.error?.stack,
-  });
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('[PeekPay Unhandled Promise]', {
-    reason: event.reason,
-    message: event.reason?.message,
-    stack: event.reason?.stack,
-    response: event.reason?.response?.data,
-    status: event.reason?.response?.status,
-  });
-});
-
 // Interceptor для добавления авторизации к каждому запросу
 axios.interceptors.request.use(async (config) => {
-  console.log('Interceptor called for URL:', config.url);
-  
   try {
     const initData = getTelegramInitData();
     const token = getAccessToken();
@@ -48,18 +25,11 @@ axios.interceptors.request.use(async (config) => {
     if (initData) {
       config.headers['X-Init-Data'] = initData;
       config.headers['X-Timestamp'] = Math.floor(Date.now() / 1000);
-      console.log('Added Telegram auth headers');
     } else if (token && !isTelegramAuthRequest && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('Added browser JWT auth header');
-    } else if (!isTelegramAuthRequest) {
-      console.warn('No Telegram initData or browser JWT available for request');
     }
-  } catch (error) {
-    console.error('Error getting auth data for request:', error);
-  }
-  
-  console.log('Final headers:', config.headers);
+  } catch (_error) {}
+
   return config;
 }, (error) => {
   return Promise.reject(error);
@@ -94,15 +64,6 @@ const pinia = createPinia();
 pinia.use(PiniaCookiesPlugin);
 
 const app = createApp(App);
-app.config.errorHandler = (error, instance, info) => {
-  console.error('[PeekPay Vue Error]', {
-    error,
-    message: error?.message,
-    stack: error?.stack,
-    component: instance?.type?.name || instance?.type?.__name,
-    info,
-  });
-};
 app.use(pinia);
 app.use(router)
 app.use(i18n)

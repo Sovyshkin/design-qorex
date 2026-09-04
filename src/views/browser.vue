@@ -1,284 +1,261 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useWalletStore } from "@/stores/walletStore.ts";
 import {
   clearBrowserAuth,
-  getAccessToken,
   getSavedBrowserUser,
   isTelegramWebView,
   normalizeTelegramUser,
-  saveBrowserAuth,
+  saveBrowserEmailAuth,
 } from "@/utils/auth";
 
 const router = useRouter();
 const walletStore = useWalletStore();
-const widgetRoot = ref(null);
+
+const email = ref("");
+const code = ref("");
+const step = ref("email");
 const isLoading = ref(false);
 const errorMessage = ref("");
-const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "peekpay_bot";
-const hasToken = computed(() => Boolean(getAccessToken()));
-const isReauth = computed(() => new URLSearchParams(window.location.search).get("reauth") === "1");
-const loginButtonText = computed(() => {
-  if (isLoading.value) return "Проверяем Telegram";
-  if (isReauth.value) return "Войти через Telegram";
-  return walletStore.userTg.first_name
-    ? `Войти как ${walletStore.userTg.first_name}`
-    : "Войти через Telegram";
+const pendingUser = ref(null);
+const sentToEmail = ref("");
+
+const normalizedEmail = computed(() => email.value.trim().toLowerCase());
+const cleanedCode = computed(() => code.value.replace(/\D/g, "").slice(0, 6));
+const isEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail.value));
+const canSubmit = computed(() => {
+  if (isLoading.value) return false;
+  return step.value === "email" ? isEmailValid.value : cleanedCode.value.length === 6;
 });
-let widgetObserver = null;
-const telegramAuthFields = [
-  "id",
-  "first_name",
-  "last_name",
-  "username",
-  "photo_url",
-  "auth_date",
-  "hash",
-  "lang",
-];
 
-const logBrowserAuth = (label, payload = {}) => {
-  console.log(`[PeekPay Browser Auth] ${label}`, {
-    ...payload,
-    botUsername,
-    href: window.location.href,
-    origin: window.location.origin,
-    hostname: window.location.hostname,
-    protocol: window.location.protocol,
-    pathname: window.location.pathname,
-    userAgent: navigator.userAgent,
-    hasTelegramObject: Boolean(window.Telegram),
-    hasTelegramWebApp: Boolean(window.Telegram?.WebApp),
-    telegramPlatform: window.Telegram?.WebApp?.platform,
-    telegramInitDataLength: window.Telegram?.WebApp?.initData?.length || 0,
-  });
-};
-
-const inspectWidgetDom = (reason = "inspect") => {
-  if (!widgetRoot.value) return;
-
-  const iframe = widgetRoot.value.querySelector("iframe");
-  const script = widgetRoot.value.querySelector("script");
-  logBrowserAuth(`widget DOM ${reason}`, {
-    rootText: widgetRoot.value.innerText || "",
-    rootHtmlLength: widgetRoot.value.innerHTML.length,
-    hasScript: Boolean(script),
-    scriptSrc: script?.src || "",
-    hasIframe: Boolean(iframe),
-    iframeSrc: iframe?.src || "",
-    iframeTitle: iframe?.title || "",
-  });
-};
-
-const handleWidgetMessage = (event) => {
-  const origin = String(event.origin || "");
-  if (!origin.includes("telegram.org") && !origin.includes("oauth.telegram.org")) return;
-
-  const messageData = typeof event.data === "string" ? event.data : "";
-  logBrowserAuth("message from Telegram widget", {
-    messageOrigin: event.origin,
-    messageData: event.data,
-  });
-
-  if (messageData.includes("unauthorized")) {
-    errorMessage.value = "Telegram не вернул данные авторизации. Нажмите кнопку ещё раз и подтвердите вход.";
-  }
-};
-
-const getTelegramAuthFromUrl = () => {
-  const params = new URLSearchParams(window.location.search);
-  if (!params.get("id") || !params.get("hash") || !params.get("auth_date")) {
-    return null;
+const actionText = computed(() => {
+  if (isLoading.value) {
+    return step.value === "email" ? "Отправляем код" : "Проверяем код";
   }
 
-  return telegramAuthFields.reduce((authData, key) => {
-    const value = params.get(key);
-    if (value !== null) authData[key] = value;
-    return authData;
-  }, {});
-};
+  return step.value === "email" ? "Получить код" : "Войти";
+});
 
-const clearTelegramAuthQuery = () => {
+const getReferralId = () => {
   const url = new URL(window.location.href);
-  telegramAuthFields.forEach((key) => url.searchParams.delete(key));
-  url.searchParams.delete("reauth");
-  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+  const values = [
+    url.searchParams.get("referal"),
+    url.searchParams.get("referral"),
+    url.searchParams.get("startapp"),
+    url.searchParams.get("start"),
+    url.hash,
+  ].filter(Boolean);
+
+  for (const value of values) {
+    const match = String(value).match(/(?:ref(?:er(?:al|ral)?)?_?)?(\d{4,})/i);
+    if (match?.[1]) return match[1];
+  }
+
+  return "";
 };
 
-const resetBrowserSession = () => {
-  clearBrowserAuth();
-  walletStore.userTg = normalizeTelegramUser({});
-  walletStore.user = {};
+const getNameFromEmail = (emailValue) => {
+  const localPart = emailValue.split("@")[0] || "";
+  const readableName = localPart.replace(/[._-]+/g, " ").trim();
+
+  if (!readableName) return "Пользователь";
+
+  return readableName.charAt(0).toUpperCase() + readableName.slice(1);
 };
 
-const loadUserSession = async (telegramUser) => {
-  logBrowserAuth("load user session", {
-    telegramUserId: telegramUser?.id,
-    telegramUsername: telegramUser?.username,
+const buildEmailUserPayload = (emailValue) => {
+  const username =
+    emailValue
+      .split("@")[0]
+      ?.replace(/[^a-zA-Z0-9_]/g, "_")
+      .replace(/_+/g, "_")
+      .slice(0, 32) || "email_user";
+  const referralId = getReferralId();
+
+  const payload = {
+    first_name: getNameFromEmail(emailValue),
+    last_name: "",
+    username,
+    email: emailValue,
+    wallet: "",
+    balance: "0",
+    pincode: "",
+    boolpin: false,
+    tg_id: "",
+    referal: Boolean(referralId),
+    whoreferal: referralId || "",
+    visibility_balance: true,
+  };
+
+  return payload;
+};
+
+const getGeneratedUserId = (data) => {
+  if (typeof data === "string" || typeof data === "number") {
+    const directValue = String(data).trim();
+    const match = directValue.match(/\d{4,}/);
+    return match?.[0] || directValue;
+  }
+
+  const candidates = [
+    data?.tg_id,
+    data?.id,
+    data?.user_id,
+    data?.user?.tg_id,
+    data?.user?.id,
+    data?.data?.tg_id,
+    data?.data?.id,
+    data?.result?.tg_id,
+    data?.result?.id,
+  ];
+
+  const id = candidates.find((value) => value !== undefined && value !== null && String(value) !== "");
+  return id ? String(id).trim() : "";
+};
+
+const getBackendMessage = (error) => {
+  return (
+    error?.response?.data?.detail ||
+    error?.response?.data?.message ||
+    error?.response?.data ||
+    error?.message ||
+    ""
+  );
+};
+
+const registerEmailUser = async (emailValue) => {
+  const payload = buildEmailUserPayload(emailValue);
+  const response = await axios.post("/new_user_e", payload, { timeout: 45000 });
+  const id = getGeneratedUserId(response.data);
+
+  if (!id) {
+    throw new Error("Сервер не вернул id пользователя");
+  }
+
+  return normalizeTelegramUser({
+    ...payload,
+    id,
   });
-  walletStore.userTg = normalizeTelegramUser(telegramUser);
-  await walletStore.getUser();
-  await walletStore.getPrice();
-  router.replace({ name: "main" });
 };
 
-const onTelegramAuth = async (user) => {
+const checkCodeTimer = async (emailValue) => {
+  await axios.patch(`/check_timer_code?email=${encodeURIComponent(emailValue)}`, null, {
+    timeout: 30000,
+  });
+};
+
+const requestCode = async () => {
+  if (!isEmailValid.value) {
+    errorMessage.value = "Введите корректный email.";
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = "";
+
   try {
-    isLoading.value = true;
-    errorMessage.value = "";
-    logBrowserAuth("Telegram widget auth callback", {
-      user,
-      hasHash: Boolean(user?.hash),
-      authDate: user?.auth_date,
+    const user = await registerEmailUser(normalizedEmail.value);
+    pendingUser.value = user;
+    sentToEmail.value = normalizedEmail.value;
+    await axios.patch(`/send_code?email=${encodeURIComponent(normalizedEmail.value)}`, null, {
+      timeout: 30000,
     });
-
-    const response = await axios.post("/auth/telegram", user, {
-      headers: { "Content-Type": "application/json" },
-      timeout: 45000,
-    });
-    logBrowserAuth("backend /auth/telegram response", {
-      status: response.status,
-      hasToken: Boolean(response.data?.access_token),
-      responseKeys: Object.keys(response.data || {}),
-    });
-
-    const token = response.data?.access_token;
-    if (!token) {
-      throw new Error("Сервер не вернул токен авторизации");
-    }
-
-    saveBrowserAuth(token, user);
-    clearTelegramAuthQuery();
-    await loadUserSession(user);
+    step.value = "code";
+    code.value = "";
   } catch (error) {
-    console.error("Browser Telegram auth failed:", error);
-    logBrowserAuth("backend /auth/telegram failed", {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-    });
     const isTimeout = error.code === "ECONNABORTED" || /timeout/i.test(String(error.message || ""));
     errorMessage.value =
-      error.response?.data?.detail ||
-      error.response?.data?.message ||
+      getBackendMessage(error) ||
       (isTimeout
-        ? "Сервер авторизации не ответил. Попробуйте ещё раз через несколько секунд."
-        : "Не удалось войти через Telegram. Попробуйте ещё раз.");
+        ? "Сервер не ответил. Попробуйте ещё раз через несколько секунд."
+        : "Не удалось отправить код. Попробуйте ещё раз.");
   } finally {
     isLoading.value = false;
   }
 };
 
-const mountTelegramWidget = async () => {
-  await nextTick();
-  logBrowserAuth("mount widget requested", {
-    hasWidgetRoot: Boolean(widgetRoot.value),
-    envBotUsername: import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "",
-  });
+const confirmCode = async () => {
+  const user = pendingUser.value;
 
-  if (!widgetRoot.value || !botUsername) {
-    logBrowserAuth("mount widget skipped", {
-      hasWidgetRoot: Boolean(widgetRoot.value),
-      hasBotUsername: Boolean(botUsername),
-    });
+  if (!user?.id) {
+    step.value = "email";
+    errorMessage.value = "Сначала запросите код на email.";
     return;
   }
 
-  widgetRoot.value.innerHTML = "";
-  window.onTelegramAuth = onTelegramAuth;
-  window.addEventListener("message", handleWidgetMessage);
-
-  if (widgetObserver) {
-    widgetObserver.disconnect();
+  if (cleanedCode.value.length !== 6) {
+    errorMessage.value = "Введите 6 цифр из письма.";
+    return;
   }
 
-  widgetObserver = new MutationObserver(() => inspectWidgetDom("changed"));
-  widgetObserver.observe(widgetRoot.value, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
+  isLoading.value = true;
+  errorMessage.value = "";
 
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = "https://telegram.org/js/telegram-widget.js?22";
-  script.setAttribute("data-telegram-login", botUsername);
-  script.setAttribute("data-size", "large");
-  script.setAttribute("data-radius", "14");
-  script.setAttribute("data-userpic", "false");
-  script.setAttribute("data-auth-url", `${window.location.origin}/browser`);
-  script.setAttribute("data-request-access", "write");
-  script.onload = () => {
-    logBrowserAuth("Telegram widget script loaded");
-    setTimeout(() => inspectWidgetDom("after script load + 300ms"), 300);
-    setTimeout(() => inspectWidgetDom("after script load + 1500ms"), 1500);
-  };
-  script.onerror = (event) => {
-    logBrowserAuth("Telegram widget script failed", { event });
-  };
-  logBrowserAuth("Telegram widget script append", {
-    dataTelegramLogin: script.getAttribute("data-telegram-login"),
-    dataAuthUrl: script.getAttribute("data-auth-url"),
-    dataUserpic: script.getAttribute("data-userpic"),
-    dataRequestAccess: script.getAttribute("data-request-access"),
-    src: script.src,
-  });
-  widgetRoot.value.appendChild(script);
-  inspectWidgetDom("after append");
+  try {
+    await checkCodeTimer(sentToEmail.value);
+    await axios.patch(
+      `/check_code?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
+        cleanedCode.value
+      )}&tg_id=${encodeURIComponent(user.id)}`,
+      null,
+      { timeout: 30000 }
+    );
+
+    saveBrowserEmailAuth(user);
+    walletStore.userTg = normalizeTelegramUser(user);
+    walletStore.user = {};
+    await walletStore.getUser();
+    await walletStore.getPrice();
+    router.replace({ name: "main" });
+  } catch (error) {
+    const isTimeout = error.code === "ECONNABORTED" || /timeout/i.test(String(error.message || ""));
+    errorMessage.value =
+      getBackendMessage(error) ||
+      (isTimeout
+        ? "Сервер проверки не ответил. Попробуйте ещё раз."
+        : error?.config?.url?.includes("/check_timer_code")
+          ? "Время действия кода истекло. Запросите новый код."
+        : "Код не подошёл. Проверьте письмо и попробуйте снова.");
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const continueSession = async () => {
-  const savedUser = getSavedBrowserUser();
-  logBrowserAuth("continue saved session", {
-    hasSavedUser: Boolean(savedUser?.id),
-    savedUserId: savedUser?.id,
-  });
-  if (savedUser?.id) {
-    await loadUserSession(savedUser);
+const submit = () => {
+  if (step.value === "email") {
+    requestCode();
+    return;
   }
+
+  confirmCode();
+};
+
+const editEmail = () => {
+  step.value = "email";
+  code.value = "";
+  errorMessage.value = "";
 };
 
 onMounted(async () => {
-  const authFromUrl = getTelegramAuthFromUrl();
-  logBrowserAuth("page mounted", {
-    hasToken: hasToken.value,
-    hasTelegramAuthQuery: Boolean(authFromUrl),
-    isTelegramWebView: isTelegramWebView(),
-    expectedBotFatherDomain: window.location.hostname,
-  });
-
   if (isTelegramWebView()) {
-    logBrowserAuth("redirect Telegram WebView away from browser login");
     router.replace({ name: "main", query: { auth: "telegram_missing" } });
     return;
   }
 
-  if (isReauth.value && !authFromUrl) {
-    resetBrowserSession();
-  }
-
-  if (authFromUrl) {
-    clearTelegramAuthQuery();
-    await onTelegramAuth(authFromUrl);
+  const isReauth = new URLSearchParams(window.location.search).get("reauth") === "1";
+  if (isReauth) {
+    clearBrowserAuth();
     return;
   }
 
-  if (hasToken.value && !isReauth.value) {
-    await continueSession();
-  }
-  await mountTelegramWidget();
-});
-
-onBeforeUnmount(() => {
-  if (window.onTelegramAuth === onTelegramAuth) {
-    delete window.onTelegramAuth;
-  }
-  window.removeEventListener("message", handleWidgetMessage);
-  if (widgetObserver) {
-    widgetObserver.disconnect();
-    widgetObserver = null;
+  const savedUser = getSavedBrowserUser();
+  if (savedUser?.id) {
+    walletStore.userTg = normalizeTelegramUser(savedUser);
+    await walletStore.getUser();
+    await walletStore.getPrice();
+    router.replace({ name: "main" });
   }
 });
 </script>
@@ -287,34 +264,54 @@ onBeforeUnmount(() => {
   <main class="browser-auth">
     <section class="auth-panel">
       <img class="auth-logo" src="/assets/peekpay-logo-150.png" alt="PeekPay" />
+
       <div class="auth-copy">
         <h1>PeekPay</h1>
-        <p>Войдите через Telegram, чтобы открыть браузерную версию кошелька.</p>
+        <p>Войдите по email, чтобы открыть браузерную версию кошелька.</p>
       </div>
 
-      <div class="widget-box">
-        <div class="telegram-login-shell" :class="{ 'telegram-login-shell--loading': isLoading }">
-          <div class="telegram-login-visual" aria-hidden="true">
-            <span class="telegram-login-icon">
-              <span v-if="isLoading" class="telegram-login-spinner"></span>
-              <template v-else>▸</template>
-            </span>
-            <span>
-              {{ loginButtonText }}
-            </span>
-          </div>
-          <div ref="widgetRoot" class="telegram-widget" :class="{ 'telegram-widget--disabled': isLoading }"></div>
+      <form class="email-auth-form" @submit.prevent="submit">
+        <label v-if="step === 'email'" class="auth-field">
+          <span>Email</span>
+          <input
+            v-model="email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="name@example.com"
+            :disabled="isLoading"
+          />
+        </label>
+
+        <div v-else class="code-step">
+          <button class="email-chip" type="button" :disabled="isLoading" @click="editEmail">
+            {{ sentToEmail }}
+          </button>
+          <label class="auth-field">
+            <span>Код из письма</span>
+            <input
+              :value="cleanedCode"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              placeholder="000000"
+              :disabled="isLoading"
+              @input="code = $event.target.value"
+            />
+          </label>
         </div>
-        <div v-if="isLoading" class="auth-status">
-          <span class="auth-progress">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-          Авторизуем браузерную версию
-        </div>
-        <div v-else-if="errorMessage" class="auth-error">{{ errorMessage }}</div>
-      </div>
+
+        <button class="auth-button" type="submit" :disabled="!canSubmit">
+          <span v-if="isLoading" class="auth-spinner"></span>
+          <span>{{ actionText }}</span>
+        </button>
+
+        <p v-if="step === 'code'" class="auth-hint">
+          Мы отправили одноразовый код на почту. Введите его, чтобы завершить вход.
+        </p>
+        <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
+      </form>
     </section>
   </main>
 </template>
@@ -332,8 +329,8 @@ onBeforeUnmount(() => {
 
 :global(.standalone-shell.pin-page--standalone:has(.browser-auth)),
 :global(.pin-page--standalone:has(.browser-auth)),
-:global(body:not(.dark-theme) main.browser-auth),
-:global(body:not(.dark-theme) .browser-auth) {
+:global(body main.browser-auth),
+:global(body .browser-auth) {
   background: #1e273bf5 !important;
   background-color: #1e273bf5 !important;
 }
@@ -374,128 +371,135 @@ onBeforeUnmount(() => {
 }
 
 .auth-copy p {
+  max-width: 300px;
   margin: 0;
   color: #a8b3c7;
   font-size: 15px;
   line-height: 1.45;
 }
 
-.widget-box {
+.email-auth-form {
   width: 100%;
-  min-height: 82px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.telegram-login-shell {
-  position: relative;
-  width: min(100%, 300px);
-  height: 50px;
-  margin-inline: auto;
   display: grid;
-  place-items: center;
+  gap: 14px;
 }
 
-.telegram-login-visual {
-  position: absolute;
-  inset: 0;
-  display: flex;
+.auth-field {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.auth-field span {
+  color: #60a5fa;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-field input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.46);
+  color: #f8fafc;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 700;
+  caret-color: #60a5fa;
+}
+
+.auth-field input::placeholder {
+  color: rgba(168, 179, 199, 0.55);
+}
+
+.auth-field input:focus {
+  border-color: rgba(96, 165, 250, 0.68);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
+}
+
+.code-step {
+  display: grid;
+  gap: 12px;
+}
+
+.email-chip {
+  justify-self: center;
+  max-width: 100%;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.12);
+  color: #bfdbfe;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.auth-button {
+  min-height: 56px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 6px 18px;
+  gap: 10px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #54a9eb, #3b82f6);
+  background:
+    linear-gradient(135deg, rgba(84, 169, 235, 0.96), rgba(59, 130, 246, 0.96)),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 100% 100%, 180% 100%;
+  color: #ffffff;
   box-shadow:
     0 16px 34px rgba(37, 99, 235, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  overflow: hidden;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.telegram-login-shell--loading .telegram-login-visual {
-  background:
-    linear-gradient(135deg, rgba(84, 169, 235, 0.96), rgba(59, 130, 246, 0.96)),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  background-size: 100% 100%, 180% 100%;
+.auth-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.auth-button:not(:disabled):active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.auth-button span {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+.auth-button:has(.auth-spinner) {
   animation: authButtonPulse 1.45s ease-in-out infinite;
 }
 
-.telegram-login-icon {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  color: #ffffff !important;
-  font-size: 26px;
-  line-height: 1;
-  transform: rotate(-32deg) translateY(-1px);
-}
-
-.telegram-login-spinner {
-  width: 19px;
-  height: 19px;
+.auth-spinner {
+  width: 18px;
+  height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.32);
   border-top-color: #ffffff;
   border-radius: 999px;
   animation: authSpinner 0.75s linear infinite;
 }
 
-.telegram-login-visual span:not(.telegram-login-icon) {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: #ffffff !important;
-  font-size: 15px;
-  line-height: 18px;
-  font-weight: 700;
-}
-
-.telegram-widget {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  opacity: 0.01;
-  overflow: hidden;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.telegram-widget--disabled {
-  pointer-events: none;
-}
-
-.telegram-widget :deep(iframe) {
-  display: block !important;
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: none !important;
-  height: 100% !important;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 16px !important;
-  background: transparent !important;
-}
-
-.auth-status,
+.auth-hint,
 .auth-error {
-  max-width: 310px;
+  margin: 0;
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.4;
   font-weight: 650;
 }
 
-.auth-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
+.auth-hint {
   color: #93c5fd;
 }
 
@@ -503,45 +507,9 @@ onBeforeUnmount(() => {
   color: #fca5a5;
 }
 
-.auth-progress {
-  display: inline-flex;
-  gap: 4px;
-}
-
-.auth-progress span {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.38;
-  animation: authDot 1.05s ease-in-out infinite;
-}
-
-.auth-progress span:nth-child(2) {
-  animation-delay: 0.14s;
-}
-
-.auth-progress span:nth-child(3) {
-  animation-delay: 0.28s;
-}
-
 @keyframes authSpinner {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes authDot {
-  0%,
-  80%,
-  100% {
-    opacity: 0.32;
-    transform: translateY(0);
-  }
-
-  40% {
-    opacity: 1;
-    transform: translateY(-3px);
   }
 }
 
@@ -560,23 +528,13 @@ onBeforeUnmount(() => {
   }
 }
 
-:global(.dark-theme) .browser-auth {
-  background:
-    radial-gradient(760px 320px at 50% -16%, rgba(56, 130, 250, 0.2), transparent 62%),
-    #0d1b2a;
-}
+@media (max-width: 420px) {
+  .auth-panel {
+    padding: 30px 18px;
+  }
 
-:global(.dark-theme) .auth-panel {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(30, 39, 59, 0.94);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
-}
-
-:global(.dark-theme) .auth-copy h1 {
-  color: #f8fafc;
-}
-
-:global(.dark-theme) .auth-copy p {
-  color: #94a3b8;
+  .auth-copy h1 {
+    font-size: 30px;
+  }
 }
 </style>
