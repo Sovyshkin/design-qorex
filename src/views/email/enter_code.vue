@@ -10,22 +10,18 @@ const isChecking = ref(false);
 
 const checkCode = async () => {
   if (isChecking.value || walletStore.isLoading) {
-    console.log('Кнопка заблокирована:', { isChecking: isChecking.value, isLoading: walletStore.isLoading });
     return;
   }
   
   if (!walletStore.code || String(walletStore.code).trim() === '') {
-    console.log('Код не введен');
     return;
   }
   
-  console.log('Отправляем код:', walletStore.code);
   isChecking.value = true;
   
   try {
     await walletStore.checkCode();
-  } catch (error) {
-    console.error('Ошибка при проверке кода:', error);
+  } catch (_error) {
   } finally {
     isChecking.value = false;
   }

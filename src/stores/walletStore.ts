@@ -1071,7 +1071,7 @@ export const useWalletStore = defineStore("wallet", () => {
   const sendCode = async () => {
     try {
       isLoading.value = true;
-      let response = await axios.patch(`/send_code?email=${email.value}`);
+      let response = await axios.patch(`/send_code?email=${encodeURIComponent(email.value)}`);
 
       if (response.status == 200) {
         showMessage(t('code_sent') || 'Код отправлен на email', 'success');
@@ -1107,24 +1107,20 @@ export const useWalletStore = defineStore("wallet", () => {
       return;
     }
     
-    if (!user.value?.tg_id) {
+    const currentTgId = getCurrentTelegramId();
+    if (!currentTgId) {
       showMessage('Ошибка авторизации', 'error');
       return;
     }
 
     try {
       isLoading.value = true;
-      console.log('Checking code with data:', {
-        email: email.value,
-        code: code.value,
-        tg_id: user.value.tg_id
-      });
+      await axios.patch(`/check_timer_code?email=${encodeURIComponent(email.value)}`);
       
       let response = await axios.patch(
-        `/check_code?email=${encodeURIComponent(email.value)}&code=${encodeURIComponent(code.value)}&tg_id=${encodeURIComponent(user.value.tg_id)}`
+        `/check_code?email=${encodeURIComponent(email.value)}&code=${encodeURIComponent(code.value)}&tg_id=${encodeURIComponent(currentTgId)}`
       );
       
-      console.log('Check code response:', response.status, response.data);
       code.value = "";
 
       if (response.status == 200) {
