@@ -330,7 +330,7 @@ const confirmCode = async () => {
 
     await checkCodeTimer(sentToEmail.value);
     await axios.patch(
-      `/check_code?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
+      `/check_code_e?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
         cleanedCode.value
       )}&tg_id=${encodeURIComponent(user.id)}`,
       null,
