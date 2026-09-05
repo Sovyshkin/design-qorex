@@ -30,8 +30,12 @@ export const saveBrowserAuth = (token, telegramUser) => {
   }
 };
 
-export const saveBrowserEmailAuth = (emailUser) => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
+export const saveBrowserEmailAuth = (emailUser, token = "") => {
+  if (token) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }
   localStorage.setItem(BROWSER_AUTH_PROVIDER_KEY, "email");
 
   const user = normalizeTelegramUser(emailUser);

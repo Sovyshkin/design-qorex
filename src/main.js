@@ -34,6 +34,9 @@ axios.interceptors.request.use(async (config) => {
       config.headers['X-Timestamp'] = Math.floor(Date.now() / 1000);
     } else if (isEmailBrowserAuth) {
       config.withCredentials = true;
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     } else if (token && !isTelegramAuthRequest && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }

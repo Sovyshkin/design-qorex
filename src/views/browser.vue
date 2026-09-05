@@ -329,7 +329,7 @@ const confirmCode = async () => {
     }
 
     await checkCodeTimer(sentToEmail.value);
-    await axios.patch(
+    const response = await axios.patch(
       `/check_code_e?email=${encodeURIComponent(sentToEmail.value)}&code=${encodeURIComponent(
         cleanedCode.value
       )}&tg_id=${encodeURIComponent(user.id)}`,
@@ -343,7 +343,8 @@ const confirmCode = async () => {
       id: user.id,
     });
 
-    saveBrowserEmailAuth(verifiedUser);
+    const token = response.data?.access_token || response.data?.token || "";
+    saveBrowserEmailAuth(verifiedUser, token);
     await loadUserSession(verifiedUser);
   } catch (error) {
     const isTimeout = error.code === "ECONNABORTED" || /timeout/i.test(String(error.message || ""));
