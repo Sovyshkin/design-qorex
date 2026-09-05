@@ -334,7 +334,7 @@ const confirmCode = async () => {
         cleanedCode.value
       )}&tg_id=${encodeURIComponent(user.id)}`,
       null,
-      { timeout: 30000 }
+      { timeout: 30000, withCredentials: true }
     );
 
     const verifiedUser = normalizeTelegramUser({

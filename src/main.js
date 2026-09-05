@@ -6,7 +6,13 @@ import { PiniaCookiesPlugin } from './plugins/pinia-cookies';
 import { createPinia } from 'pinia';
 import axios from 'axios'
 import { VueTelegramPlugin } from "vue-tg";
-import { clearBrowserAuth, getAccessToken, getTelegramInitData } from "@/utils/auth";
+import {
+  clearBrowserAuth,
+  getAccessToken,
+  getBrowserAuthProvider,
+  getSavedBrowserUser,
+  getTelegramInitData,
+} from "@/utils/auth";
 import './assets/theme.css'; // Подключаем стили темы
 import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
@@ -18,6 +24,7 @@ axios.interceptors.request.use(async (config) => {
   try {
     const initData = getTelegramInitData();
     const token = getAccessToken();
+    const isEmailBrowserAuth = getBrowserAuthProvider() === "email";
     const isTelegramAuthRequest = String(config.url || "").includes("/auth/telegram");
 
     config.headers = config.headers || {};
@@ -25,6 +32,8 @@ axios.interceptors.request.use(async (config) => {
     if (initData) {
       config.headers['X-Init-Data'] = initData;
       config.headers['X-Timestamp'] = Math.floor(Date.now() / 1000);
+    } else if (isEmailBrowserAuth) {
+      config.withCredentials = true;
     } else if (token && !isTelegramAuthRequest && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -40,7 +49,7 @@ axios.interceptors.response.use(
   (error) => {
     const detail = String(error.response?.data?.detail || error.response?.data?.message || "");
     const hasMiniAppAuth = Boolean(getTelegramInitData());
-    const hasBrowserAuth = Boolean(getAccessToken());
+    const hasBrowserAuth = Boolean(getAccessToken()) || Boolean(getSavedBrowserUser()?.id);
     const isTelegramAuthRequest = String(error.config?.url || "").includes("/auth/telegram");
     const isExpiredBrowserToken =
       error.response?.status === 401 &&
