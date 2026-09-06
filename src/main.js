@@ -5,7 +5,6 @@ import i18n from "./i18n";
 import { PiniaCookiesPlugin } from './plugins/pinia-cookies';
 import { createPinia } from 'pinia';
 import axios from 'axios'
-import { VueTelegramPlugin } from "vue-tg";
 import {
   clearBrowserAuth,
   getAccessToken,
@@ -111,12 +110,17 @@ axios.interceptors.response.use(
 const pinia = createPinia();
 pinia.use(PiniaCookiesPlugin);
 
-loadTelegramSdk().finally(() => {
+loadTelegramSdk().finally(async () => {
   const app = createApp(App);
   app.use(pinia);
   app.use(router)
   app.use(i18n)
   app.config.devtools = false
-  app.use(VueTelegramPlugin)
+  if (window.Telegram?.WebApp) {
+    try {
+      const { VueTelegramPlugin } = await import("vue-tg");
+      app.use(VueTelegramPlugin)
+    } catch (_error) {}
+  }
   app.mount('#app')
 });
