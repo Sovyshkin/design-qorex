@@ -16,6 +16,44 @@ import {
 import './assets/theme.css'; // Подключаем стили темы
 import './assets/global-theme.css'; // Подключаем глобальные стили компонентов
 
+const shouldLoadTelegramSdk = () => {
+  const userAgent = navigator.userAgent || "";
+  const search = window.location.search || "";
+  const hash = window.location.hash || "";
+
+  return Boolean(
+    window.Telegram ||
+      window.TelegramWebviewProxy ||
+      /Telegram/i.test(userAgent) ||
+      /tgWebApp/i.test(search) ||
+      /tgWebApp/i.test(hash)
+  );
+};
+
+const loadTelegramSdk = () => {
+  if (!shouldLoadTelegramSdk() || window.Telegram?.WebApp) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const existingScript = document.querySelector('script[src="https://telegram.org/js/telegram-web-app.js"]');
+
+    if (existingScript) {
+      existingScript.addEventListener("load", resolve, { once: true });
+      existingScript.addEventListener("error", resolve, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://telegram.org/js/telegram-web-app.js";
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = resolve;
+    document.head.appendChild(script);
+    setTimeout(resolve, 3500);
+  });
+};
+
 axios.defaults.baseURL = "https://back.peekpay.ru";
 axios.defaults.timeout = 12000;
 
@@ -73,10 +111,12 @@ axios.interceptors.response.use(
 const pinia = createPinia();
 pinia.use(PiniaCookiesPlugin);
 
-const app = createApp(App);
-app.use(pinia);
-app.use(router)
-app.use(i18n)
-app.config.devtools = false
-app.use(VueTelegramPlugin)
-app.mount('#app')
+loadTelegramSdk().finally(() => {
+  const app = createApp(App);
+  app.use(pinia);
+  app.use(router)
+  app.use(i18n)
+  app.config.devtools = false
+  app.use(VueTelegramPlugin)
+  app.mount('#app')
+});
