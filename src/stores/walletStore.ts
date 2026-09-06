@@ -11,7 +11,12 @@ import {
 } from "@/utils/transactionStatus";
 import { isCashbackTransaction } from "@/utils/cashbackTransaction";
 import { normalizeTransactionType } from "@/utils/transactionType";
-import { getSavedBrowserUser, getSavedTelegramData, normalizeTelegramUser } from "@/utils/auth";
+import {
+  getSavedBrowserUser,
+  getSavedTelegramData,
+  getTelegramInitData,
+  normalizeTelegramUser,
+} from "@/utils/auth";
 
 // Вспомогательная функция для форматирования даты в локальном часовом поясе
 const formatDateForTransaction = (date = new Date()) => {
@@ -540,8 +545,9 @@ export const useWalletStore = defineStore("wallet", () => {
     console.log('Telegram object:', window.Telegram);
     console.log('WebApp object:', window.Telegram?.WebApp);
     
-    if (window.Telegram && window.Telegram.WebApp) {
-      const initData = window.Telegram.WebApp.initData;
+    const initData = getTelegramInitData();
+
+    if (initData || (window.Telegram && window.Telegram.WebApp)) {
       console.log('initData:', initData);
 
       if (initData) {

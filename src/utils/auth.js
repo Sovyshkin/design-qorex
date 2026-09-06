@@ -4,12 +4,31 @@ const BROWSER_TELEGRAM_DATA_KEY = "telegram_browser_auth_data";
 const BROWSER_AUTH_PROVIDER_KEY = "browser_auth_provider";
 const LEGACY_USER_KEY = "user";
 
+const getTelegramInitDataFromUrl = () => {
+  const sources = [window.location.search, window.location.hash.replace(/^#/, "?")];
+
+  for (const source of sources) {
+    if (!source) continue;
+
+    try {
+      const params = new URLSearchParams(source);
+      const initData = params.get("tgWebAppData");
+
+      if (initData) {
+        return decodeURIComponent(initData);
+      }
+    } catch (_error) {}
+  }
+
+  return "";
+};
+
 export const getTelegramInitData = () => {
   if (window.Telegram?.WebApp?.initData) {
     return window.Telegram.WebApp.initData;
   }
 
-  return "";
+  return getTelegramInitDataFromUrl();
 };
 
 export const getAccessToken = () => {
